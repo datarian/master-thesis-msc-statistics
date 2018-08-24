@@ -1,0 +1,581 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"times",
+				"times"
+			],
+			[
+				"coe",
+				"coef\t{stats}"
+			],
+			[
+				"resi",
+				"residuals\t{stats}"
+			],
+			[
+				"quasi",
+				"quasipoisson\t{stats}"
+			],
+			[
+				"reis",
+				"residuals\t{stats}"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "/C/Users/micro/OneDrive/unine/Master_Thesis/data/cup98LRN.txt",
+			"settings":
+			{
+				"buffer_size": 117167952,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/C/Users/micro/OneDrive/unine/Master_Thesis/data/cup98dic.txt",
+			"settings":
+			{
+				"buffer_size": 56007,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "'COLLECT1',\n'VETERANS',\n'BIBLE',\n'CATLG',\n'HOMEE',\n'PETS',\n'CDPLAY',\n'STEREO',\n'PCOWNERS',\n'PHOTO',\n'CRAFTS',\n'FISHER',\n'GARDENIN',\n'BOATS',\n'WALKER',\n'KIDSTUFF',\n'CARDS',\n'PLATES',",
+			"settings":
+			{
+				"buffer_size": 181,
+				"line_ending": "Windows",
+				"name": "'COLLECT1',"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+		[
+			[
+				[
+					"Packages/LaTeXing/LaTeX.sublime-build",
+					""
+				],
+				[
+					"Packages/LaTeXing/LaTeX.sublime-build",
+					"Clean up Files"
+				]
+			],
+			[
+				"Packages/LaTeXing/LaTeX.sublime-build",
+				""
+			]
+		]
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 784.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"package",
+				"Package Control: Install Package"
+			],
+			[
+				"menu",
+				"View: Toggle Menu"
+			],
+			[
+				"markdown synta",
+				"Set Syntax: R Markdown"
+			],
+			[
+				"markdown pr",
+				"Markdown Preview: Preview in Browser"
+			],
+			[
+				"markdown pre",
+				"Markdown Preview: Preview in Browser"
+			],
+			[
+				"Snippet: ",
+				"Snippet: Insert knitr Markdown chunk"
+			],
+			[
+				"Package Control: ins",
+				"Package Control: Install Package"
+			],
+			[
+				"markdownsl",
+				"Markdown Slideshow"
+			],
+			[
+				"instal",
+				"Package Control: Install Package"
+			],
+			[
+				"markdown",
+				"MarkdownEditing: Change color scheme..."
+			],
+			[
+				"markdownpr",
+				"Markdown Preview: Preview in Browser"
+			],
+			[
+				"markdownediting",
+				"MarkdownEditing: Add Missing Link Labels"
+			],
+			[
+				"materia",
+				"Material Theme: Advanced configuration"
+			],
+			[
+				"mat",
+				"Material Theme: Extras"
+			],
+			[
+				"install ",
+				"Package Control: Install Package"
+			],
+			[
+				"packa",
+				"Install Package Control"
+			]
+		],
+		"width": 1016.0
+	},
+	"console":
+	{
+		"height": 76.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/C/Users/micro/OneDrive/unine/Master_Thesis/code"
+	],
+	"file_history":
+	[
+		"/C/Users/micro/OneDrive/unine/Master_Thesis/code/Package Control Messages.txt",
+		"/C/Users/micro/OneDrive/unine/Master_Thesis/code/ma-kdd-cup.sublime-project",
+		"/C/Users/micro/OneDrive/unine/Master_Thesis/code/start.py",
+		"/C/Users/micro/OneDrive/unine/Master_Thesis/data/readme.txt",
+		"/C/Users/micro/OneDrive/unine/Master_Thesis/data/valtargt.readme.txt",
+		"/C/Users/micro/Desktop/nautilus.csv",
+		"/C/Users/micro/Documents/R/win-library/3.4/comleamReports/rmd/pandoc.tex",
+		"/C/Users/micro/OneDrive/unine/Semester 2/Seminar of applied statistics/Wine_Quality/eda.Rmd",
+		"/C/Users/micro/OneDrive/unine/Semester 2/Seminar of applied statistics/Wine_Quality/wine_quality_report.Rmd",
+		"/C/Users/micro/OneDrive/unine/Semester 2/Computational Statistics/Computational_Statistics_R/presentation/styles.css",
+		"/C/Users/micro/OneDrive/unine/Semester 2/Time Series/Time_Series_Final_Project/appendix.Rmd",
+		"/C/Users/micro/OneDrive/unine/Semester 2/Time Series/Time_Series_Final_Project/introduction.Rmd",
+		"/C/Users/micro/OneDrive/unine/Semester 2/Time Series/Time_Series_Final_Project/conclusion.Rmd",
+		"/C/Users/micro/OneDrive/unine/Semester 2/Time Series/Time_Series_Final_Project/Final_Project.Rmd",
+		"/C/Users/micro/Documents/ssh_public_key_github",
+		"/C/Users/micro/OneDrive/unine/Semester 2/Time Series/Time_Series_Final_Project/.git/config",
+		"/C/Users/micro/OneDrive/DataScience/SeelandSettlements/.git/config",
+		"/C/Users/micro/OneDrive/unine/Semester 2/Time Series/Time_Series_R/Lecture12.R",
+		"/C/Users/micro/OneDrive/unine/Semester 2/Time Series/Time_Series_R/Lecture11.R",
+		"/C/Users/micro/OneDrive/unine/Semester 2/Time Series/Time_Series_Final_Project/final_project.bib",
+		"/C/Users/micro/OneDrive/unine/Semester 2/Time Series/Time_Series_Final_Project/analysis/make_series_stationary.R",
+		"/C/Program Files/R/R-3.5.0/etc/Rconsole",
+		"/C/Users/micro/AppData/Local/Temp/nature14565.ris",
+		"/C/Users/micro/OneDrive/unine/Semester 2/Time Series/Time_Series_Final_Project/methods.Rmd",
+		"/C/Users/micro/OneDrive/unine/Semester 2/Time Series/Time_Series_Final_Project/results_discussion.Rmd",
+		"/C/Users/micro/OneDrive/unine/Semester 2/Computational Statistics/chapter 3/data_exer.txt",
+		"/C/Users/micro/AppData/Local/Temp/S0378112700006320.bib",
+		"/C/Users/micro/Desktop/exer_3.R",
+		"/C/Users/micro/OneDrive/unine/Semester 2/Time Series/Time_Series_Final_Project/Time_Series_Final_Project.Rproj",
+		"/C/Users/micro/OneDrive/unine/Semester 2/Computational Statistics/Computational_Statistics_R/presentation/presentation_fho.Rmd",
+		"/C/Users/micro/Desktop/plot.fevd.R",
+		"/C/Users/micro/Desktop/table.html",
+		"/C/Users/micro/OneDrive/unine/Semester 2/Time Series/Time_Series_Final_Project/data/900+.txt",
+		"/C/Users/micro/AppData/Local/Temp/pericles_1467986861.bib",
+		"/C/Users/micro/AppData/Local/Temp/pericles_1097025819.bib",
+		"/C/Users/micro/AppData/Local/Temp/citation-285502499.bib.fmd",
+		"/C/Users/micro/AppData/Local/Temp/S1125786508000350.bib",
+		"/C/Users/micro/AppData/Local/Temp/science.bib",
+		"/C/Users/micro/OneDrive/unine/Semester 2/Generalized Linear Model/GLM_R/GLM_notes.Rmd",
+		"/C/Users/micro/OneDrive/unine/Semester 2/Time Series/Time_Series_Final_Project/data/NOAA_data.R",
+		"/C/Users/micro/OneDrive/DataScience/SeelandSettlements/data/belab.txt",
+		"/C/Users/micro/OneDrive/DataScience/SeelandSettlements/data/Gesamtholzliste_Bielersee.txt",
+		"/C/Users/micro/AppData/Local/Packages/microsoft.windowscommunicationsapps_8wekyb3d8bbwe/LocalState/Files/S0/7631/Proposal_TS_Project_Final[7963].Rmd",
+		"/C/Users/micro/AppData/Local/Temp/Methods_of_Dendrochronology.bibtex",
+		"/C/Users/micro/AppData/Local/Temp/Methods_of_Dendrochronology-1.bibtex",
+		"/C/Users/micro/OneDrive/DataScience/Creating-maps-in-R/data/london_sport.shp",
+		"/C/Users/micro/OneDrive/DataScience/Creating-maps-in-R/data/london_sport.prj",
+		"/C/Users/micro/OneDrive/DataScience/Creating-maps-in-R/data/london_sport.dbf",
+		"/C/Users/micro/OneDrive/unine/Semester 2/Time Series/Time_Series_Final_Project/GLM_Exam2017.R",
+		"/C/Users/micro/OneDrive/diy/READY_TO_PRINT/cheetah_seals.gcode",
+		"/C/Users/micro/OneDrive/diy/horten/airfoils/dragonwing_Y=0_T=1.DAT",
+		"/C/Users/micro/OneDrive/unine/Semester 2/Time Series/Time_Series_Final_Project/data/loehle_global_temp_reconstruction.dat",
+		"/C/Users/micro/OneDrive/diy/horten/nurfluegel/HM50.dat",
+		"/C/Users/micro/OneDrive/diy/horten/airfoils/dragonwing_Y=1_T=1.DAT",
+		"/C/Users/micro/OneDrive/diy/horten/airfoils/dragonwing_Y=1,125_T=1.DAT",
+		"/C/Users/micro/OneDrive/diy/horten/airfoils/dragonwing_Y=1,25_T=1.DAT",
+		"/C/Users/micro/OneDrive/diy/horten/airfoils/dragonwing_Y=0,875_T=1.DAT",
+		"/C/Users/micro/OneDrive/diy/horten/airfoils/dragonwing_Y=0,625_T=1.DAT",
+		"/C/Users/micro/OneDrive/diy/horten/airfoils/dragonwing_Y=0,375_T=1.DAT",
+		"/C/Users/micro/OneDrive/diy/horten/airfoils/dragonwing_Y=0,125_T=1.DAT",
+		"/C/Users/micro/OneDrive/diy/horten/airfoils/dragonwing_Y=0,75_T=1.DAT",
+		"/C/Users/micro/OneDrive/diy/horten/airfoils/dragonwing_Y=0,25_T=1.DAT",
+		"/C/Users/micro/OneDrive/diy/horten/nurfluegel/E193r318.dat",
+		"/C/Users/micro/OneDrive/diy/horten/airfoils/E193r318.dat",
+		"/C/Users/micro/OneDrive/diy/horten/airfoils/dragonwing_Y=0,5_T=1.DAT",
+		"/C/Users/micro/OneDrive/diy/horten/nurfluegel/E193r3_y15.dat",
+		"/C/Users/micro/OneDrive/diy/horten/nurfluegel/dragonwing_Y=0,119999997317791_T=1.DAT",
+		"/C/Users/micro/OneDrive/diy/horten/airfoils/dragonwing_Y=1,08000004291534_T=1.DAT",
+		"/C/Users/micro/OneDrive/diy/horten/airfoils/dragonwing_Y=1,20000004768372_T=1.DAT",
+		"/C/Users/micro/OneDrive/diy/horten/airfoils/dragonwing_Y=0,959999978542328_T=1.DAT",
+		"/C/Users/micro/OneDrive/diy/horten/airfoils/dragonwing_Y=0,839999973773956_T=1.DAT",
+		"/C/Users/micro/OneDrive/diy/horten/airfoils/dragonwing_Y=0,720000028610229_T=1.DAT",
+		"/C/Users/micro/OneDrive/diy/horten/airfoils/dragonwing_Y=0,600000023841858_T=1.DAT",
+		"/C/Users/micro/OneDrive/diy/horten/airfoils/dragonwing_Y=0,479999989271164_T=1.DAT",
+		"/C/Users/micro/OneDrive/diy/horten/airfoils/dragonwing_Y=0,360000014305115_T=1.DAT",
+		"/C/Users/micro/OneDrive/diy/horten/nurfluegel/E193r3.dat",
+		"/C/Users/micro/OneDrive/diy/horten/nurfluegel/E193t.dat",
+		"/C/Users/micro/OneDrive/diy/horten/airfoils/dragonwing_Y=0,119999997317791_T=1.DAT",
+		"/C/Users/micro/OneDrive/diy/horten/airfoils/dragonwing_Y=0,239999994635582_T=1.DAT",
+		"/C/Users/micro/OneDrive/diy/horten/nurfluegel/dragonwing_2.DAT",
+		"/C/Users/micro/OneDrive/diy/horten/nurfluegel/dragonwing_1.DAT",
+		"/C/Users/micro/OneDrive/diy/horten/airfoils/HM50.dat",
+		"/C/Users/micro/Desktop/aerofly_lizenz.txt",
+		"/C/Users/micro/Downloads/save_citation.enw",
+		"/C/Users/micro/AppData/Local/Temp/Tree_rings_and_climate.bibtex",
+		"/C/Users/micro/AppData/Local/Temp/Temp2_config.zip/bed.g",
+		"/C/Users/micro/OneDrive/diy/READY_TO_PRINT/EDGE_HA_wingL_1.gcode",
+		"/C/Users/micro/Documents/git/comleamReports/inst/rmd/report_dynamic_template.Rmd",
+		"/C/Users/micro/OneDrive/unine/Semester 2/Time Series/Time_Series_Final_Project/custom.tex",
+		"/C/Users/micro/OneDrive/unine/Semester 2/Time Series/Time_Series_Final_Project/mystyles.sty",
+		"/C/Users/micro/OneDrive/diy/horten/wings/165horten.flg",
+		"/C/Users/micro/AppData/Local/Temp/Temp1_config.zip/bed.g",
+		"/C/Users/micro/AppData/Local/Temp/Temp2_config.zip/config.g",
+		"/C/Users/micro/OneDrive/diy/horten/wings/0_7m_hiv.flg",
+		"/C/Users/micro/OneDrive/unine/Semester 2/Time Series/Time_Series_R/monthly-milk-production-pounds-p2.csv",
+		"/C/Users/micro/OneDrive/diy/horten/airfoils/nurfluegel/HM50T.dat",
+		"/C/Users/micro/OneDrive/diy/horten/airfoils/nurfluegel/HM50.dat",
+		"/C/Users/micro/AppData/Local/Temp/Temp1_config.zip/config.g",
+		"/C/Users/micro/OneDrive/diy/horten/airfoils/nurfluegel/ebene_platte.dat",
+		"/C/Users/micro/Downloads/ConnectTheDots.py",
+		"/C/Users/micro/OneDrive/Dokumente/Hochstrasser_Lösungen/Projekte/comleamReports_Erweiterungen/virtualbox_shared_folder/files/Geometry/ESD_PT9_Modelhouse.csv",
+		"/C/Users/micro/OneDrive/Dokumente/Hochstrasser_Lösungen/Projekte/comleamReports_Erweiterungen/virtualbox_shared_folder/files/emissionData/dcoit_otelfingen.emDat",
+		"/C/Users/micro/OneDrive/Dokumente/Hochstrasser_Lösungen/Projekte/comleamReports_Erweiterungen/virtualbox_shared_folder/files/emissionData/oit_otelfingen_n.emDat",
+		"/C/Users/micro/Downloads/config/stop.g",
+		"/C/Users/micro/Downloads/config/tfree0.g",
+		"/C/Users/micro/Downloads/config/homedelta.g",
+		"/C/Users/micro/Downloads/config/config.g",
+		"/C/Users/micro/AppData/Local/Temp/MoveComponent.txt",
+		"/C/Users/micro/OneDrive/unine/Resources/Differentials.pdf",
+		"/C/Users/micro/OneDrive/diy/Flugis/EDGE_v3_HA_replica/EDGE_v3_HA_replica_STL/EDGE_v3_HA_replica_STL/STL_3D_files/landing_gear/EDGE_HA_LG_var.STL",
+		"/C/Users/micro/Documents/simplify3dProfiles/edge_1per.fff",
+		"/C/Users/micro/OneDrive/diy/Flugis/READY_TO_PRINT/EDGE_HA_fuselage2_5_7.gcode",
+		"/C/Users/micro/Documents/simplify3dProfiles/Kossel Mini.fff",
+		"/C/Users/micro/OneDrive/unine/Seminar_Stat_SW/sas/snippets.sas",
+		"/C/Users/micro/OneDrive/unine/Seminar_Stat_SW/sas/20171212_sas_macros.sas",
+		"/C/Users/micro/OneDrive/unine/Seminar_Stat_SW/sas/20171212_proc_reg.sas",
+		"/C/Users/micro/OneDrive/unine/Seminar_Stat_SW/sas/20171212_exercises.sas",
+		"/C/Users/micro/OneDrive/unine/Seminar_Stat_SW/sas/20171205_statistics.sas",
+		"/C/Users/micro/OneDrive/unine/Seminar_Stat_SW/sas/20171205_regression.sas",
+		"/C/Users/micro/OneDrive/unine/Seminar_Stat_SW/sas/20171128_salary.sas",
+		"/C/Users/micro/OneDrive/unine/Seminar_Stat_SW/sas/20171128_practical_session_2.sas",
+		"/C/Users/micro/OneDrive/unine/Seminar_Stat_SW/sas/20171128_information_on_datasets.sas",
+		"/C/Users/micro/OneDrive/unine/Seminar_Stat_SW/sas/20171121_practical_session_file_import.sas",
+		"/C/Users/micro/OneDrive/unine/Seminar_Stat_SW/sas/20171128_flow_control_statements.sas",
+		"/C/Users/micro/OneDrive/unine/Seminar_Stat_SW/sas/20171114_second_ex.sas",
+		"/C/Users/micro/OneDrive/unine/Seminar_Stat_SW/sas/20171121_notes.sas",
+		"/C/Users/micro/OneDrive/unine/Seminar_Stat_SW/sas/20171114_first_ex.sas",
+		"/C/Users/micro/OneDrive/unine/Seminar_Stat_SW/sas/20171114_cars1_example.sas"
+	],
+	"find":
+	{
+		"height": 30.0
+	},
+	"find_in_files":
+	{
+		"height": 242.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": true,
+		"find_history":
+		[
+			"('[A-Z0-9]*')",
+			"'[A-Z0-9]*'",
+			"#([A-Z0-9]*)[ A-Za-z0-9()/]*",
+			"#([A-Z1-9]*) *[A-Za-z0-9 ]* ",
+			"'([0-9]{3})':",
+			"'0{1,2}([123456789]{1}[0-9]*)':",
+			",",
+			"([A-Z0-9]*),",
+			",",
+			"\"\\n",
+			"':",
+			"^'",
+			"' \"",
+			"' ",
+			" *\\n",
+			":  ",
+			" *=",
+			" {28}",
+			"[ ]28",
+			"                            ",
+			"[ ]28",
+			"                            "
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": true,
+		"replace_history":
+		[
+			"\\1,",
+			"'[A-Z0-9]*',",
+			"'\\1'",
+			"\\1:",
+			" = ,",
+			"'\\1',",
+			"'\\1'",
+			"'(1)'",
+			",\\n",
+			"\",\\n",
+			":",
+			"",
+			"': \"",
+			"\"\\n",
+			"\"",
+			" \"",
+			"': ",
+			"'"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "/C/Users/micro/OneDrive/unine/Master_Thesis/data/cup98LRN.txt",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 117167952,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1257,
+								1257
+							]
+						],
+						"settings":
+						{
+							"SL.13.region_keys":
+							[
+							],
+							"SL.14.region_keys":
+							[
+							],
+							"git_gutter_is_enabled": false,
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "/C/Users/micro/OneDrive/unine/Master_Thesis/data/cup98dic.txt",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 56007,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								42578,
+								42578
+							]
+						],
+						"settings":
+						{
+							"SL.14.region_keys":
+							[
+							],
+							"git_gutter_is_enabled": false,
+							"markdonw_live_preview_last_run": 1534590409.57,
+							"syntax": "Packages/Text/Plain text.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 14153.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 181,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								181,
+								0
+							]
+						],
+						"settings":
+						{
+							"SL.20.region_keys":
+							[
+							],
+							"auto_name": "'COLLECT1',",
+							"default_dir": "C:\\Users\\micro\\OneDrive\\unine\\Master_Thesis\\data",
+							"git_gutter_is_enabled": false,
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 30.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.SublimeLinter":
+	{
+		"height": 0.0
+	},
+	"output.exec":
+	{
+		"height": 68.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.mdpopups":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "Packages/R-Box/support/R Markdown.sublime-build",
+	"project": "ma-kdd-cup.sublime-project",
+	"replace":
+	{
+		"height": 102.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 138.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

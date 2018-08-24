@@ -1,0 +1,11 @@
+# Data
+
+The data at hand originates from a U.S. veterans organisation and is freely available online[^1]. It contains data from the organisations members and the turnout of a direct mailing addressed to 3.5 million members in the scope of a fundraising effort that was conducted in 1997.
+[1]: See [UCI Machine Learning Repository: KDD Cup 1998 Data](https://archive.ics.uci.edu/ml/datasets/KDD+Cup+1998+Data)
+
+In the following section, the data will be characterized.
+
+##  Highlevel structure
+
+The complete dataset is pre-cut into a training and test set.
+
