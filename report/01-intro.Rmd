@@ -19,3 +19,34 @@ knitr::kable(
 ```
 
 You can write citations, too. This sample book was built on top of R Markdown and **knitr** [@xie2015].
+
+## Problem description
+
+<!--- Rewrite this for problem identification.
+
+The mailing included a gift (or "premium") of personalized name &
+address labels plus an assortment of 10 note cards and envelopes.  All
+of the donors who received this mailing were acquired by PVA through
+similar premium-oriented appeals such as this.
+
+One group that is of particular interest to PVA is "Lapsed" donors.
+These are individuals who made their last donation to PVA 13 to 24
+months ago.  They represent an important group to PVA, since the
+longer someone goes without donating, the less likely they will be to
+give again.  Therefore, recapture of these former donors is a critical
+aspect of PVA's fund raising efforts.
+
+However, PVA has found that there is often an inverse correlation
+between likelihood to respond and the dollar amount of the gift, so a
+straight response model (a classification or discrimination task) will
+most likely net only very low dollar donors.  High dollar donors will
+fall into the lower deciles, which would most likely be suppressed
+from future mailings.  The lost revenue of these suppressed donors
+would then offset any gains due to the increased response rate of the
+low dollar donors.
+
+Therefore, to improve the cost-effectiveness of future direct
+marketing efforts, PVA wishes to develop a model that will help them
+maximize the net revenue (a regression or estimation task) generated
+from future renewal mailings to Lapsed donors.
+-->
