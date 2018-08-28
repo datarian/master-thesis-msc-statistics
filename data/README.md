@@ -1,0 +1,1 @@
+Download data from the [UCI machine learning repository: DD Cup 1998 Data Data Set](https://archive.ics.uci.edu/ml/datasets/KDD+Cup+1998+Data) and unpack the complete archive in this directory.

@@ -11,6 +11,12 @@ class App:
     __conf = {
             "root_dir": os.getcwd()+"\\",
             "data_dir": "..\\data\\",
+            "hdf_store": "tidy_data.h5",
+            "train_file_name": "cup98LRN.txt",
+            "train_name": "kddCup98Train",
+            "test_file_name": "cup98VAL.txt",
+            "test_name": "kddCup98Test",
+            "dependent_vars": ["TARGET_B","TARGET_D"]
             }
     
     __setters = []
