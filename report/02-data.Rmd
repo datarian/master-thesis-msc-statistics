@@ -1,11 +1,32 @@
 # Data
 
-The data at hand originates from a U.S. veterans organisation and is freely available online[^1]. It contains data from the organisations members and the turnout of a direct mailing addressed to 3.5 million members in the scope of a fundraising effort that was conducted in 1997.
-[1]: See [UCI Machine Learning Repository: KDD Cup 1998 Data](https://archive.ics.uci.edu/ml/datasets/KDD+Cup+1998+Data)
+The data at hand originates from a U.S. veterans organisation and is freely available online ^[See [UCI Machine Learning Repository: KDD Cup 1998 Data](https://archive.ics.uci.edu/ml/datasets/KDD+Cup+1998+Data)]. It contains data from the organisations members and the turnout of a direct mailing addressed to 3.5 million members in the scope of a fundraising effort that was conducted in 1997.
 
 In the following section, the data will be characterized.
 
-##  Highlevel structure
+##  High-level structure
 
 The complete dataset is pre-cut into a training and test set.
 
+In the learning dataset, there are 95412 observations and 481 variables, of which two are the dependent variables.
+
+The validation dataset contains 96367 observations and 479 variables, lacking the two dependent variables. The remaining explanatory variables are identical to the learning dataset.
+
+There are three blocks of variables in both datasets. A first block concerns the personal data of each record, followed by census-data describing the socio-economic particulars of the record's living environment. The third block contains information on previous mailing activity and the record's response patterns.
+
+```{python overview-data}
+import 
+
+
+```
+
+## Data preparation outline
+
+The data needs cleansing and transformations for several variables. On the cleansing side, boolean variables are coded arbitrarily and some categorical variables rely on NA-values as a category. Several variables are aggregated into byte-wise codes that need to be "spread" out across separate variables.
+
+According to the much-discussed paper by Hadley Wickham [@tidy-data], there are two criteria that qualify tidy data:
+
+    1. Each variable has it's own column
+    2. Each observation has it's own row
+
+The data at hand needs several transformations in order to conform to the tidy data principle.

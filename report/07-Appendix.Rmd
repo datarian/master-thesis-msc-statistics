@@ -1,0 +1,9 @@
+# Appendix
+
+## Python Environment
+
+Python was installed through the Anaconda distribution
+
+Heavy coding was conducted using the spyder-IDE
+
+Data analysis and learning was conducted using jupyter notebooks
