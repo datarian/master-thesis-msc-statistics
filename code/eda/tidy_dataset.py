@@ -7,12 +7,12 @@ Created on Fri Aug 24 10:18:44 2018
 
 import numpy as np
 import pandas as pd
-#from pandas.api.types import CategoricalDtype
+import traceback
+import logging
 from config import App
 
-
-# Boolean values are coded in several different ways in the original data.
-# The following class specifys the mapping of the respective fields.
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 class BooleanRecodeSpec:
     """ Holds a dict of true / false value mappings and a list of fields
@@ -31,15 +31,86 @@ class BooleanRecodeSpec:
         return self.value_mapping
 
 
+class SymbolicFieldToDummies:
+    """
+    Holds information on a symbolic field and the functions used
+    to create dummy variables from it.
+
+    Directly modifies the dataset passed to the class!
+
+    Params:
+    -------
+    dataset A pandas DataFrame
+    field The field name to split
+    field_names The identifiers for each byte, from left to right
+    """
+
+    def __init__(self, dataset, field, field_names):
+        self.dataset = dataset # Reference to the dataframe
+        self.field = field
+        self.newfields = field_names
+        self.original_field = pd.DataFrame(dataset.loc[:, field]) # The original field to be replaced
+        self.temp_df = pd.DataFrame()
+
+
+    def _fill_temp_with_bytes(self):
+        """ Fills the byte dataset for each record"""
+        sigbytes = len(self.newfields) # determines how many bytes to extract
+        # Dict to hold the split bytes
+        spread_field = {}
+
+        # Iterate over all rows, fill into dict
+        for row in self.original_field.itertuples(name=None):
+            # row[0] is the index, row[1] the content of the cell
+            if not row[1] is np.nan:
+                if len(row[1]) == sigbytes:
+                    spread_field[row[0]] = list(row[1])
+                else:
+                    # The field is invalid, set all to empty
+                    spread_field[row[0]] = [np.nan]*sigbytes
+            else:
+                # handle missing values -> set all empty
+                spread_field[row[0]] = [np.nan]*sigbytes
+
+        # Create the dataframe, orient=index means we interprete the dict's contents as rows (defaults to columns)
+        self.temp_df = pd.DataFrame.from_dict(data=spread_field, orient="index")
+        # Name the fields correctly
+        self.temp_df.columns = self.newfields
+        self.temp_df.index.name = "CONTROLN"
+        self.temp_df = self.temp_df.astype("category") # make sure all fields are categorical
+
+
+    def _create_dummies(self):
+        """For each byte column in the temporary dataset,
+        new dummy variables are created for all the levels in a byte. The prefix is build from the original field name, followed by the byte identifier."""
+        self._fill_temp_with_bytes()
+
+        dummy_names = ["_".join([self.field,f]) for f in self.newfields]
+        dummies_df = pd.get_dummies(self.temp_df, prefix=dummy_names)
+        return dummies_df
+
+
+    def spread(self):
+        """Spreads a symbolic field into dummy variables bytewise, inserts the new dummy variables into the original dataset, then drops the initial symbolic field."""
+        dummies = self._create_dummies()
+        #self.dataset = pd.concat(
+        #    [self.dataset, dummies], axis=1, sort=False,copy=False)
+        self.dataset = self.dataset.merge(dummies,on="CONTROLN",copy=False)
+        self.dataset.drop(self.field, axis=1, inplace=True)
+
+    def get_data(self):
+        return self.dataset
+
+
+
 class TidyDataset:
     """
-    Represents a tidy dataset for either training or test data of the
+    Represents a tidy dataset for either learning or validation data of the
     kdd cup 1998. This class is recommended to load ready-to-work-with data.
     Expects input data as distributed on UCI's machine learning repository
     (either 'cup98LRN.txt' or 'cup98VAL.txt')."
     """
 
-    ###########################################################################
     # Dicts and data structures to recode / reformat various variables
     ###########################################################################
 
@@ -51,13 +122,39 @@ class TidyDataset:
         'MDMAUD': 'XXXX',
         'DOB': '0',
         'AGE': '0',
+        'DOMAIN': ' ',
         'CHILD03': ' ',
         'CHILD07': ' ',
         'CHILD12': ' ',
-        'CHILD18': ' '}
+        'CHILD18': ' ',
+        'GEOCODE': ' ',
+        'RFA_2': ' ',
+        'RFA_3': ' ',
+        'RFA_4': ' ',
+        'RFA_5': ' ',
+        'RFA_6': ' ',
+        'RFA_7': ' ',
+        'RFA_8': ' ',
+        'RFA_9': ' ',
+        'RFA_10': ' ',
+        'RFA_11': ' ',
+        'RFA_12': ' ',
+        'RFA_13': ' ',
+        'RFA_14': ' ',
+        'RFA_15': ' ',
+        'RFA_16': ' ',
+        'RFA_17': ' ',
+        'RFA_18': ' ',
+        'RFA_19': ' ',
+        'RFA_20': ' ',
+        'RFA_21': ' ',
+        'RFA_22': ' ',
+        'RFA_23': ' ',
+        'RFA_24': ' '}
 
     recode_x_underscore = BooleanRecodeSpec({'true': 'X', 'false': '_'},
                                             ['NOEXCH',
+                                             'MAJOR',
                                              'RECINHSE',
                                              'RECP3',
                                              'RECPGVG',
@@ -88,9 +185,12 @@ class TidyDataset:
     recode_x_blank = BooleanRecodeSpec({'true': 'X', 'false': ' '},
                                        ['PEPSTRFL'])
 
+    recode_h_u = BooleanRecodeSpec({'true': 'H', 'false': 'U'}, ['HOMEOWNR'])
+
     boolean_recode = [recode_x_underscore,
                       recode_y_n,
-                      recode_x_blank]
+                      recode_x_blank,
+                      recode_h_u]
 
     # Donor title code. Pandas strips leading zeros on reading the data,
     # so this is reflected in the index keys here. (1 instead of 001 and so on)
@@ -209,7 +309,6 @@ class TidyDataset:
         'MDMAUD': 'str',
         'CLUSTER': 'category',
         'AGEFLAG': 'category',
-        'HOMEOWNR': 'category',
         'CHILD03': 'category',
         'CHILD07': 'category',
         'CHILD12': 'category',
@@ -225,6 +324,7 @@ class TidyDataset:
 
     index_field = "CONTROLN"
     target_vars = ["TARGET_B", "TARGET_D"]
+    date_fields = ["ODATEDW","DOB","ADATE_2","ADATE_3","ADATE_4","ADATE_5","ADATE_6","ADATE_7","ADATE_8","ADATE_9","ADATE_10","ADATE_11","ADATE_12","ADATE_13","ADATE_14","ADATE_15","ADATE_16","ADATE_17","ADATE_18","ADATE_19","ADATE_20","ADATE_21","ADATE_22","ADATE_23","ADATE_24"]
 
     data_path = App.config("data_dir")
 
@@ -248,12 +348,12 @@ class TidyDataset:
         self.raw_data = None
         self.processed_data = None
 
-        if not csv_file is None and csv_file in [App.config("train_file_name"),
-                                                 App.config("test_file_name")]:
+        if not csv_file is None and csv_file in [App.config("learn_file_name"),
+                                                 App.config("validation_file_name")]:
             if "lrn" in csv_file.lower():
-                self.dataset_type = App.config("train_name")
+                self.dataset_type = App.config("learn_name")
             elif "val" in csv_file.lower():
-                self.dataset_type = App.config("test_name")
+                self.dataset_type = App.config("validation_name")
         else:
             raise NameError("Set csv_file to either training- or test-file.")
 
@@ -298,28 +398,39 @@ class TidyDataset:
         for spec in recode_specs:
             do_recode(spec)
 
-    def _split_promotion_history(self):
-        # TODO: Implement, along with other vars that need splitting
-        """
-        The promotion history data is aggregated
-        """
-        pass
-
     def _read_csv_data(self):
         """ Read in csv data. """
         try:
-            self.raw_data = pd.read_csv(self.get_raw_datafile_path(),
-                                        index_col=self.index_field,
-                                        parse_dates=[0, 7],
-                                        date_parser=self._four_digit_date_parser,
-                                        na_values=self.na_codes,
-                                        dtype=self.dtype_categorical,
-                                        low_memory=False,  # needed for mixed type columns
-                                        memory_map=True  # load file in memory
-                                        )
+            self.raw_data = pd.read_csv(
+                self.get_raw_datafile_path(),
+                index_col=self.index_field,
+                parse_dates=[0, 7],
+                date_parser=self._four_digit_date_parser,
+                na_values=self.na_codes,
+                dtype=self.dtype_categorical,
+                low_memory=False,  # needed for mixed type columns
+                memory_map=True  # load file in memory
+                )
         except Exception as exc:
             print(exc)
             raise
+
+    def _process_symbolic_fields(self, data):
+        if isinstance(data, pd.DataFrame):
+            symbolics = []
+            symbolics.append(SymbolicFieldToDummies(
+                data,"MDMAUD", ["Recency","Frequency","Amount"]))
+            symbolics.append(SymbolicFieldToDummies(
+                data, "DOMAIN",["Urbanicity", "SocioEconomicStatus"]))
+            for i in range(2,25):
+                field = "_".join(["RFA",str(i)])
+                symbolics.append(SymbolicFieldToDummies(
+                    data, field, ["Recency","Frequency","Amount"]))
+
+            for f in symbolics:
+                f.spread()
+        else:
+            raise NameError
 
     def _process_raw(self):
         """
@@ -327,15 +438,20 @@ class TidyDataset:
             - Recodes booleans
             - Splits multi-value columns
             - Renames categorical columns
+        This procedure creates a copy of the raw data, which is preserved
+        for later comparison.
         """
+
         if self.raw_data is None:
             self._read_csv_data()
         try:
-            self.processed_data = self.raw_data
+            self.processed_data = self.raw_data.copy()
             self._recode_booleans(self.processed_data, self.boolean_recode)
-        except Exception as exc:
+            self._process_symbolic_fields(self.processed_data)
+        except Exception as error:
             self.processed_data = None
-            print(exc)
+            logger.exception(error)
+            print(traceback.format_exc())
 
     def _load_hdf(self):
         """ Loads tidy data from hdf store """
@@ -379,15 +495,18 @@ class TidyDataset:
                 self._process_raw()
                 self._save_hdf()
 
+
     def get_raw_datafile_path(self):
         """ Return relative path to csv data file"""
         if self.raw_data_file is None:
             raise NameError("No data file specified yet.")
         return self.data_path+self.raw_data_file
 
+
     def get_hdf_datafile_path(self):
         """ Return relative path to hdf data file"""
         return self.hdf_store
+
 
     def get_target_variables(self, names_only=True):
         """
@@ -414,7 +533,17 @@ class TidyDataset:
             self._load_data()
         return self.processed_data.loc[:, App.config("dependent_vars")]
 
-    def get_data(self):
+
+    def get_raw_data(self):
+        if self.raw_data is None:
+            try:
+                self._read_csv_data()
+            except Exception as exc:
+                print(exc)
+        return self.raw_data
+
+
+    def get_tidy_data(self):
         """
         Gets processed data ready for further analysis. Attempts to load
         hdf, if that's not available, reads csv and processes data first.
