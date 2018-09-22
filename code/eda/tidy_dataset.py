@@ -31,7 +31,7 @@ class BooleanRecodeSpec:
         return self.value_mapping
 
 
-class SymbolicFieldToDummies:
+class SymbolicFieldToDummiesHandler:
     """
     Holds information on a symbolic field and the functions used
     to create dummy variables from it.
@@ -40,16 +40,16 @@ class SymbolicFieldToDummies:
 
     Params:
     -------
-    dataset A pandas DataFrame
+    tidy_dataset: A reference to the TidyDataset class
     field The field name to split
     field_names The identifiers for each byte, from left to right
     """
 
-    def __init__(self, dataset, field, field_names):
-        self.dataset = dataset # Reference to the dataframe
+    def __init__(self, tidy_dataset, field, field_names):
+        self.tds_ref = tidy_dataset
         self.field = field
         self.newfields = field_names
-        self.original_field = pd.DataFrame(dataset.loc[:, field]) # The original field to be replaced
+        self.original_field = pd.DataFrame(self.tds_ref.processed_data.loc[:, field]) # The original field to be replaced
         self.temp_df = pd.DataFrame()
 
 
@@ -84,7 +84,6 @@ class SymbolicFieldToDummies:
         """For each byte column in the temporary dataset,
         new dummy variables are created for all the levels in a byte. The prefix is build from the original field name, followed by the byte identifier."""
         self._fill_temp_with_bytes()
-
         dummy_names = ["_".join([self.field,f]) for f in self.newfields]
         dummies_df = pd.get_dummies(self.temp_df, prefix=dummy_names)
         return dummies_df
@@ -93,10 +92,8 @@ class SymbolicFieldToDummies:
     def spread(self):
         """Spreads a symbolic field into dummy variables bytewise, inserts the new dummy variables into the original dataset, then drops the initial symbolic field."""
         dummies = self._create_dummies()
-        #self.dataset = pd.concat(
-        #    [self.dataset, dummies], axis=1, sort=False,copy=False)
-        self.dataset = self.dataset.merge(dummies,on="CONTROLN",copy=False)
-        self.dataset.drop(self.field, axis=1, inplace=True)
+        self.tds_ref.processed_data = self.tds_ref.processed_data.merge(dummies,on="CONTROLN",copy=False)
+        self.tds_ref.processed_data.drop(self.field, axis=1, inplace=True)
 
     def get_data(self):
         return self.dataset
@@ -338,8 +335,7 @@ class TidyDataset:
         Parameters:
         -----------
         csv_file: The name of either the training or test file (cup98[LRN,VAL].txt)
-        pull_stored: Whether to attempt loading from hdf store before reading
-            in csv data (default True).
+        pull_stored: Whether to attempt loading tidy data from HDF store. Raw data is always pulled from the store if present.
         """
         self.hdf_data_file = App.config("hdf_store")
         self.pull_stored = pull_stored
@@ -352,8 +348,10 @@ class TidyDataset:
                                                  App.config("validation_file_name")]:
             if "lrn" in csv_file.lower():
                 self.dataset_type = App.config("learn_name")
+                self.raw_dataset = App.config("learn_name_raw")
             elif "val" in csv_file.lower():
                 self.dataset_type = App.config("validation_name")
+                self.raw_dataset = App.config("validation_name_raw")
         else:
             raise NameError("Set csv_file to either training- or test-file.")
 
@@ -398,8 +396,32 @@ class TidyDataset:
         for spec in recode_specs:
             do_recode(spec)
 
+
+    def _process_symbolic_fields(self):
+        """ Processes the symbolic fields specified within this method.
+
+        Params:
+        -------
+        data: A reference to TidyDataset.processed_data
+        """
+        if isinstance(self.processed_data, pd.DataFrame):
+            # Create handler objects for symbolic fields:
+            symbolic_fields = []
+            symbolic_fields.append(SymbolicFieldToDummiesHandler(
+                    self,"MDMAUD", ["Recency","Frequency","Amount"]))
+            symbolic_fields.append(SymbolicFieldToDummiesHandler(
+                    self, "DOMAIN",["Urbanicity", "SocioEconomicStatus"]))
+            for i in range(2,25):
+                field = "_".join(["RFA",str(i)])
+                symbolic_fields.append(SymbolicFieldToDummiesHandler(
+                    self, field, ["Recency","Frequency","Amount"]))
+            for f in symbolic_fields:
+                f.spread()
+        else:
+            raise NameError
+
     def _read_csv_data(self):
-        """ Read in csv data. """
+        """Read in csv data. After successful read, raw data is saved to HDF for future access."""
         try:
             self.raw_data = pd.read_csv(
                 self.get_raw_datafile_path(),
@@ -414,66 +436,62 @@ class TidyDataset:
         except Exception as exc:
             print(exc)
             raise
-
-    def _process_symbolic_fields(self, data):
-        if isinstance(data, pd.DataFrame):
-            symbolics = []
-            symbolics.append(SymbolicFieldToDummies(
-                data,"MDMAUD", ["Recency","Frequency","Amount"]))
-            symbolics.append(SymbolicFieldToDummies(
-                data, "DOMAIN",["Urbanicity", "SocioEconomicStatus"]))
-            for i in range(2,25):
-                field = "_".join(["RFA",str(i)])
-                symbolics.append(SymbolicFieldToDummies(
-                    data, field, ["Recency","Frequency","Amount"]))
-
-            for f in symbolics:
-                f.spread()
-        else:
-            raise NameError
+        self._save_hdf(self.raw_dataset)
 
     def _process_raw(self):
         """
-        Processes the raw csv import.
+        Processes the raw csv import / raw data stored in HDF.
             - Recodes booleans
-            - Splits multi-value columns
+            - Splits multi-value columns (symbolic fields)
             - Renames categorical columns
-        This procedure creates a copy of the raw data, which is preserved
+        This method creates a copy of the raw data, which is preserved
         for later comparison.
         """
 
         if self.raw_data is None:
-            self._read_csv_data()
+            self.get_raw_data()
         try:
             self.processed_data = self.raw_data.copy()
             self._recode_booleans(self.processed_data, self.boolean_recode)
-            self._process_symbolic_fields(self.processed_data)
+            self._process_symbolic_fields()
         except Exception as error:
             self.processed_data = None
             logger.exception(error)
-            print(traceback.format_exc())
 
-    def _load_hdf(self):
-        """ Loads tidy data from hdf store """
+    def _load_hdf(self, key_name):
+        """ Loads data from hdf store """
 
-        # If data should not be pulled, throw an exception to make sure
+        # If data sould not be pulled, throw an exception to make sure
         # data is loaded from csv
         if not self.pull_stored:
             raise ValueError("HDF loading prohibited by options set.")
+        if not key_name in [self.raw_dataset, self.dataset_type]:
+            raise ValueError("Invalid HDF key. Cannot load data")
 
         try:
-            self.processed_data = pd.read_hdf(self.get_hdf_datafile_path(),
-                                              key=self.dataset_type,
-                                              mode='r')
-        except (OSError, IOError):
-            raise
+            if(key_name == self.raw_dataset):
+                self.raw_data = pd.read_hdf(self.get_hdf_datafile_path(),
+                                            key=self.raw_dataset,
+                                            mode='r')
+            else:
+                self.processed_data = pd.read_hdf(self.get_hdf_datafile_path(),
+                                            key=self.dataset_type,
+                                            mode='r')
+        except (OSError, IOError, KeyError) as error:
+            # If something goes wrong, pass the exception on to the caller
+            raise error
 
-    def _save_hdf(self):
+    def _save_hdf(self, key_name):
         """ Save tidy data to hdf store """
         try:
-            self.processed_data.to_hdf(self.get_hdf_datafile_path(),
-                                       key=self.dataset_type,
-                                       format='table')
+            if key_name == self.dataset_type:
+                self.processed_data.to_hdf(self.get_hdf_datafile_path(),
+                                           key=key_name,
+                                           format='table')
+            elif key_name == self.raw_dataset:
+                self.raw_data.to_hdf(self.get_hdf_datafile_path(),
+                                     key=key_name,
+                                     format='table')
         except Exception as exc:
             print(exc)
 
@@ -485,15 +503,15 @@ class TidyDataset:
         """
         if self.processed_data is None:
             try:
-                self._load_hdf()
-            except:
+                self._load_hdf(self.dataset_type)
+            except (OSError, IOError, ValueError):
                 if self.raw_data is None:
                     try:
-                        self._read_csv_data()
+                        self.get_raw_data(inplace=True)
                     except Exception as exc:
-                        print(exc)
-                self._process_raw()
-                self._save_hdf()
+                        logger.error(exc)
+                    self._process_raw()
+                    self._save_hdf(self.dataset_type)
 
 
     def get_raw_datafile_path(self):
@@ -534,13 +552,17 @@ class TidyDataset:
         return self.processed_data.loc[:, App.config("dependent_vars")]
 
 
-    def get_raw_data(self):
+    def get_raw_data(self, inplace=False):
         if self.raw_data is None:
             try:
-                self._read_csv_data()
-            except Exception as exc:
-                print(exc)
-        return self.raw_data
+                self._load_hdf(self.raw_dataset)
+            except(OSError, IOError, ValueError, KeyError):
+                try:
+                    self._read_csv_data()
+                except Exception as exc:
+                    print(exc)
+        if not inplace:
+            return self.raw_data
 
 
     def get_tidy_data(self):

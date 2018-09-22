@@ -15,8 +15,10 @@ class App:
         "hdf_store": "tidy_data.h5",
         "learn_file_name": "cup98LRN.txt",
         "learn_name": "kddCup98Learn",
+        "learn_name_raw": "kddCup98LearnRaw",
         "validation_file_name": "cup98VAL.txt",
         "validation_name": "kddCup98Validation",
+        "validation_name_raw": "kddCup98ValidationRaw",
         "dependent_vars": ["TARGET_B", "TARGET_D"]
     }
 
