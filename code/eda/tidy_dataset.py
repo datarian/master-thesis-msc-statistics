@@ -11,9 +11,8 @@ import traceback
 import logging
 from config import App
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(filename=__name__+'.log',level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-
 class BooleanRecodeSpec:
     """ Holds a dict of true / false value mappings and a list of fields
     in the data coded in that specific format."""
@@ -31,7 +30,7 @@ class BooleanRecodeSpec:
         return self.value_mapping
 
 
-class SymbolicFieldToDummiesHandler:
+class SymbolicFieldSpreader:
     """
     Holds information on a symbolic field and the functions used
     to create dummy variables from it.
@@ -80,24 +79,15 @@ class SymbolicFieldToDummiesHandler:
         self.temp_df = self.temp_df.astype("category") # make sure all fields are categorical
 
 
-    def _create_dummies(self):
-        """For each byte column in the temporary dataset,
-        new dummy variables are created for all the levels in a byte. The prefix is build from the original field name, followed by the byte identifier."""
-        self._fill_temp_with_bytes()
-        dummy_names = ["_".join([self.field,f]) for f in self.newfields]
-        dummies_df = pd.get_dummies(self.temp_df, prefix=dummy_names)
-        return dummies_df
-
-
     def spread(self):
-        """Spreads a symbolic field into dummy variables bytewise, inserts the new dummy variables into the original dataset, then drops the initial symbolic field."""
-        dummies = self._create_dummies()
-        self.tds_ref.processed_data = self.tds_ref.processed_data.merge(dummies,on="CONTROLN",copy=False)
+        """Spreads a symbolic field bytewise into categoricals, then drops the initial symbolic field."""
+        #dummies = self._create_dummies()
+        spread_fields = self._fill_temp_with_bytes()
+        self.tds_ref.processed_data = self.tds_ref.processed_data.merge(self.temp_df,on="CONTROLN",copy=False)
         self.tds_ref.processed_data.drop(self.field, axis=1, inplace=True)
 
     def get_data(self):
         return self.dataset
-
 
 
 class TidyDataset:
@@ -360,7 +350,12 @@ class TidyDataset:
         Formats YYMM dates as YYYY-MM-DD where DD is the first d.o.m always.
         """
         if len(date) == 4:
-            parsed_date = pd.to_datetime(date, format="%y%m")
+            date = "19"+date
+            try:
+                parsed_date = pd.to_datetime(date, format="%Y%m")
+            except ValueError: # there was something wrong with the value, like an ivalid month number
+                logger.debug("Invalid date encountered: "+date+", setting to empty")
+                parsed_date = np.nan
         else:
             parsed_date = np.nan
 
@@ -390,8 +385,7 @@ class TidyDataset:
                     data.loc[(data[name] != true_char) & (
                         data[name] != false_char), name] = np.nan
             except Exception as exc:
-                print("Failed to recode boolean:")
-                print(exc)
+                logger.exception(exc)
 
         for spec in recode_specs:
             do_recode(spec)
@@ -407,13 +401,13 @@ class TidyDataset:
         if isinstance(self.processed_data, pd.DataFrame):
             # Create handler objects for symbolic fields:
             symbolic_fields = []
-            symbolic_fields.append(SymbolicFieldToDummiesHandler(
+            symbolic_fields.append(SymbolicFieldSpreader(
                     self,"MDMAUD", ["Recency","Frequency","Amount"]))
-            symbolic_fields.append(SymbolicFieldToDummiesHandler(
+            symbolic_fields.append(SymbolicFieldSpreader(
                     self, "DOMAIN",["Urbanicity", "SocioEconomicStatus"]))
             for i in range(2,25):
                 field = "_".join(["RFA",str(i)])
-                symbolic_fields.append(SymbolicFieldToDummiesHandler(
+                symbolic_fields.append(SymbolicFieldSpreader(
                     self, field, ["Recency","Frequency","Amount"]))
             for f in symbolic_fields:
                 f.spread()
@@ -423,10 +417,11 @@ class TidyDataset:
     def _read_csv_data(self):
         """Read in csv data. After successful read, raw data is saved to HDF for future access."""
         try:
+            logger.debug("trying to read"+self.get_raw_datafile_path())
             self.raw_data = pd.read_csv(
                 self.get_raw_datafile_path(),
                 index_col=self.index_field,
-                parse_dates=[0, 7],
+                parse_dates=self.date_fields,
                 date_parser=self._four_digit_date_parser,
                 na_values=self.na_codes,
                 dtype=self.dtype_categorical,
@@ -434,7 +429,7 @@ class TidyDataset:
                 memory_map=True  # load file in memory
                 )
         except Exception as exc:
-            print(exc)
+            logger.exception(exc)
             raise
         self._save_hdf(self.raw_dataset)
 
@@ -447,10 +442,10 @@ class TidyDataset:
         This method creates a copy of the raw data, which is preserved
         for later comparison.
         """
-
         if self.raw_data is None:
             self.get_raw_data()
         try:
+            logger.debug("Processing"+self.raw_data_file)
             self.processed_data = self.raw_data.copy()
             self._recode_booleans(self.processed_data, self.boolean_recode)
             self._process_symbolic_fields()
@@ -470,15 +465,21 @@ class TidyDataset:
 
         try:
             if(key_name == self.raw_dataset):
+                logger.debug("Loading "+self.raw_dataset+" from HDF.")
                 self.raw_data = pd.read_hdf(self.get_hdf_datafile_path(),
                                             key=self.raw_dataset,
                                             mode='r')
             else:
+                logger.debug("Loading "+self.dataset_type+" from HDF.")
                 self.processed_data = pd.read_hdf(self.get_hdf_datafile_path(),
                                             key=self.dataset_type,
                                             mode='r')
-        except (OSError, IOError, KeyError) as error:
+        except (KeyError) as error:
             # If something goes wrong, pass the exception on to the caller
+            logger.warning(error)
+            raise error
+        except(OSError, FileNotFoundError) as error:
+            logger.info("HDF file not found. Will read from CSV.")
             raise error
 
     def _save_hdf(self, key_name):
@@ -493,7 +494,7 @@ class TidyDataset:
                                      key=key_name,
                                      format='table')
         except Exception as exc:
-            print(exc)
+            logger.error(exc)
 
     def _load_data(self):
         """
@@ -504,7 +505,7 @@ class TidyDataset:
         if self.processed_data is None:
             try:
                 self._load_hdf(self.dataset_type)
-            except (OSError, IOError, ValueError):
+            except (OSError, IOError, ValueError, KeyError, FileNotFoundError):
                 if self.raw_data is None:
                     try:
                         self.get_raw_data(inplace=True)
@@ -541,12 +542,15 @@ class TidyDataset:
         Returns
         -------
         pandas.Dataframe object, possibly empty (if names_only=True)
-            with columns TARGET_B and TARGET_D
+            with columns TARGET_B and TARGET_D. Or None if the method is called on the validation dataset, which does not include these columns
         """
 
         if names_only:
             return pd.DataFrame(columns=App.config("dependent_vars"))
 
+        if self.dataset_type == App.config("validation_name"):
+            logger.debug("Tried to get dependent variables from validation dataset. Not found.")
+            return None
         if self.processed_data is None:
             self._load_data()
         return self.processed_data.loc[:, App.config("dependent_vars")]
@@ -560,7 +564,7 @@ class TidyDataset:
                 try:
                     self._read_csv_data()
                 except Exception as exc:
-                    print(exc)
+                    logger.error(exc)
         if not inplace:
             return self.raw_data
 
@@ -576,5 +580,4 @@ class TidyDataset:
         """
         if self.processed_data is None:
             self._load_data()
-
         return self.processed_data
