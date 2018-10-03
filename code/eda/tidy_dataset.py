@@ -11,8 +11,11 @@ import traceback
 import logging
 from config import App
 
-logging.basicConfig(filename=__name__+'.log',level=logging.DEBUG)
+# Set up the logger
+logging.basicConfig(filename=__name__+'.log',level=logging.WARNING)
 logger = logging.getLogger(__name__)
+
+
 class BooleanRecodeSpec:
     """ Holds a dict of true / false value mappings and a list of fields
     in the data coded in that specific format."""
@@ -20,6 +23,15 @@ class BooleanRecodeSpec:
     def __init__(self, value_mapping, fields):
         self.value_mapping = value_mapping
         self.fields = fields
+        self.tds_ref = None # Reference to a TidyDataset object
+
+        @property
+        def tds_ref(self):
+            return(self.tds_ref)
+
+        @tds_ref.setter
+        def tds_ref(self, ref):
+            self.tds_ref = ref
 
     def get_fields(self):
         """ Get all fields that are coded in the current mapping. """
@@ -28,6 +40,20 @@ class BooleanRecodeSpec:
     def get_value_map(self):
         """ Get the recoding map."""
         return self.value_mapping
+
+    def do_recode(self):
+
+            if not self.tds_ref:
+                raise ValueError("Missing object reference.")
+            true_char = self.value_mapping.get('true')
+            false_char = self.value_mapping.get('false')
+            try:
+                for field in self.fields:
+                    self.tds_ref.processed_data[field] = self.tds_ref.processed_data[field].map({true_char: True, false_char: False})
+                    self.tds_ref.processed_data[field].fillna(False,inplace=True) #everything that's not coded as True or False already is set to False
+                    self.tds_ref.processed_data[field].astype('bool',copy=False)
+            except Exception as exc:
+                logger.exception(exc)
 
 
 class SymbolicFieldSpreader:
@@ -44,16 +70,25 @@ class SymbolicFieldSpreader:
     field_names The identifiers for each byte, from left to right
     """
 
-    def __init__(self, tidy_dataset, field, field_names):
-        self.tds_ref = tidy_dataset
+    def __init__(self, field, field_names):
+        self.tds_ref = None
         self.field = field
         self.newfields = field_names
-        self.original_field = pd.DataFrame(self.tds_ref.processed_data.loc[:, field]) # The original field to be replaced
+        self.original_field = None
         self.temp_df = pd.DataFrame()
+
+    def set_tidy_dataset_ref(self, tidy_dataset):
+        self.tds_ref = tidy_dataset
+        self.original_field = pd.DataFrame(self.tds_ref.processed_data.loc[:, self.field]) # The original field to be replaced
 
 
     def _fill_temp_with_bytes(self):
         """ Fills the byte dataset for each record"""
+
+        # Make sure the reference to the tidy dataset instance is around:
+        if not self.tds_ref:
+            raise ValueError("No reference to dataset found!")
+
         sigbytes = len(self.newfields) # determines how many bytes to extract
         # Dict to hold the split bytes
         spread_field = {}
@@ -73,8 +108,7 @@ class SymbolicFieldSpreader:
 
         # Create the dataframe, orient=index means we interprete the dict's contents as rows (defaults to columns)
         self.temp_df = pd.DataFrame.from_dict(data=spread_field, orient="index")
-        # Name the fields correctly
-        self.temp_df.columns = self.newfields
+        self.temp_df.columns = ["_".join([self.field,f]) for f in self.newfields]
         self.temp_df.index.name = "CONTROLN"
         self.temp_df = self.temp_df.astype("category") # make sure all fields are categorical
 
@@ -82,12 +116,9 @@ class SymbolicFieldSpreader:
     def spread(self):
         """Spreads a symbolic field bytewise into categoricals, then drops the initial symbolic field."""
         #dummies = self._create_dummies()
-        spread_fields = self._fill_temp_with_bytes()
+        self._fill_temp_with_bytes()
         self.tds_ref.processed_data = self.tds_ref.processed_data.merge(self.temp_df,on="CONTROLN",copy=False)
         self.tds_ref.processed_data.drop(self.field, axis=1, inplace=True)
-
-    def get_data(self):
-        return self.dataset
 
 
 class TidyDataset:
@@ -139,6 +170,7 @@ class TidyDataset:
         'RFA_23': ' ',
         'RFA_24': ' '}
 
+    # Specs for boolean fields that need recoding
     recode_x_underscore = BooleanRecodeSpec({'true': 'X', 'false': '_'},
                                             ['NOEXCH',
                                              'MAJOR',
@@ -147,7 +179,6 @@ class TidyDataset:
                                              'RECPGVG',
                                              'RECSWEEP',
                                              ])
-
     recode_y_n = BooleanRecodeSpec({'true': 'Y', 'false': 'N'},
                                    ['COLLECT1',
                                     'VETERANS',
@@ -168,20 +199,62 @@ class TidyDataset:
                                     'CARDS',
                                     'PLATES'
                                     ])
-
+    recode_e_i = BooleanRecodeSpec({'true': "E", 'false': 'I'},['AGEFLAG'])
     recode_x_blank = BooleanRecodeSpec({'true': 'X', 'false': ' '},
                                        ['PEPSTRFL'])
-
     recode_h_u = BooleanRecodeSpec({'true': 'H', 'false': 'U'}, ['HOMEOWNR'])
+    recode_b_blank = BooleanRecodeSpec({'true': 'B', 'false': ' '}, ['MAILCODE'])
+    recode_1_0 = BooleanRecodeSpec({'true': '1', 'false': '0'}, ['TARGET_B','HPHONE_D'])
 
-    boolean_recode = [recode_x_underscore,
+    boolean_recode_specs = [recode_x_underscore,
                       recode_y_n,
+                      recode_e_i,
                       recode_x_blank,
-                      recode_h_u]
+                      recode_h_u,
+                      recode_b_blank,
+                      recode_1_0]
 
-    # Donor title code. Pandas strips leading zeros on reading the data,
+    # Fields with bytewise categorical data
+    symbolic_fields = []
+    symbolic_fields.append(SymbolicFieldSpreader(
+                           "MDMAUD", ["Recency","Frequency","Amount"]))
+    symbolic_fields.append(SymbolicFieldSpreader(
+                           "DOMAIN",["Urbanicity", "SocioEconomicStatus"]))
+    for i in range(2,25):
+        field = "_".join(["RFA",str(i)])
+        symbolic_fields.append(SymbolicFieldSpreader(
+                               field, ["Recency","Frequency","Amount"]))
+
+    # Some features of particular interest
+    #######################################################################
+
+    index_name = "CONTROLN"
+    target_vars = ["TARGET_B", "TARGET_D"]
+
+    date_features = ["ODATEDW","DOB","ADATE_2","ADATE_3","ADATE_4","ADATE_5","ADATE_6","ADATE_7","ADATE_8","ADATE_9","ADATE_10","ADATE_11","ADATE_12","ADATE_13","ADATE_14","ADATE_15","ADATE_16","ADATE_17","ADATE_18","ADATE_19","ADATE_20","ADATE_21","ADATE_22","ADATE_23","ADATE_24"]
+
+    boolean_features = ["MAILCODE", "NOEXCH","RECINHSE","RECP3","RECPGVG","AGEFLAG","HOMEOWNR","MAJOR","COLLECT1","VETERANS","BIBLE","CATLG","HOMEE","PETS","CDPLAY","STEREO","PCOWNERS","PHOTO","CRAFTS","FISHER","GARDENIN","BOATS","WALKER","KIDSTUFF","CARDS","PLATES","REPSTRFL","TARGET_B","HPHONE_D"]
+
+    categorical_features = ["TCODE", "STATE","PVASTATE","CLUSTER","CHILD03","CHILD07","CHILD12","CHILD18","GENDER","DATASRCE","SOLP3","SOLIH","WEALTH2","GEOCODE","LIFESRC","OSOURCE","RFA_2R","RFA_2A","MDMAUD_R", "MDMAUD_F","MDMAUD_A"]
+
+    nominal_features = ["OSOURCE", "MDMAUD", "DOMAIN"]
+
+    # Several features need special treatment on or after import. Where necessary, these are included here for explicit datatype casting
+    # Categoricals are created unordered by default
+    dtype_specs = {}
+    for date in date_features:
+        dtype_specs[date] = 'float'
+    for boolean in boolean_features:
+        dtype_specs[boolean] = 'str'
+    for categorical in categorical_features:
+        dtype_specs[categorical] = 'category'
+    for nominal in nominal_features:
+        dtype_specs[nominal] = 'str'
+
+     # Donor title code. Pandas strips leading zeros on reading the data,
     # so this is reflected in the index keys here. (1 instead of 001 and so on)
     tcode_categories = {
+        0: "_",
         1: "MR.",
         1001: "MESSRS.",
         1002: "MR. & MRS.",
@@ -282,36 +355,8 @@ class TidyDataset:
         135: "M. ET MME.",
         210: "PROF."}
 
-    # Categorical variables have to be handled on import. List every one here.
-    # By passing a CategoricalDtype, the categories can be setup correctly.
-    # Any level not present will be coded as NaN.
-    # categoricals are created unordered by default., however when implicitly
-    # constructing one, the argument ordered=False has to be set for unordered.
-    # TODO: SOLP3 and SOLIH have NaN as a level too!
-    dtype_categorical = {
-        'TCODE': 'category',
-        'STATE': 'category',
-        'MAILCODE': 'category',
-        'PVASTATE': 'category',
-        'MDMAUD': 'str',
-        'CLUSTER': 'category',
-        'AGEFLAG': 'category',
-        'CHILD03': 'category',
-        'CHILD07': 'category',
-        'CHILD12': 'category',
-        'CHILD18': 'category',
-        'GENDER': 'category',
-        'WEALTH1': 'category',
-        'DATASRCE': 'category',
-        'SOLP3': 'category',
-        'SOLIH': 'category',
-        'WEALTH2': 'category',
-        'LIFESRC': 'category'
-    }
-
-    index_field = "CONTROLN"
-    target_vars = ["TARGET_B", "TARGET_D"]
-    date_fields = ["ODATEDW","DOB","ADATE_2","ADATE_3","ADATE_4","ADATE_5","ADATE_6","ADATE_7","ADATE_8","ADATE_9","ADATE_10","ADATE_11","ADATE_12","ADATE_13","ADATE_14","ADATE_15","ADATE_16","ADATE_17","ADATE_18","ADATE_19","ADATE_20","ADATE_21","ADATE_22","ADATE_23","ADATE_24"]
+    # Features from US census
+    us_census_features = ["POP901", "POP902", "POP903", "POP90C1", "POP90C2", "POP90C3", "POP90C4", "POP90C5", "ETH1", "ETH2", "ETH3", "ETH4", "ETH5", "ETH6", "ETH7", "ETH8", "ETH9", "ETH10", "ETH11", "ETH12", "ETH13", "ETH14", "ETH15", "ETH16", "AGE901", "AGE902", "AGE903", "AGE904", "AGE905", "AGE906", "AGE907", "CHIL1", "CHIL2", "CHIL3", "AGEC1", "AGEC2", "AGEC3", "AGEC4", "AGEC5", "AGEC6", "AGEC7", "CHILC1", "CHILC2", "CHILC3", "CHILC4", "CHILC5", "HHAGE1", "HHAGE2", "HHAGE3", "HHN1", "HHN2", "HHN3", "HHN4", "HHN5", "HHN6", "MARR1", "MARR2", "MARR3", "MARR4", "HHP1", "HHP2", "DW1", "DW2", "DW3", "DW4", "DW5", "DW6", "DW7", "DW8", "DW9", "HV1", "HV2", "HV3", "HV4", "HU1", "HU2", "HU3", "HU4", "HU5", "HHD1", "HHD2", "HHD3", "HHD4", "HHD5", "HHD6", "HHD7", "HHD8", "HHD9", "HHD10", "HHD11", "HHD12", "ETHC1", "ETHC2", "ETHC3", "ETHC4", "ETHC5", "ETHC6", "HVP1", "HVP2", "HVP3", "HVP4", "HVP5", "HVP6", "HUR1", "HUR2", "RHP1", "RHP2", "RHP3", "RHP4", "HUPA1", "HUPA2", "HUPA3", "HUPA4", "HUPA5", "HUPA6", "HUPA7", "RP1", "RP2", "RP3", "RP4", "MSA", "ADI", "DMA", "IC1", "IC2", "IC3", "IC4", "IC5", "IC6", "IC7", "IC8", "IC9", "IC10", "IC11", "IC12", "IC13", "IC14", "IC15", "IC16", "IC17", "IC18", "IC19", "IC20", "IC21", "IC22", "IC23", "HHAS1", "HHAS2", "HHAS3", "HHAS4", "MC1", "MC2", "MC3", "TPE1", "TPE2", "TPE3", "TPE4", "TPE5", "TPE6", "TPE7", "TPE8", "TPE9", "PEC1", "PEC2", "TPE10", "TPE11", "TPE12", "TPE13", "LFC1", "LFC2", "LFC3", "LFC4", "LFC5", "LFC6", "LFC7", "LFC8", "LFC9", "LFC10", "OCC1", "OCC2", "OCC3", "OCC4", "OCC5", "OCC6", "OCC7", "OCC8", "OCC9", "OCC10", "OCC11", "OCC12", "OCC13", "EIC1", "EIC2", "EIC3", "EIC4", "EIC5", "EIC6", "EIC7", "EIC8", "EIC9", "EIC10", "EIC11", "EIC12", "EIC13", "EIC14", "EIC15", "EIC16", "OEDC1", "OEDC2", "OEDC3", "OEDC4", "OEDC5", "OEDC6", "OEDC7", "EC1", "EC2", "EC3", "EC4", "EC5", "EC6", "EC7", "EC8", "SEC1", "SEC2", "SEC3", "SEC4", "SEC5", "AFC1", "AFC2", "AFC3", "AFC4", "AFC5", "AFC6", "VC1", "VC2", "VC3", "VC4", "ANC1", "ANC2", "ANC3", "ANC4", "ANC5", "ANC6", "ANC7", "ANC8", "ANC9", "ANC10", "ANC11", "ANC12", "ANC13", "ANC14", "ANC15", "POBC1", "POBC2", "LSC1", "LSC2", "LSC3", "LSC4", "VOC1", "VOC2", "VOC3", "HC1", "HC2", "HC3", "HC4", "HC5", "HC6", "HC7", "HC8", "HC9", "HC10", "HC11", "HC12", "HC13", "HC14", "HC15", "HC16", "HC17", "HC18", "HC19", "HC20", "HC21", "MHUC1", "MHUC2", "AC1", "AC2"]
 
     data_path = App.config("data_dir")
 
@@ -345,50 +390,64 @@ class TidyDataset:
         else:
             raise NameError("Set csv_file to either training- or test-file.")
 
-    def _four_digit_date_parser(self, date):
+    def _rename_tcode(self):
         """
-        Formats YYMM dates as YYYY-MM-DD where DD is the first d.o.m always.
+        Renames category labels for the donor title code.
+        NOT USED! Extraneous levels in dataset.
         """
-        if len(date) == 4:
-            date = "19"+date
+        if isinstance(self.processed_data, pd.DataFrame):
+            # cast keys to string:
+            new_cats = {str(k):str(v) for k,v in self.tcode_categories.items()}
             try:
-                parsed_date = pd.to_datetime(date, format="%Y%m")
-            except ValueError: # there was something wrong with the value, like an ivalid month number
-                logger.debug("Invalid date encountered: "+date+", setting to empty")
-                parsed_date = np.nan
+                self.processed_data.TCODE.rename_categories(new_categories=new_cats,inplace=True)
+            except ValueError as error:
+                logger.error(error)
+
+    def _format_zip(self, inplace=True):
+        """
+        Removes the dash at the end of some zip codes
+        """
+        zip_series = self.processed_data.ZIP.copy()
+        zip_series = zip_series.str.replace('-','').astype('category')
+        if inplace:
+            self.processed_data.ZIP = zip_series
+            return None
         else:
-            parsed_date = np.nan
+            return zip_series
 
-        return parsed_date
 
-    def _recode_booleans(self, data, recode_specs):
+    def _recode_booleans(self):
         """
         Recodes boolean columns. Specify the codes used in data and the
         affected columns through BooleanRecodeSpec objects.
         Expects a pandas data frame!
         """
-        if not isinstance(data, pd.DataFrame):
+        if not isinstance(self.processed_data, pd.DataFrame):
             raise TypeError("Needs a pandas dataframe.")
 
-        if not all(isinstance(r, BooleanRecodeSpec) for r in recode_specs):
+        if not all(isinstance(r, BooleanRecodeSpec) for r in self.boolean_recode_specs):
             raise TypeError("Expects a list of BooleanRecodeSpec objects.")
 
-        def do_recode(recode_spec):
+        for spec in self.boolean_recode_specs:
+            spec.tds_ref = self # set reference to acess self.processed_data
+            spec.do_recode()
 
-            true_char = recode_spec.value_mapping.get('t')
-            false_char = recode_spec.value_mapping.get('f')
+
+    def _process_date_columns(self):
+        """ Dates are stored as yymm in several columns. Split each of them into
+        two new columns, containing the yy and mm parts separately. """
+
+        for col in self.date_features:
+            df = self.processed_data
+            df[col] = df[col].astype(str)
             try:
-                for field in recode_spec.fields:
-                    name = str(field)
-                    data.loc[data[name] == false_char, name] = False
-                    data.loc[data[name] == true_char, name] = True
-                    data.loc[(data[name] != true_char) & (
-                        data[name] != false_char), name] = np.nan
-            except Exception as exc:
-                logger.exception(exc)
-
-        for spec in recode_specs:
-            do_recode(spec)
+                self.processed_data = df.join(df[col].str.extract(r'(?P<'+col+'_year>\d{2})(?P<'+col+'_month>\d{2})',
+                             expand=True)).drop(col, axis=1)
+                self.processed_data[col+'_year'].astype('category',copy=False)
+                self.processed_data[col+'_month'].astype('category',copy=False)
+            except Exception:
+                logger.exception("Failed to convert date field %s", col)
+                raise
 
 
     def _process_symbolic_fields(self):
@@ -399,17 +458,9 @@ class TidyDataset:
         data: A reference to TidyDataset.processed_data
         """
         if isinstance(self.processed_data, pd.DataFrame):
-            # Create handler objects for symbolic fields:
-            symbolic_fields = []
-            symbolic_fields.append(SymbolicFieldSpreader(
-                    self,"MDMAUD", ["Recency","Frequency","Amount"]))
-            symbolic_fields.append(SymbolicFieldSpreader(
-                    self, "DOMAIN",["Urbanicity", "SocioEconomicStatus"]))
-            for i in range(2,25):
-                field = "_".join(["RFA",str(i)])
-                symbolic_fields.append(SymbolicFieldSpreader(
-                    self, field, ["Recency","Frequency","Amount"]))
-            for f in symbolic_fields:
+            # Call handler object's spreader method
+            for f in self.symbolic_fields:
+                f.set_tidy_dataset_ref(self)
                 f.spread()
         else:
             raise NameError
@@ -420,18 +471,17 @@ class TidyDataset:
             logger.debug("trying to read"+self.get_raw_datafile_path())
             self.raw_data = pd.read_csv(
                 self.get_raw_datafile_path(),
-                index_col=self.index_field,
-                parse_dates=self.date_fields,
-                date_parser=self._four_digit_date_parser,
+                index_col=self.index_name,
                 na_values=self.na_codes,
-                dtype=self.dtype_categorical,
+                dtype=self.dtype_specs,
                 low_memory=False,  # needed for mixed type columns
                 memory_map=True  # load file in memory
                 )
         except Exception as exc:
             logger.exception(exc)
             raise
-        self._save_hdf(self.raw_dataset)
+        else:
+            self._save_hdf(self.raw_dataset)
 
     def _process_raw(self):
         """
@@ -447,11 +497,14 @@ class TidyDataset:
         try:
             logger.debug("Processing"+self.raw_data_file)
             self.processed_data = self.raw_data.copy()
-            self._recode_booleans(self.processed_data, self.boolean_recode)
+            self._format_zip()
+            self._process_date_columns()
+            self._recode_booleans()
             self._process_symbolic_fields()
         except Exception as error:
             self.processed_data = None
             logger.exception(error)
+            raise
 
     def _load_hdf(self, key_name):
         """ Loads data from hdf store """
@@ -505,15 +558,20 @@ class TidyDataset:
         if self.processed_data is None:
             try:
                 self._load_hdf(self.dataset_type)
-            except (OSError, IOError, ValueError, KeyError, FileNotFoundError):
-                if self.raw_data is None:
+            except:
+                try:
+                    self.get_raw_data(inplace=True)
+                except Exception as exc:
+                    logger.error(exc)
+                    raise
+                else:
                     try:
-                        self.get_raw_data(inplace=True)
-                    except Exception as exc:
-                        logger.error(exc)
-                    self._process_raw()
-                    self._save_hdf(self.dataset_type)
-
+                        self._process_raw()
+                    except:
+                        logger.error("Failed to process raw data.")
+                        raise
+                    else:
+                        self._save_hdf(self.dataset_type)
 
     def get_raw_datafile_path(self):
         """ Return relative path to csv data file"""
@@ -579,5 +637,9 @@ class TidyDataset:
         processed_data: pandas.DataFrame object with tidy data
         """
         if self.processed_data is None:
-            self._load_data()
-        return self.processed_data
+            try:
+                self._load_data()
+            except Exception as error:
+                logger.error(error)
+            else:
+                return self.processed_data
