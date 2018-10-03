@@ -1,32 +1,82 @@
 # Data
 
-The data at hand originates from a U.S. veterans organisation and is freely available online ^[See [UCI Machine Learning Repository: KDD Cup 1998 Data](https://archive.ics.uci.edu/ml/datasets/KDD+Cup+1998+Data)]. It contains data from the organisations members and the turnout of a direct mailing addressed to 3.5 million members in the scope of a fundraising effort that was conducted in 1997.
+The data at hand originates from a U.S. veterans organisation and is freely available online ^[See [UCI Machine Learning Repository: KDD Cup 1998 Data](https://archive.ics.uci.edu/ml/datasets/KDD+Cup+1998+Data)]. It contains data from the organisation's members and the turnout of a direct mailing addressed to 3.5 million members in the scope of a fundraising effort that was conducted in 1997.
 
 In the following section, the data will be characterized.
 
-##  High-level structure
+## General structure
 
-The complete dataset is pre-cut into a training and test set.
+The dataset is provided pre-cut into a learning and validation set. The features are identical between the two except for the target that has been stripped from the validation set.
 
-In the learning dataset, there are 95412 observations and 481 variables, of which two are the dependent variables.
+The dataset is aggregated from several sources.
 
-The validation dataset contains 96367 observations and 479 variables, lacking the two dependent variables. The remaining explanatory variables are identical to the learning dataset.
+- Internal database of members
+- US census 1990: 286 features
+- Promotion history file: 97 features
+- Giving history file: 13 features
 
-There are three blocks of variables in both datasets. A first block concerns the personal data of each record, followed by census-data describing the socio-economic particulars of the record's living environment. The third block contains information on previous mailing activity and the record's response patterns.
+**Learning dataset**
+In the learning dataset, there are 95412 observations and 481 features, of which two are the targets.
 
-```{python overview-data}
-import 
+**Validation dataset**
+The validation dataset contains 96367 observations and 479 features.
 
 
-```
+### Features
+So and so many features, blablabla.
 
-## Data preparation outline
+**Datatypes**
+An analysis of the dataset dictionary (see \@ref(dataset-dictionary)) reveals the following datatypes for features:
 
-The data needs cleansing and transformations for several variables. On the cleansing side, boolean variables are coded arbitrarily and some categorical variables rely on NA-values as a category. Several variables are aggregated into byte-wise codes that need to be "spread" out across separate variables.
+- Index: CONTROLN, unique record identifier
+- Dates: 48 features in yymm format.
+- Boolean: 30 features
+- Categorical: 90 features
+- Numeric: 286
 
-According to the much-discussed paper by Hadley Wickham [@tidy-data], there are two criteria that qualify tidy data:
+## Targets
 
-    1. Each variable has it's own column
-    2. Each observation has it's own row
+- TARGET_B: Categorical -> Classification
+- TARGET_D: Numeric -> Regression
 
-The data at hand needs several transformations in order to conform to the tidy data principle.
+
+## Preprocessing
+
+Preprocessing of the data is necessary to obtain a tidy dataset (see [@tidy-data]) with consistent, valid formats for the different data types present (like boolean/indicator-, categorical-, and date-features). Several features need transforming steps. The features affected will be discussed in detail here.
+
+### Boolean features
+
+Boolean features were all recoded to $\{\text{True},\text{False}\}$. Missing values and those that were not mentioned in the dictionary but present in the data were coded as $\text{False}$.
+
+
+### Categorical features
+
+On the cleansing side, boolean variables are coded arbitrarily and some categorical variables rely on NA-values as a category. Furthermore, several variables are aggregated into byte-wise codes (referred to as *symbolic* fields in the data dictionary) that need to be spread out across separate variables.
+
+### Categorical fields
+
+Most machine-learning methods require strictly numerical data [REFERENCE]. Several methods exist to transform categorical (string-) values into a usable format. These include:
+
+- One-hot tranformation: Creating dummy variables for each category level.
+This approach greatly increases dimensionality, which is both more resource-intensive and prone to overfitting.
+- Ordinal encoding: The categorical labels are transformed to ordinal values (integer numbers). This preserves dimensionality, but the algorithm chosen to assign the ordinal levels can introduce unwanted effects (an implied similarity based on closeness of the ordinal variables)
+    Feature hashing: The individual values are hashed into a value of fixed length.
+- Hashing: [DEFINITION]
+
+### Missing values
+
+Two possible strategies:
+
+    - Exclusion of rows/columnns
+    - Imputation
+    
+## Summary Statistics
+
+    
+## Feature Extraction
+
+### Dimensionality reduction
+
+
+
+## Feature Selection

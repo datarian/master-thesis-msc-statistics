@@ -1,9 +1,9 @@
---- 
-title: "Topic"
+---
+title: "Designing a relational marketing model to maximize revenues of targeted marketing campaigns."
 author: "Florian Hochstrasser"
 date: "`r Sys.Date()`"
-output: pdf_document
-description: Thesis for the programme Master in Statistics at the University of NeuchÃ¢tel,
+output: html_document
+description: Thesis for the programme Master in Statistics at the University of Neuchâtel,
   Switzerland.
 documentclass: scrartcl
 link-citations: yes
