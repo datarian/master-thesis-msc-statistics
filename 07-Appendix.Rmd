@@ -1,6 +1,6 @@
-# Appendix
+# Appendix {-}
 
-## Python Environment
+**Python Environment**
 
 Python was installed through the Anaconda distribution
 
@@ -8,7 +8,7 @@ Heavy coding was conducted using the spyder-IDE
 
 Data analysis and learning was conducted using jupyter notebooks
 
-## Dataset Dictionary
+**Dataset Dictionary**
 
 The original dictionary file can be found at [https://archive.ics.uci.edu/ml/datasets/KDD+Cup+1998+Data](https://archive.ics.uci.edu/ml/datasets/KDD+Cup+1998+Data).
 

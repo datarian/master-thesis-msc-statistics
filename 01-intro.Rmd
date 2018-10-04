@@ -8,30 +8,41 @@ The donors are grouped, among other criteria, by the recency of their last donat
 
 The organization has furthermore found that there is an negative correlation between the dollar amount donated and the likelihood to respond to a mailing. This means it is important to include the most unlikely donors in future mailings because if they donate, the net revenue is particularly large. If these unlikely donors would be suppressed from future mailings, the gains from additional small dollar lapsed donors would not offset the losses from the potential high dollar donors.
 
-### Identification of the domain
-
 From the data and the documentation at hand, the domain in question is relational marketing.
+...
 
 ## Problem to solve
 
 A data analysis is to be carried out, answering the cup's question using the programming language Python @CS-R9526.
 
-## Approach
+...
+
+## Python in data science
+
+There is a range of packages available that have different levels of abstraction to conduct data science tasks. 
+
+...
+
+### Scikit-Learn
+
+The module scikit-learn @scikit-learn provides high-level functions for a broad range of machine learning methods (i.e. supervised and unsupervised learning. It includes preprocessing functions, is able to do feature selection and designed for accesibility.
+
+...
+
+### TensorFlow
+
+TensorFlow @tensorflow2015-whitepaper is a machine learning framework that provides an abstraction to the process of learning. It allows to build so-called *dataflow graphs*, which can be interpreted as a network of processing nodes through which data flows. Tensorflow applications are scalable and run on devices from smartphones and single machines to computing clusters.
+
+...
+
+### Established workflows
+
+Following the principle of literate programming @knuth1984literate, Jupyter @Kluyver:2016aa provides a client-server solution that enables interactive programming sessions in the browser. Blocks of code producing output including interactive plots can be mixed with formatted text. These notebooks can easily be shared with others or exported in various formats.
+
+...
 
 ## Conventions
 
 In the scope of this thesis, the following naming conventions are used.
 
-```{r glossary-table, results='asis',echo=F}
-
-# Key / Value pairs for the dictionary:
-dict <- c(Observation = "A row in a dataset, contains a set of specific feature values.",
-          Feature = "A column in a dataset, describing one certain characteristic of an observation.")
-
-# Sort alphabetically by key:
-dict <- sort(dict)
-
-knitr::kable(as.data.frame(dict), col.names = c(''),
-             caption = "Naming conventions.")
-
-```
+...
