@@ -10,6 +10,6 @@ A data analysis performed with python's tools. Data comes from the KDD Cup 1998,
 
 # Report
 
-The current state of the report's master branch is at: [https://datarian.github.io/ma-thesis-report](https://datarian.github.io/ma-thesis-report/)
+The current state of the report's master branch is at: [https://datarian.github.io/master-thesis-report/](https://datarian.github.io/master-thesis-report/)
 
 The repository containing the bookdown report files is at: https://github.com/datarian/master-thesis-report
