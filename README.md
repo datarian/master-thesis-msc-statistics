@@ -8,6 +8,9 @@ A data analysis performed with python's tools. Data comes from the KDD Cup 1998,
 * code/jupyter_notebooks holds jupyter notebooks to recreate the analysis
 * other folders in code/ are python modules supporting the analysis
 
+## Python
+* Anaconda, at https://www.anaconda.com/download/ was used to provide the python environment.
+
 # Report
 
 The current state of the report's master branch is at: [https://datarian.github.io/master-thesis-report/](https://datarian.github.io/master-thesis-report/)
