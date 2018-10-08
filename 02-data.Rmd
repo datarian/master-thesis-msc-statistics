@@ -4,11 +4,9 @@ The data at hand originates from a U.S. veterans organisation and is freely avai
 
 In the following section, the data will be characterized.
 
-...
-
 ## General structure
 
-The dataset is provided pre-cut into a learning and validation set. The features are identical between the two except for the target that has been stripped from the validation set.
+The dataset is provided pre-cut into a learning and validation set. The features are identical between the two except for the target that has been stripped from the validation set. The two datasets encompass all recipients of the mailing with a *lapsed* donation status.
 
 The dataset is aggregated from several sources.
 
@@ -17,15 +15,43 @@ The dataset is aggregated from several sources.
 - Promotion history file: 97 features
 - Giving history file: 13 features
 
+## Targets
+
+- TARGET_B: Categorical -> Classification, not of interest.
+- TARGET_D: Numeric -> Regression
+
+### Features
+So and so many features, blablabla.
+
 **Learning dataset**
 In the learning dataset, there are 95412 observations and 481 features, of which two are the targets.
 
+The distributions for the target variables have been provided in the cup's documentation files and are documented in \ref{tab:dist-targ-lrn}
+
+```{r dist-targ-lrn result="asis"}
+
+```
+
+  Learning Data Set
+  Target Variable: Binary Indicator of Response to 97NK 
+  Mailing
+                                Cumulative  Cumulative
+  TARGET_B   Frequency   Percent   Frequency    Percent
+  ------------------------------------------------------
+         0      90569      94.9       90569       94.9
+         1       4843       5.1       95412      100.0
+
+
+  Learning Data Set
+  Target Variable: Donation Amount (in $) to 97NK Mailing   
+
+  Variable       N          Mean   Minimum       Maximum 
+  ------------------------------------------------------ 
+  TARGET_D   95412     0.7930732         0   200.0000000 
+  ------------------------------------------------------ 
+
 **Validation dataset**
 The validation dataset contains 96367 observations and 479 features.
-
-
-## Features
-So and so many features, blablabla.
 
 **Datatypes**
 An analysis of the dataset dictionary (see \@ref(dataset-dictionary)) reveals the following datatypes for features:
@@ -36,21 +62,36 @@ An analysis of the dataset dictionary (see \@ref(dataset-dictionary)) reveals th
 - Categorical: 90 features
 - Numeric: 286
 
-## Targets
-
-- TARGET_B: Categorical -> Classification
-- TARGET_D: Numeric -> Regression
-
-
 ## Preprocessing
+
+Preprocessing of the data is necessary to obtain a tidy dataset (see [@tidy-data]) with consistent, valid formats for the different data types present (like boolean/indicator-, categorical-, and date-features). Some requirements for preprocessing were given in the cup documentation. 
+
+Noisy and multibyte-categorical features were processed by the author manually. Handling of missing values, zero variance and sparse features was carried out through scikit-learn preprocessors.
+
+### Noisy data
+
+- Boolean fields with a mixture of 0,1 and other codes
+
+### Constant features
+- Per the cup's documentation, features with zero variance have to be excluded
 
 ### Boolean features
 
 Boolean features were all recoded to $\{\text{True},\text{False}\}$. Missing values and those that were not mentioned in the dictionary but present in the data were coded as $\text{False}$.
 
+### Missing values / sparse features
+
+- Character features: ' '
+- Numeric features: ' ', '.'
+- Missing values are to be kept in the dataset for learning. Approriate methods for imputation are to be employed (median, mean, mode, modeled, ...)
+- Exception: Features with $\gt 99.5%$ missing values are to be dropped
+- Features with a sparse distribution are to be dropped
+
 ### Categorical features
 
-Several methods exist to transform categorical (string-) values into a usable format. These include:
+Sseveral variables are aggregated into byte-wise codes (referred to as *symbolic* fields in the data dictionary) that need to be spread out across separate variables.
+
+Most machine-learning methods require strictly numerical data [REFERENCE]. Several methods exist to transform categorical (string-) values into a usable format. These include:
 
 - One-hot tranformation: Creating dummy variables for each category level.
 This approach greatly increases dimensionality, which is both more resource-intensive and prone to overfitting.
@@ -58,19 +99,10 @@ This approach greatly increases dimensionality, which is both more resource-inte
     Feature hashing: The individual values are hashed into a value of fixed length.
 - Hashing: [DEFINITION]
 
-### Missing values
-
-Two possible strategies:
-
-    - Exclusion of rows/columnns
-    - Imputation
-    
 ## Summary Statistics
-
     
 ## Feature Extraction
 
--> Dimensionality reduction and so on
-
+### Dimensionality reduction
 
 ## Feature Selection
