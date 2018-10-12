@@ -27,6 +27,8 @@ hdf_store = App.config("data_dir")+App.config("hdf_store")
 index_name = "CONTROLN"
 labels = ["TARGET_B", "TARGET_D"]
 
+drop_initial = ["MDMAUD", "RFA_2"]  # These are pre-split multibyte features
+
 date_features = ["ODATEDW", "DOB", "ADATE_2", "ADATE_3", "ADATE_4",
                  "ADATE_5", "ADATE_6", "ADATE_7", "ADATE_8", "ADATE_9",
                  "ADATE_10", "ADATE_11", "ADATE_12", "ADATE_13",
@@ -41,65 +43,71 @@ boolean_features = ["MAILCODE", "NOEXCH", "RECINHSE", "RECP3", "RECPGVG",
                     "BOATS", "WALKER", "KIDSTUFF", "CARDS", "PLATES",
                     "PEPSTRFL", "TARGET_B", "HPHONE_D"]
 
-categorical_features = ["TCODE", "STATE", "PVASTATE", "CLUSTER", "CHILD03",
-                        "CHILD07", "CHILD12", "CHILD18", "GENDER",
-                        "DATASRCE", "SOLP3", "SOLIH", "WEALTH2", "GEOCODE",
-                        "LIFESRC", "OSOURCE", "RFA_2R", "RFA_2A",
-                        "MDMAUD_R", "MDMAUD_F", "MDMAUD_A", "GEOCODE2", "TARGET_B"]
+categorical_features = ["DOMAIN", "TCODE", "STATE", "PVASTATE", "CLUSTER",
+                        "CHILD03", "CHILD07", "CHILD12", "CHILD18", "GENDER",
+                        "DATASRCE", "SOLP3", "SOLIH", "WEALTH1", "WEALTH2",
+                        "GEOCODE", "LIFESRC", "OSOURCE", "RFA_2R", "RFA_2A",
+                        "RFA_2F", "MDMAUD_R", "MDMAUD_F", "MDMAUD_A",
+                        "GEOCODE2", "TARGET_B"]
 
-nominal_features = ["MDMAUD", "DOMAIN"]
+nominal_features = ["RFA_3", "RFA_4", "RFA_5", "RFA_6", "RFA_7", "RFA_8",
+                    "RFA_9", "RFA_10", "RFA_11", "RFA_12", "RFA_13",
+                    "RFA_14", "RFA_15", "RFA_16", "RFA_17", "RFA_18",
+                    "RFA_19", "RFA_20", "RFA_21", "RFA_22", "RFA_23",
+                    "RFA_24"]
 
 us_census_features = ["POP901", "POP902", "POP903", "POP90C1", "POP90C2",
-                        "POP90C3", "POP90C4", "POP90C5", "ETH1", "ETH2",
-                        "ETH3", "ETH4", "ETH5", "ETH6", "ETH7", "ETH8",
-                        "ETH9", "ETH10", "ETH11", "ETH12", "ETH13", "ETH14",
-                        "ETH15", "ETH16", "AGE901", "AGE902", "AGE903",
-                        "AGE904", "AGE905", "AGE906", "AGE907", "CHIL1",
-                        "CHIL2", "CHIL3", "AGEC1", "AGEC2", "AGEC3", "AGEC4",
-                        "AGEC5", "AGEC6", "AGEC7", "CHILC1", "CHILC2",
-                        "CHILC3", "CHILC4", "CHILC5", "HHAGE1", "HHAGE2",
-                        "HHAGE3", "HHN1", "HHN2", "HHN3", "HHN4", "HHN5",
-                        "HHN6", "MARR1", "MARR2", "MARR3", "MARR4", "HHP1",
-                        "HHP2", "DW1", "DW2", "DW3", "DW4", "DW5", "DW6",
-                        "DW7", "DW8", "DW9", "HV1", "HV2", "HV3", "HV4",
-                        "HU1", "HU2", "HU3", "HU4", "HU5", "HHD1", "HHD2",
-                        "HHD3", "HHD4", "HHD5", "HHD6", "HHD7", "HHD8",
-                        "HHD9", "HHD10", "HHD11", "HHD12", "ETHC1", "ETHC2",
-                        "ETHC3", "ETHC4", "ETHC5", "ETHC6", "HVP1", "HVP2",
-                        "HVP3", "HVP4", "HVP5", "HVP6", "HUR1", "HUR2",
-                        "RHP1", "RHP2", "RHP3", "RHP4", "HUPA1", "HUPA2",
-                        "HUPA3", "HUPA4", "HUPA5", "HUPA6", "HUPA7", "RP1",
-                        "RP2", "RP3", "RP4", "MSA", "ADI", "DMA", "IC1",
-                        "IC2", "IC3", "IC4", "IC5", "IC6", "IC7", "IC8",
-                        "IC9", "IC10", "IC11", "IC12", "IC13", "IC14",
-                        "IC15", "IC16", "IC17", "IC18", "IC19", "IC20",
-                        "IC21", "IC22", "IC23", "HHAS1", "HHAS2", "HHAS3",
-                        "HHAS4", "MC1", "MC2", "MC3", "TPE1", "TPE2", "TPE3",
-                        "TPE4", "TPE5", "TPE6", "TPE7", "TPE8", "TPE9",
-                        "PEC1", "PEC2", "TPE10", "TPE11", "TPE12", "TPE13",
-                        "LFC1", "LFC2", "LFC3", "LFC4", "LFC5", "LFC6",
-                        "LFC7", "LFC8", "LFC9", "LFC10", "OCC1", "OCC2",
-                        "OCC3", "OCC4", "OCC5", "OCC6", "OCC7", "OCC8",
-                        "OCC9", "OCC10", "OCC11", "OCC12", "OCC13", "EIC1",
-                        "EIC2", "EIC3", "EIC4", "EIC5", "EIC6", "EIC7",
-                        "EIC8", "EIC9", "EIC10", "EIC11", "EIC12", "EIC13",
-                        "EIC14", "EIC15", "EIC16", "OEDC1", "OEDC2", "OEDC3",
-                        "OEDC4", "OEDC5", "OEDC6", "OEDC7", "EC1", "EC2",
-                        "EC3", "EC4", "EC5", "EC6", "EC7", "EC8", "SEC1",
-                        "SEC2", "SEC3", "SEC4", "SEC5", "AFC1", "AFC2",
-                        "AFC3", "AFC4", "AFC5", "AFC6", "VC1", "VC2", "VC3",
-                        "VC4", "ANC1", "ANC2", "ANC3", "ANC4", "ANC5",
-                        "ANC6", "ANC7", "ANC8", "ANC9", "ANC10", "ANC11",
-                        "ANC12", "ANC13", "ANC14", "ANC15", "POBC1", "POBC2",
-                        "LSC1", "LSC2", "LSC3", "LSC4", "VOC1", "VOC2",
-                        "VOC3", "HC1", "HC2", "HC3", "HC4", "HC5", "HC6",
-                        "HC7", "HC8", "HC9", "HC10", "HC11", "HC12", "HC13",
-                        "HC14", "HC15", "HC16", "HC17", "HC18", "HC19",
-                        "HC20", "HC21", "MHUC1", "MHUC2", "AC1", "AC2"]
+                      "POP90C3", "POP90C4", "POP90C5", "ETH1", "ETH2",
+                      "ETH3", "ETH4", "ETH5", "ETH6", "ETH7", "ETH8",
+                      "ETH9", "ETH10", "ETH11", "ETH12", "ETH13", "ETH14",
+                      "ETH15", "ETH16", "AGE901", "AGE902", "AGE903",
+                      "AGE904", "AGE905", "AGE906", "AGE907", "CHIL1",
+                      "CHIL2", "CHIL3", "AGEC1", "AGEC2", "AGEC3", "AGEC4",
+                      "AGEC5", "AGEC6", "AGEC7", "CHILC1", "CHILC2",
+                      "CHILC3", "CHILC4", "CHILC5", "HHAGE1", "HHAGE2",
+                      "HHAGE3", "HHN1", "HHN2", "HHN3", "HHN4", "HHN5",
+                      "HHN6", "MARR1", "MARR2", "MARR3", "MARR4", "HHP1",
+                      "HHP2", "DW1", "DW2", "DW3", "DW4", "DW5", "DW6",
+                      "DW7", "DW8", "DW9", "HV1", "HV2", "HV3", "HV4",
+                      "HU1", "HU2", "HU3", "HU4", "HU5", "HHD1", "HHD2",
+                      "HHD3", "HHD4", "HHD5", "HHD6", "HHD7", "HHD8",
+                      "HHD9", "HHD10", "HHD11", "HHD12", "ETHC1", "ETHC2",
+                      "ETHC3", "ETHC4", "ETHC5", "ETHC6", "HVP1", "HVP2",
+                      "HVP3", "HVP4", "HVP5", "HVP6", "HUR1", "HUR2",
+                      "RHP1", "RHP2", "RHP3", "RHP4", "HUPA1", "HUPA2",
+                      "HUPA3", "HUPA4", "HUPA5", "HUPA6", "HUPA7", "RP1",
+                      "RP2", "RP3", "RP4", "MSA", "ADI", "DMA", "IC1",
+                      "IC2", "IC3", "IC4", "IC5", "IC6", "IC7", "IC8",
+                      "IC9", "IC10", "IC11", "IC12", "IC13", "IC14",
+                      "IC15", "IC16", "IC17", "IC18", "IC19", "IC20",
+                      "IC21", "IC22", "IC23", "HHAS1", "HHAS2", "HHAS3",
+                      "HHAS4", "MC1", "MC2", "MC3", "TPE1", "TPE2", "TPE3",
+                      "TPE4", "TPE5", "TPE6", "TPE7", "TPE8", "TPE9",
+                      "PEC1", "PEC2", "TPE10", "TPE11", "TPE12", "TPE13",
+                      "LFC1", "LFC2", "LFC3", "LFC4", "LFC5", "LFC6",
+                      "LFC7", "LFC8", "LFC9", "LFC10", "OCC1", "OCC2",
+                      "OCC3", "OCC4", "OCC5", "OCC6", "OCC7", "OCC8",
+                      "OCC9", "OCC10", "OCC11", "OCC12", "OCC13", "EIC1",
+                      "EIC2", "EIC3", "EIC4", "EIC5", "EIC6", "EIC7",
+                      "EIC8", "EIC9", "EIC10", "EIC11", "EIC12", "EIC13",
+                      "EIC14", "EIC15", "EIC16", "OEDC1", "OEDC2", "OEDC3",
+                      "OEDC4", "OEDC5", "OEDC6", "OEDC7", "EC1", "EC2",
+                      "EC3", "EC4", "EC5", "EC6", "EC7", "EC8", "SEC1",
+                      "SEC2", "SEC3", "SEC4", "SEC5", "AFC1", "AFC2",
+                      "AFC3", "AFC4", "AFC5", "AFC6", "VC1", "VC2", "VC3",
+                      "VC4", "ANC1", "ANC2", "ANC3", "ANC4", "ANC5",
+                      "ANC6", "ANC7", "ANC8", "ANC9", "ANC10", "ANC11",
+                      "ANC12", "ANC13", "ANC14", "ANC15", "POBC1", "POBC2",
+                      "LSC1", "LSC2", "LSC3", "LSC4", "VOC1", "VOC2",
+                      "VOC3", "HC1", "HC2", "HC3", "HC4", "HC5", "HC6",
+                      "HC7", "HC8", "HC9", "HC10", "HC11", "HC12", "HC13",
+                      "HC14", "HC15", "HC16", "HC17", "HC18", "HC19",
+                      "HC20", "HC21", "MHUC1", "MHUC2", "AC1", "AC2"]
 
 interest_features = ["COLLECT1", "VETERANS", "BIBLE", "CATLG", "HOMEE", "PETS",
-                     "CDPLAY", "STEREO", "PCOWNERS", "PHOTO", "CRAFTS", "FISHER",
-                     "GARDENIN", "BOATS", "WALKER", "KIDSTUFF", "CARDS", "PLATES", ]
+                     "CDPLAY", "STEREO", "PCOWNERS", "PHOTO", "CRAFTS",
+                     "FISHER", "GARDENIN", "BOATS", "WALKER", "KIDSTUFF",
+                     "CARDS", "PLATES", ]
 
 # Explicitly define NA codes globally
 # The codes are specified in the dataset documentation.
@@ -150,30 +158,35 @@ class KDD98DataLoader:
             raise NameError("Set csv_file to either training- or test-file.")
 
     def _read_csv_data(self):
-            """Read in csv data. After successful read,
-            raw data is saved to HDF for future access."""
+        """
+        Read in csv data. After successful read,
+        raw data is saved to HDF for future access. A few fetures
+        are already dropped at this stage (see: data_loader.drop_initial)!
+        """
 
-            def dateparser(date):
-                return pd.to_datetime(date,
-                                      yearfirst=True)
+        def dateparser(date):
+            return pd.to_datetime(date,
+                                  yearfirst=True)
 
-            try:
-                logger.debug("trying to read csv file: "+self.raw_data_file_name)
-                self.raw_data = pd.read_csv(
-                    data_path+self.raw_data_file_name,
-                    index_col=index_name,
-                    na_values=na_codes,
-                    #parse_dates=date_features,
-                    #date_parser=dateparser,
-                    dtype=self.dtype_specs,
-                    low_memory=False,  # needed for mixed type columns
-                    memory_map=True  # load file in memory
-                )
-            except Exception as exc:
-                logger.exception(exc)
-                raise
-            else:
-                self._save_hdf(self.raw_dataset)
+        try:
+            logger.debug("trying to read csv file: "+self.raw_data_file_name)
+            self.raw_data = pd.read_csv(
+                data_path+self.raw_data_file_name,
+                index_col=index_name,
+                na_values=na_codes,
+                # parse_dates=date_features,
+                # date_parser=dateparser,
+                dtype=self.dtype_specs,
+                low_memory=False,  # needed for mixed type columns
+                memory_map=True  # load file in memory
+            )
+            self.raw_data.NOEXCH = self.raw_data.NOEXCH.str.replace("X", "1")
+            self.raw_data = self.raw_data.drop(drop_initial, axis=1)
+        except Exception as exc:
+            logger.exception(exc)
+            raise
+        else:
+            self._save_hdf(self.raw_dataset)
 
     def _load_hdf(self, key_name):
         """ Loads data from hdf store """
