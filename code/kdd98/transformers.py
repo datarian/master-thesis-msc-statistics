@@ -7,6 +7,9 @@ Created on Fri Aug 24 10:18:44 2018
 
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
+from category_encoders.ordinal import OrdinalEncoder
+import datetime
+from dateutil import relativedelta
 import pandas as pd
 import logging
 # Set up the logger
@@ -18,7 +21,10 @@ __all__ = [
     'RemoveConstantFeatures',
     'BooleanFeatureRecode',
     'MultiByteExtract',
-    'ZipCodeFormatter'
+    'ZipCodeFormatter',
+    'ParseDates',
+    'ComputeAge',
+    'MonthsToDonation'
 ]
 
 
@@ -222,4 +228,138 @@ class ZipCodeFormatter(BaseEstimator, TransformerMixin):
 
     def get_feature_names(self):
         if self.is_fit:
+            return self.feature_names
+
+
+class ParseDates(BaseEstimator, TransformerMixin):
+
+    def __init__(self, treat_errors='coerce'):
+        self.is_fitted = False
+        self.treat_errors = treat_errors
+        self.feature_names = None
+
+    def fit(self, X, y=None):
+        assert isinstance(X, pd.DataFrame)
+        self.feature_names = X.columns
+        self.is_fitted = True
+        return self
+
+    def transform(self, X, y=None):
+
+        assert isinstance(X, pd.DataFrame)
+        X_trans = X.copy().astype("str")
+
+        def fix_format(d):
+            # If the date string is only 3 characters long,
+            # the format is probably %yy%m
+            # If after filling, we have 00 as month, make it 01
+            if not d == 'nan':
+                if len(d) == 3:
+                    d = d[:2]+"0"+d[2]
+                    if d[2:] == "00":
+                        d = d[:-1] + "1"
+            return d
+
+        def fix_century(d):
+            if not pd.isnull(d):
+                try:
+                    if d.year > 1997:
+                        d = d.replace(year=d.year-100)
+                except:
+                    print("Invalid value! "+d)
+            return d
+
+        for f in X_trans.columns:
+            X_trans[f] = X_trans[f].map(fix_format)
+            try:
+                X_trans[f] = pd.to_datetime(
+                    X_trans[f], format="%y%m", errors='coerce').map(fix_century)
+            except Exception as e:
+                print(e)
+                raise
+        return X_trans
+
+    def get_feature_names(self):
+        if not self.is_fitted:
+            raise ValueError("Needs to be fitted first!")
+        return self.feature_names
+
+
+class ComputeAge(BaseEstimator, TransformerMixin):
+
+    def __init__(self, reference_date=pd.datetime(1997, 6, 1)):
+        self.reference_date = reference_date
+        self.reference_date = reference_date
+        self.feature_names = list()
+        self.is_transformed = False
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X, y=None):
+        assert isinstance(X, pd.DataFrame)
+
+        X_trans = X.copy()
+
+        def get_age(date):
+            if not pd.isnull(date):
+                age = relativedelta.relativedelta(
+                    self.reference_date, date).years
+            else:
+                age = 0.0
+            return age
+
+        for f in X_trans.columns:
+            X_trans[f] = X_trans[f].map(get_age)
+
+        self.feature_names = X_trans.columns
+        self.is_transformed = True
+
+        return X_trans
+
+    def get_feature_names(self):
+        if self.is_transformed:
+            return self.feature_names
+
+
+class MonthsToDonation(BaseEstimator, TransformerMixin):
+
+    def __init__(self):
+        self.feature_names = list()
+        self.is_transformed = False
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X, y=None):
+        assert isinstance(X, pd.DataFrame)
+
+        X_trans = pd.DataFrame(index=X.index)
+
+        for i in range(3, 25):
+            select = ["ADATE_"+str(i), "RDATE_"+str(i)]
+            feat_name = "MONTHS_TO_DONATION_"+str(i)
+            mailing = X[select]
+
+            def calc_diff(row):
+                if any([(pd.isnull(v)) for v in row]):
+                    d = 0.0
+                else:
+                    d = relativedelta.relativedelta(row[1], row[0]).months
+                    if d < 0.0:
+                        d -= 1
+                    else:
+                        d += 1
+                return d
+
+            diffs = mailing.agg(calc_diff, axis=1)
+            X_trans = X_trans.merge(pd.DataFrame(
+                diffs, columns=[feat_name]), on=X_trans.index.name)
+            self.feature_names.extend([feat_name])
+
+        self.is_transformed = True
+        return X_trans
+
+    def get_feature_names(self):
+        if self.is_transformed:
             return self.feature_names
