@@ -61,16 +61,18 @@ boolean_features = ["MAILCODE", "NOEXCH", "RECSWEEP", "RECINHSE", "RECP3",
                     "BOATS", "WALKER", "KIDSTUFF", "CARDS", "PLATES",
                     "PEPSTRFL", "TARGET_B", "HPHONE_D", "VETERANS"]
 
-categorical_features = ["DOMAIN", "TCODE", "STATE", "PVASTATE", "CLUSTER",
+# Already usable nominal features
+categorical_features = ["TCODE", "DOMAIN", "STATE", "PVASTATE", "CLUSTER",
                         "CHILD03", "CHILD07", "CHILD12", "CHILD18", "GENDER",
                         "DATASRCE", "SOLP3", "SOLIH", "WEALTH1", "WEALTH2",
                         "GEOCODE", "LIFESRC", "RFA_2R", "RFA_2A",
                         "RFA_2F", "MDMAUD_R", "MDMAUD_F", "MDMAUD_A",
                         "GEOCODE2"]
 
-nominal_features = ["RFA_3", "RFA_4", "RFA_5", "RFA_6", "RFA_7", "RFA_8",
-                    "RFA_9", "RFA_10", "RFA_11", "RFA_12", "RFA_13",
-                    "RFA_14", "RFA_15", "RFA_16", "RFA_17", "RFA_18",
+# Nominal features needing further cleaning treatment
+nominal_features = ["OSOURCE", "RFA_3", "RFA_4", "RFA_5", "RFA_6",
+                    "RFA_7", "RFA_8", "RFA_9", "RFA_10", "RFA_11", "RFA_12",
+                    "RFA_13", "RFA_14", "RFA_15", "RFA_16", "RFA_17", "RFA_18",
                     "RFA_19", "RFA_20", "RFA_21", "RFA_22", "RFA_23",
                     "RFA_24"]
 
@@ -254,4 +256,4 @@ class KDD98DataLoader:
                 except Exception as exc:
                     logger.error(exc)
                     raise exc
-        return self.raw_data
+        return self.raw_data.copy()
