@@ -10,8 +10,8 @@ import os
 
 class App:
     __conf = {
-        "root_dir": os.getcwd()+"\\",
-        "data_dir": "..\\data\\",
+        "root_dir": os.getcwd()+"/",
+        "data_dir": "../data/",
         "hdf_store": "kdd_cup98_datastore.h5",
         "learn_file_name": "cup98LRN.txt",
         "learn_name": "kddCup98Learn",
