@@ -377,9 +377,9 @@ class ComputeDuration(BaseEstimator, TransformerMixin):
         return X_trans
 
     def get_feature_names(self):
-        if self.feature_names:
-            return self.feature_names
-
+        if not isinstance(self.is_transformed, list):
+            raise ValueError("Must be transformed first.")
+        return self.feature_names
 
 class ComputeAge(BaseEstimator, TransformerMixin):
 
