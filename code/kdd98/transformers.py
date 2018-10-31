@@ -10,7 +10,7 @@ import hashlib
 import copy
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
-from category_encoders.ordinal import OrdinalEncoder
+#from category_encoders.ordinal import OrdinalEncoder
 from util.utils_catenc import get_obj_cols, convert_input, get_generated_cols
 import datetime
 from dateutil import relativedelta
@@ -22,11 +22,13 @@ logger = logging.getLogger(__name__)
 
 
 __all__ = [
+    'DropSparseLowVar',
     'BooleanFeatureRecode',
     'MultiByteExtract',
     'ZipCodeFormatter',
     'ParseDates',
     'ComputeAge',
+    'ComputeDuration',
     'MonthsToDonation',
     'HashingEncoder',
     'OneHotEncoder',
@@ -34,24 +36,102 @@ __all__ = [
 ]
 
 
+class DropSparseLowVar(BaseEstimator, TransformerMixin):
+    """ Transformer to drop:
+
+    * low variance
+    * sparse (abundance of NaN)
+    features.
+
+    Parameters:
+    -----------
+
+    * var_threshold float
+        Defines the threshold for the variance below which columns
+        are interpreted as constant.
+    * sparse_threshold loat
+        Defines the threshold (percentage) of NaN's in a column, anything
+        having greater than this percentage NaN's will be discarded.
+    """
+
+    def __init__(self, var_threshold=1e-5, sparse_threshold=0.1,
+                 keep_anyways=[]):
+        """
+        Removes features with either a low variance or
+        those that contain only very few non-NAN's.
+
+        Parameters:
+        -----------
+
+        var_threshold: float. Anything lower than this
+                       is considered constant and dropped.
+        sparse_threshold: Minimum percentage of non-NaN's needed to keep
+                          a feature
+        keep_anyways: List of regex patterns for features to keep regardless of
+            variance / sparsity.
+        """
+        self.thresh_var = var_threshold
+        self.thresh_sparse = sparse_threshold
+        self.feature_names = []
+        self.drop_names = []
+        self. is_transformed = False
+        self.keep_anyways = keep_anyways
+
+    def fit(self, X, y=None):
+        assert isinstance(X, pd.DataFrame)
+        nrow = X.shape[0]
+
+        keep_names = set()
+        for search in self.keep_anyways:
+            print(X.filter(regex=search).columns)
+            keep_names.update(X.filter(regex=search).columns)
+
+        sparse_names = set(
+            [c for c in X if X[c].count() / nrow >= self.thresh_sparse]) - keep_names
+
+        low_var_names = set([c for c in X.select_dtypes(
+            include="number") if X[c].var() <= self.thresh_var]) - keep_names
+
+        self.drop_names = list(sparse_names.union(low_var_names))
+        print("Constant features: " + str(low_var_names))
+        print("Sparse features: " + str(sparse_names))
+        print("Keep anyways features: " + str(keep_names))
+        print(self.drop_names.sort())
+        return self
+
+    def transform(self, X, y=None):
+        X_trans = X.copy()
+        X_trans = X_trans.drop(columns=self.drop_names)
+        self.feature_names = X_trans.columns
+        self.is_transformed = True
+        return X_trans
+
+    def get_feature_names(self):
+
+        if not isinstance(self.is_transformed, list):
+            raise ValueError("Must be transformed first.")
+        return self.feature_names
+
+
 class MultiByteExtract(BaseEstimator, TransformerMixin):
+    """
+    This is a transformer for multibyte features. Each byte in such
+    a multibyte feature is actually a categorical feature.
+
+    The bytes are spread into separate categoricals.
+
+    Params:
+    -------
+    field_names: A list with the new names for each byte
+                    that is to be spread
+
+    impute: False means missing / malformatted entries will be coded NaN
+            If a value is passed, fields will be filled with that instead.
+
+    drop_orig: Whether to drop the original multibyte feature or not.
+    """
+
     def __init__(self, field_names, impute=False, drop_orig=True):
-        """
-        This is a transformer for multibyte features. Each byte in such
-        a multibyte feature is actually a categorical feature.
-
-        The bytes are spread into separate categoricals.
-
-        Params:
-        -------
-        field_names: A list with the new names for each byte
-                     that is to be spread
-
-        impute: False means missing / malformatted entries will be coded NaN
-                If a value is passed, fields will be filled with that instead.
-
-        drop_orig: Whether to drop the original multibyte feature or not.
-        """
         self.field_names = field_names
         # determines how many bytes to extract
         self.sigbytes = len(self.field_names)
@@ -124,7 +204,8 @@ class MultiByteExtract(BaseEstimator, TransformerMixin):
 class BooleanFeatureRecode(BaseEstimator, TransformerMixin):
     """
     Recodes one or more boolean feature(s), imputing missing values.
-    The feature is recoded to integer 0/1 for False/True
+    The feature is recoded to float64, 1.0 = True, 0.0 = False,
+    NaN for missing (by default). This can be changed through correct_noisy
 
     Params:
     -------
@@ -153,18 +234,18 @@ class BooleanFeatureRecode(BaseEstimator, TransformerMixin):
             if type(self.correct_noisy) is dict:
                 vmap = self.correct_noisy
             else:
-                vmap = {'1': True, '0': False, ' ': False}
+                vmap = {'1': 1.0, '0': 1.0, ' ': 0.0}
         else:
-            vmap = {'1': True, '0': False, ' ': np.nan}
-        vmap[self.value_map.get('true')] = True
-        vmap[self.value_map.get('false')] = False
+            vmap = {'1': 1.0, '0': 0.0, ' ': np.nan}
+        vmap[self.value_map.get('true')] = 1.0
+        vmap[self.value_map.get('false')] = 0.0
         temp_df = X.copy()
         try:
             for feature in X:
                 # Map values in data to True/False.
                 # NA values are propagated.
-                temp_df[feature] = temp_df[feature].map(
-                    vmap, na_action='ignore').astype('bool')
+                temp_df[feature] = temp_df[feature].astype('object').map(
+                    vmap, na_action='ignore').astype('float64')
         except Exception as exc:
             logger.exception(exc)
             raise
@@ -190,8 +271,16 @@ class ZipCodeFormatter(BaseEstimator, TransformerMixin):
 
     def transform(self, X, y=None):
         zip_series = X.ZIP.copy()
-        zip_series = zip_series.str.replace('-', '').astype('category')
-        return pd.DataFrame(zip_series).astype('int')
+        zip_series = zip_series.str.replace('-', '')
+        zip_series.replace([' ', '.'], np.nan, inplace=True)
+
+        def fix_size(zip):
+            factor = 1
+            if zip < 1000:
+                factor = 100
+
+        zip_series = pd.DataFrame(zip_series).astype('float64')
+        return pd.DataFrame(zip_series).astype('float64')
 
     def get_feature_names(self):
         if self.is_fitted:
@@ -200,9 +289,10 @@ class ZipCodeFormatter(BaseEstimator, TransformerMixin):
 
 class ParseDates(BaseEstimator, TransformerMixin):
 
-    def __init__(self, treat_errors='coerce'):
+    def __init__(self, treat_errors='coerce', reference_date=pd.datetime(1997, 6, 1)):
         self.is_fitted = False
         self.treat_errors = treat_errors
+        self.reference_date = reference_date
         self.feature_names = None
 
     def fit(self, X, y=None):
@@ -225,12 +315,17 @@ class ParseDates(BaseEstimator, TransformerMixin):
                     d = d[:2]+"0"+d[2]
                     if d[2:] == "00":
                         d = d[:-1] + "1"
+            else:
+                d = np.nan
             return d
 
         def fix_century(d):
+            """We use the year of the last mailing as the pivot year.
+            Any year after 1997 has the wrong century set. We subtract
+            100 years to get it right."""
             if not pd.isnull(d):
                 try:
-                    if d.year > 1997:
+                    if d.year > self.reference_date.year:
                         d = d.replace(year=d.year-100)
                 except:
                     print("Invalid value! "+d)
@@ -251,11 +346,44 @@ class ParseDates(BaseEstimator, TransformerMixin):
             raise ValueError("Needs to be fitted first!")
         return self.feature_names
 
+class ComputeDuration(BaseEstimator, TransformerMixin):
+    """Computes the duration between a date and the reference date in months."""
+    def __init__(self, reference_date=pd.datetime(1997, 6, 1)):
+        self.reference_date = reference_date
+        self.feature_names = False
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X, y=None):
+        assert isinstance(X, pd.DataFrame)
+
+        X_trans = X.copy()
+
+        def get_duration(date):
+            if not pd.isnull(date):
+                duration = relativedelta.relativedelta(
+                    self.reference_date, date).months
+            else:
+                duration = 0.0
+            return duration
+
+        for f in X_trans.columns:
+            name = f+str("_DELTA_MONTHS")
+            X_trans[name] = X_trans[f].map(get_duration)
+
+        self.feature_names = X_trans.columns
+
+        return X_trans
+
+    def get_feature_names(self):
+        if self.feature_names:
+            return self.feature_names
+
 
 class ComputeAge(BaseEstimator, TransformerMixin):
 
     def __init__(self, reference_date=pd.datetime(1997, 6, 1)):
-        self.reference_date = reference_date
         self.reference_date = reference_date
         self.feature_names = list()
         self.is_transformed = False
@@ -301,22 +429,22 @@ class MonthsToDonation(BaseEstimator, TransformerMixin):
     def transform(self, X, y=None):
         assert isinstance(X, pd.DataFrame)
 
-        X_trans = pd.DataFrame(index=X.index)
+        X_trans = pd.DataFrame(index=X.index).astype('float64')
 
         for i in range(3, 25):
             select = ["ADATE_"+str(i), "RDATE_"+str(i)]
-            feat_name = "MONTHS_TO_DONATION_"+str(i)
+            feat_name = "MONTHS_TO_GIFT_"+str(i)
             mailing = X[select]
 
             def calc_diff(row):
                 if any([(pd.isnull(v)) for v in row]):
-                    d = 0.0
+                    d = np.NaN
                 else:
                     d = relativedelta.relativedelta(row[1], row[0]).months
                     if d < 0.0:
-                        d -= 1
+                        d -= 1.0
                     else:
-                        d += 1
+                        d += 1.0
                 return d
 
             diffs = mailing.agg(calc_diff, axis=1)
@@ -434,8 +562,6 @@ class HashingEncoder(BaseEstimator, TransformerMixin):
 
         self._dim = X.shape[1]
 
-        print(self.cols)
-        print(X.columns)
         # if columns aren't passed, just use every string column
         if self.cols is None:
             self.cols = get_obj_cols(X)
@@ -1072,7 +1198,8 @@ class OrdinalEncoder(BaseEstimator, TransformerMixin):
 
         for switch in self.mapping:
             for cat in switch.get('mapping'):
-                self.feature_names.extend([str(switch.get('col'))+"_"+str(cat[0])])
+                self.feature_names.extend(
+                    [str(switch.get('col'))+"_"+str(cat[0])])
 
         # drop all output columns with 0 variance.
         if self.drop_invariant:

@@ -40,7 +40,8 @@ date_features = ["ODATEDW", "DOB", "ADATE_2", "ADATE_3", "ADATE_4",
                  "RDATE_11", "RDATE_12", "RDATE_13", "RDATE_14",
                  "RDATE_15", "RDATE_16", "RDATE_17", "RDATE_18",
                  "RDATE_19", "RDATE_20", "RDATE_21", "RDATE_22",
-                 "RDATE_23", "RDATE_24"]
+                 "RDATE_23", "RDATE_24", "LASTDATE", "MINRDATE",
+                 "MAXRDATE", "FISTDATE", "NEXTDATE", "MAXADATE"]
 
 don_hist_dates = ["ADATE_3", "ADATE_4", "ADATE_5", "ADATE_6",
                   "ADATE_7", "ADATE_8", "ADATE_9", "ADATE_10",
@@ -53,6 +54,9 @@ don_hist_dates = ["ADATE_3", "ADATE_4", "ADATE_5", "ADATE_6",
                   "RDATE_15", "RDATE_16", "RDATE_17", "RDATE_18",
                   "RDATE_19", "RDATE_20", "RDATE_21", "RDATE_22",
                   "RDATE_23", "RDATE_24"]
+
+don_summary_dates = ["LASTDATE", "MINRDATE", "MAXRDATE", "FISTDATE",
+                     "NEXTDATE", "MAXADATE"]
 
 boolean_features = ["MAILCODE", "NOEXCH", "RECSWEEP", "RECINHSE", "RECP3",
                     "RECPGVG", "AGEFLAG", "HOMEOWNR", "MAJOR", "COLLECT1",
@@ -128,6 +132,13 @@ interest_features = ["COLLECT1", "VETERANS", "BIBLE", "CATLG", "HOMEE", "PETS",
                      "CDPLAY", "STEREO", "PCOWNERS", "PHOTO", "CRAFTS",
                      "FISHER", "GARDENIN", "BOATS", "WALKER", "KIDSTUFF",
                      "CARDS", "PLATES", ]
+
+promotion_history_summary = ['CARDPROM',
+                             'MAXADATE', 'NUMPROM', 'CARDPM12', 'NUMPRM12']
+
+giving_history_summary = ['RAMNTALL', 'NGIFTALL', 'MINRAMNT', 'MINRDATE',
+                          'MAXRAMNT', 'LASTGIFT', 'LASTDATE', 'FISTDATE',
+                          'NEXTDATE', 'TIMELAG', 'AVGGIFT']
 
 # Explicitly define NA codes globally
 # The codes are specified in the dataset documentation.
