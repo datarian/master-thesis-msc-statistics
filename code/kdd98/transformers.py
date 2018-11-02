@@ -10,10 +10,11 @@ import hashlib
 import copy
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
-#from category_encoders.ordinal import OrdinalEncoder
+# from category_encoders.ordinal import OrdinalEncoder
 from util.utils_catenc import get_obj_cols, convert_input, get_generated_cols
 import datetime
 from dateutil import relativedelta
+from dateutil.rrule import rrule, MONTHLY, YEARLY
 import pandas as pd
 import logging
 # Set up the logger
@@ -27,8 +28,7 @@ __all__ = [
     'MultiByteExtract',
     'ZipCodeFormatter',
     'ParseDates',
-    'ComputeAge',
-    'ComputeDuration',
+    'DeltaTime',
     'MonthsToDonation',
     'HashingEncoder',
     'OneHotEncoder',
@@ -346,11 +346,23 @@ class ParseDates(BaseEstimator, TransformerMixin):
             raise ValueError("Needs to be fitted first!")
         return self.feature_names
 
-class ComputeDuration(BaseEstimator, TransformerMixin):
-    """Computes the duration between a date and the reference date in months."""
-    def __init__(self, reference_date=pd.datetime(1997, 6, 1)):
+
+class DeltaTime(BaseEstimator, TransformerMixin):
+    """Computes the duration between a date and a reference date in months."""
+    def __init__(self, reference_date=pd.datetime(1997, 6, 1), unit='months'):
         self.reference_date = reference_date
-        self.feature_names = False
+        self.feature_suffix = "_DELTA_"+unit.upper()
+        self.unit = unit
+        self.feature_names = None
+
+    def get_duration(self, date_pair):
+        if not any([(pd.isnull(v)) for v in date_pair]):
+            duration = abs(relativedelta.relativedelta(date_pair.ref, date_pair.target).years)
+            if self.unit.lower() == 'months':
+                duration = duration * 12 + abs(relativedelta.relativedelta(date_pair.ref, date_pair.target).months)
+        else:
+            duration = np.nan
+        return duration
 
     def fit(self, X, y=None):
         return self
@@ -358,63 +370,24 @@ class ComputeDuration(BaseEstimator, TransformerMixin):
     def transform(self, X, y=None):
         assert isinstance(X, pd.DataFrame)
 
-        X_trans = X.copy()
+        X_trans = pd.DataFrame()
 
-        def get_duration(date):
-            if not pd.isnull(date):
-                duration = relativedelta.relativedelta(
-                    self.reference_date, date).months
+        for f in X.columns:
+            if isinstance(self.reference_date, pd.Series):
+                # we have a series of reference dates
+                feature_name = f+"_"+str(self.reference_date.name)+self.feature_suffix
             else:
-                duration = 0.0
-            return duration
+                feature_name = f+self.feature_suffix
 
-        for f in X_trans.columns:
-            name = f+str("_DELTA_MONTHS")
-            X_trans[name] = X_trans[f].map(get_duration)
+            X_temp = pd.DataFrame({'target': X[f], 'ref': self.reference_date})
+            X_trans[feature_name] = X_temp.apply(self.get_duration,axis=1)
 
         self.feature_names = X_trans.columns
 
         return X_trans
 
     def get_feature_names(self):
-        if not isinstance(self.is_transformed, list):
-            raise ValueError("Must be transformed first.")
         return self.feature_names
-
-class ComputeAge(BaseEstimator, TransformerMixin):
-
-    def __init__(self, reference_date=pd.datetime(1997, 6, 1)):
-        self.reference_date = reference_date
-        self.feature_names = list()
-        self.is_transformed = False
-
-    def fit(self, X, y=None):
-        return self
-
-    def transform(self, X, y=None):
-        assert isinstance(X, pd.DataFrame)
-
-        X_trans = X.copy()
-
-        def get_age(date):
-            if not pd.isnull(date):
-                age = relativedelta.relativedelta(
-                    self.reference_date, date).years
-            else:
-                age = 0.0
-            return age
-
-        for f in X_trans.columns:
-            X_trans[f] = X_trans[f].map(get_age)
-
-        self.feature_names = X_trans.columns
-        self.is_transformed = True
-
-        return X_trans
-
-    def get_feature_names(self):
-        if self.is_transformed:
-            return self.feature_names
 
 
 class MonthsToDonation(BaseEstimator, TransformerMixin):
@@ -440,11 +413,8 @@ class MonthsToDonation(BaseEstimator, TransformerMixin):
                 if any([(pd.isnull(v)) for v in row]):
                     d = np.NaN
                 else:
-                    d = relativedelta.relativedelta(row[1], row[0]).months
-                    if d < 0.0:
-                        d -= 1.0
-                    else:
-                        d += 1.0
+                    d = relativedelta.relativedelta(row[1], row[0]).years * 12
+                    d += relativedelta.relativedelta(row[1], row[0]).months
                 return d
 
             diffs = mailing.agg(calc_diff, axis=1)

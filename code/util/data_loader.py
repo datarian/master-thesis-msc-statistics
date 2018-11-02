@@ -22,6 +22,7 @@ hdf_store = App.config("data_dir")+App.config("hdf_store")
 
 #######################################################################
 # Dicts and data structures to recode / reformat various variables
+# and collections of related features
 
 # Some features of particular interest
 index_name = "CONTROLN"
@@ -136,9 +137,9 @@ interest_features = ["COLLECT1", "VETERANS", "BIBLE", "CATLG", "HOMEE", "PETS",
 promotion_history_summary = ['CARDPROM',
                              'MAXADATE', 'NUMPROM', 'CARDPM12', 'NUMPRM12']
 
-giving_history_summary = ['RAMNTALL', 'NGIFTALL', 'MINRAMNT', 'MINRDATE',
-                          'MAXRAMNT', 'LASTGIFT', 'LASTDATE', 'FISTDATE',
-                          'NEXTDATE', 'TIMELAG', 'AVGGIFT']
+giving_history_summary = ['RAMNTALL', 'NGIFTALL', 'MINRAMNT', 'MAXRAMNT',
+                          'LASTGIFT', 'LASTDATE_DELTA_MONTHS',
+                          'TIMELAG', 'AVGGIFT']
 
 # Explicitly define NA codes globally
 # The codes are specified in the dataset documentation.
