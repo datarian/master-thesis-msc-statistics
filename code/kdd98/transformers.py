@@ -1144,7 +1144,7 @@ class OrdinalEncoder(BaseEstimator, TransformerMixin):
 
         for switch in self.mapping:
             name = switch.get('col')
-            self.feature_names.extend(name)
+            self.feature_names.extend(str(name))
 
         # drop all output columns with 0 variance.
         if self.drop_invariant:
@@ -1292,11 +1292,6 @@ class OrdinalEncoder(BaseEstimator, TransformerMixin):
         else:
             mapping_out = []
             for col in cols:
-                print(col)
-                categories = [col+"_".join(x) for x in pd.unique(
-                    X[col].values) if x is not None]
-                categories_dict = {x: i + 1 for i, x in enumerate(categories)}
-
                 mapping_out.append({'col': col, 'mapping': [
                                    (x[1], x[0] + 1) for x in list(enumerate(categories))]})
 
