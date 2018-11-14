@@ -1143,7 +1143,8 @@ class OrdinalEncoder(BaseEstimator, TransformerMixin):
         self.mapping = categories
 
         for switch in self.mapping:
-            self.feature_names.extend(switch.get('col'))
+            name = switch.get('col')
+            self.feature_names.extend(name)
 
         # drop all output columns with 0 variance.
         if self.drop_invariant:
