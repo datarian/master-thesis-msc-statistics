@@ -1270,29 +1270,41 @@ class OrdinalEncoder(BaseEstimator, TransformerMixin):
         if mapping is not None:
             mapping_out = mapping
             for switch in mapping:
-                categories_dict = dict(switch.get('mapping'))
                 column = switch.get('col')
-                transformed_column = X[column].map(
-                    lambda x: categories_dict.get(x))
+                X[column] = X[column].map(switch['mapping'])
+
+                try:
+                    X[column] = X[column].astype(int)
+                except ValueError as e:
+                    X[column] = X[column].astype(float)
 
                 if impute_missing:
                     if handle_unknown == 'impute':
-                        transformed_column.fillna(0, inplace=True)
+                        X[column].fillna(0, inplace=True)
                     elif handle_unknown == 'error':
-                        missing = transformed_column.isnull()
+                        missing = X[column].isnull()
                         if any(missing):
-                            raise ValueError(
-                                'Unexpected categories found in column %s' % column)
-
-                try:
-                    X[column] = transformed_column.astype(int)
-                except ValueError as e:
-                    X[column] = transformed_column.astype(float)
+                            raise ValueError('Unexpected categories found in column %s' % column)
         else:
             mapping_out = []
             for col in cols:
-                mapping_out.append({'col': col, 'mapping': [
-                                   (x[1], x[0] + 1) for x in list(enumerate(categories))]})
+
+                if util.is_category(X[col].dtype):
+                    categories = X[col].cat.categories
+                else:
+                    categories = [x for x in pd.unique(
+                        X[col].values) if x is not None]
+
+                index = []
+                values = []
+
+                for i in range(len(categories)):
+                    index.append(categories[i])
+                    values.append(i + 1)
+
+                mapping = pd.Series(data=values, index=index)
+
+                mapping_out.append({'col': col, 'mapping': mapping, 'data_type': X[col].dtype}, )
 
         return X, mapping_out
 
