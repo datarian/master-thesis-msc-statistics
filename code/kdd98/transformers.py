@@ -400,7 +400,7 @@ class MonthsToDonation(BaseEstimator, TransformerMixin):
                 diffs, columns=[feat_name]), on=X_trans.index.name)
             self.feature_names.extend([feat_name])
             self.is_transformed = True
-        return X_trans
+        return X_trans.astype("float64")
 
     def get_feature_names(self):
         if self.is_transformed:
@@ -1143,9 +1143,7 @@ class OrdinalEncoder(BaseEstimator, TransformerMixin):
         self.mapping = categories
 
         for switch in self.mapping:
-            for cat in switch.get('mapping'):
-                self.feature_names.extend(
-                    [str(switch.get('col'))+"_"+str(cat[0])])
+            self.feature_names.extend(switch.get('col'))
 
         # drop all output columns with 0 variance.
         if self.drop_invariant:
