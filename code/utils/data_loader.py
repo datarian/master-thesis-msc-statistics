@@ -5,12 +5,14 @@ Created on Fri Aug 24 10:18:44 2018
 @author: Florian Hochstrasser
 """
 
+import os
 import pandas as pd
+import numpy as np
 import logging
 from config import App
 
 # Set up the logger
-logging.basicConfig(filename=__name__+'.log', level=logging.WARNING)
+logging.basicConfig(filename=__name__+'.log', level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
 
@@ -18,7 +20,7 @@ logger = logging.getLogger(__name__)
 # Main config
 data_path = App.config("data_dir")
 hdf_data_file_name = App.config("hdf_store")
-hdf_store = App.config("data_dir")+App.config("hdf_store")
+hdf_store = os.path.join(App.config("data_dir"), App.config("hdf_store"))
 
 #######################################################################
 # Dicts and data structures to recode / reformat various variables
@@ -29,6 +31,7 @@ index_name = "CONTROLN"
 labels = ["TARGET_B", "TARGET_D"]
 
 drop_initial = ["MDMAUD", "RFA_2"]  # These are pre-split multibyte features
+drop_redundant = ["FISTDATE", "NEXTDATE", "DOB"]
 
 date_features = ["ODATEDW", "DOB", "ADATE_2", "ADATE_3", "ADATE_4",
                  "ADATE_5", "ADATE_6", "ADATE_7", "ADATE_8", "ADATE_9",
@@ -44,38 +47,23 @@ date_features = ["ODATEDW", "DOB", "ADATE_2", "ADATE_3", "ADATE_4",
                  "RDATE_23", "RDATE_24", "LASTDATE", "MINRDATE",
                  "MAXRDATE", "FISTDATE", "NEXTDATE", "MAXADATE"]
 
-don_hist_dates = ["ADATE_3", "ADATE_4", "ADATE_5", "ADATE_6",
-                  "ADATE_7", "ADATE_8", "ADATE_9", "ADATE_10",
-                  "ADATE_11", "ADATE_12", "ADATE_13",  "ADATE_14",
-                  "ADATE_15", "ADATE_16", "ADATE_17", "ADATE_18",
-                  "ADATE_19", "ADATE_20", "ADATE_21", "ADATE_22",
-                  "ADATE_23", "ADATE_24", "RDATE_3", "RDATE_4",
-                  "RDATE_5", "RDATE_6", "RDATE_7", "RDATE_8", "RDATE_9",
-                  "RDATE_10", "RDATE_11", "RDATE_12", "RDATE_13", "RDATE_14",
-                  "RDATE_15", "RDATE_16", "RDATE_17", "RDATE_18",
-                  "RDATE_19", "RDATE_20", "RDATE_21", "RDATE_22",
-                  "RDATE_23", "RDATE_24"]
-
-don_summary_dates = ["LASTDATE", "MINRDATE", "MAXRDATE", "FISTDATE",
-                     "NEXTDATE", "MAXADATE"]
-
-boolean_features = ["MAILCODE", "NOEXCH", "RECSWEEP", "RECINHSE", "RECP3",
-                    "RECPGVG", "AGEFLAG", "HOMEOWNR", "MAJOR", "COLLECT1",
-                    "BIBLE", "CATLG", "HOMEE", "PETS", "CDPLAY", "STEREO",
-                    "PCOWNERS", "PHOTO", "CRAFTS", "FISHER", "GARDENIN",
-                    "BOATS", "WALKER", "KIDSTUFF", "CARDS", "PLATES",
-                    "PEPSTRFL", "TARGET_B", "HPHONE_D", "VETERANS"]
+binary_features = ["MAILCODE", "NOEXCH", "RECSWEEP", "RECINHSE", "RECP3",
+                   "RECPGVG", "AGEFLAG", "HOMEOWNR", "MAJOR", "COLLECT1",
+                   "BIBLE", "CATLG", "HOMEE", "PETS", "CDPLAY", "STEREO",
+                   "PCOWNERS", "PHOTO", "CRAFTS", "FISHER", "GARDENIN",
+                   "BOATS", "WALKER", "KIDSTUFF", "CARDS", "PLATES",
+                   "PEPSTRFL", "TARGET_B", "HPHONE_D", "VETERANS"]
 
 # Already usable nominal features
-categorical_features = ["TCODE", "DOMAIN", "STATE", "PVASTATE", "CLUSTER",
+categorical_features = ["TCODE", "DOMAIN", "STATE", "PVASTATE", "CLUSTER", "INCOME",
                         "CHILD03", "CHILD07", "CHILD12", "CHILD18", "GENDER",
                         "DATASRCE", "SOLP3", "SOLIH", "WEALTH1", "WEALTH2",
                         "GEOCODE", "LIFESRC", "RFA_2R", "RFA_2A",
                         "RFA_2F", "MDMAUD_R", "MDMAUD_F", "MDMAUD_A",
-                        "GEOCODE2"]
+                        "GEOCODE2","TARGET_D"]
 
 # Nominal features needing further cleaning treatment
-nominal_features = ["OSOURCE", "RFA_3", "RFA_4", "RFA_5", "RFA_6",
+nominal_features = ["OSOURCE", "TCODE", "RFA_3", "RFA_4", "RFA_5", "RFA_6",
                     "RFA_7", "RFA_8", "RFA_9", "RFA_10", "RFA_11", "RFA_12",
                     "RFA_13", "RFA_14", "RFA_15", "RFA_16", "RFA_17", "RFA_18",
                     "RFA_19", "RFA_20", "RFA_21", "RFA_22", "RFA_23",
@@ -132,26 +120,72 @@ us_census_features = ["POP901", "POP902", "POP903", "POP90C1", "POP90C2",
 interest_features = ["COLLECT1", "VETERANS", "BIBLE", "CATLG", "HOMEE", "PETS",
                      "CDPLAY", "STEREO", "PCOWNERS", "PHOTO", "CRAFTS",
                      "FISHER", "GARDENIN", "BOATS", "WALKER", "KIDSTUFF",
-                     "CARDS", "PLATES", ]
+                     "CARDS", "PLATES"]
 
-promotion_history_summary = ['CARDPROM',
-                             'MAXADATE', 'NUMPROM', 'CARDPM12', 'NUMPRM12']
+promo_history_dates = ["ADATE_3", "ADATE_4", "ADATE_5", "ADATE_6",
+                       "ADATE_7", "ADATE_8", "ADATE_9", "ADATE_10",
+                       "ADATE_11", "ADATE_12", "ADATE_13",  "ADATE_14",
+                       "ADATE_15", "ADATE_16", "ADATE_17", "ADATE_18",
+                       "ADATE_19", "ADATE_20", "ADATE_21", "ADATE_22",
+                       "ADATE_23", "ADATE_24"]
 
-giving_history_features = ['RDATE_3', 'RDATE_4', 'RDATE_5', 'RDATE_6', 'RDATE_7', 'RDATE_8',
-                        'RDATE_9', 'RDATE_10', 'RDATE_11', 'RDATE_12', 'RDATE_13', 'RDATE_14',
-                        'RDATE_15', 'RDATE_16', 'RDATE_17', 'RDATE_18', 'RDATE_19', 'RDATE_20',
-                        'RDATE_21', 'RDATE_22', 'RDATE_23', 'RDATE_24', 'RAMNT_3', 'RAMNT_4',
-                        'RAMNT_5', 'RAMNT_6', 'RAMNT_7', 'RAMNT_8', 'RAMNT_9', 'RAMNT_10',
-                        'RAMNT_11', 'RAMNT_12', 'RAMNT_13', 'RAMNT_14', 'RAMNT_15', 'RAMNT_16',
-                        'RAMNT_17', 'RAMNT_18', 'RAMNT_19', 'RAMNT_20', 'RAMNT_21', 'RAMNT_22',
-                        'RAMNT_23', 'RAMNT_24']
+don_summary_dates = ["LASTDATE", "MINRDATE", "MAXRDATE", "MAXADATE"]
+
+promo_history_summary = ['CARDPROM', 'MAXADATE', 'NUMPROM', 'CARDPM12',
+                         'NUMPRM12']
+
+giving_history_dates = ['RDATE_3', 'RDATE_4', 'RDATE_5', 'RDATE_6', 'RDATE_7',
+                        'RDATE_8', 'RDATE_9', 'RDATE_10', 'RDATE_11',
+                        'RDATE_12', 'RDATE_13', 'RDATE_14', 'RDATE_15',
+                        'RDATE_16', 'RDATE_17', 'RDATE_18', 'RDATE_19',
+                        'RDATE_20', 'RDATE_21', 'RDATE_22', 'RDATE_23',
+                        'RDATE_24']
+
+giving_history = ['RAMNT_3', 'RAMNT_4', 'RAMNT_5', 'RAMNT_6',
+                  'RAMNT_7', 'RAMNT_8', 'RAMNT_9', 'RAMNT_10', 'RAMNT_11',
+                  'RAMNT_12', 'RAMNT_13', 'RAMNT_14', 'RAMNT_15',
+                  'RAMNT_16', 'RAMNT_17', 'RAMNT_18', 'RAMNT_19',
+                  'RAMNT_20', 'RAMNT_21', 'RAMNT_22', 'RAMNT_23',
+                  'RAMNT_24']
+
 giving_history_summary = ['RAMNTALL', 'NGIFTALL', 'MINRAMNT', 'MAXRAMNT',
-                          'LASTGIFT', 'LASTDATE_DELTA_MONTHS',
-                          'TIMELAG', 'AVGGIFT']
+                          'LASTGIFT', 'TIMELAG', 'AVGGIFT']
 
 # Explicitly define NA codes globally
 # The codes are specified in the dataset documentation.
-na_codes = ['', '.']
+na_codes = ['', '.', ' ']
+
+
+def dateparser(date_features):
+
+    reference_date = App.config("reference_date")
+
+    def fix_format(d):
+        if not pd.isna(d):
+            if len(d) == 3:
+                d = '0'+d
+        else:
+            d = pd.NaT
+        return d
+
+    def fix_century(d):
+        ref_date = App.config("reference_date")
+        if not pd.isna(d):
+            try:
+                if d.year > ref_date.year:
+                    d = d.replace(year=(d.year-100))
+            except Exception as err:
+                logger.warning("Failed to fix century for date {}, reason: {}".format(d, err))
+                d = pd.NaT
+        else:
+            d = pd.NaT
+        return d
+
+    try:
+        date_features = [fix_century(pd.to_datetime(fix_format(d), format="%y%m", errors="coerce")) for d in date_features]
+    except Exception as e:
+        logger.warn("Failed to parse date array {}.\nReason: {}".format(date_features, e))
+    return date_features
 
 
 class KDD98DataLoader:
@@ -165,8 +199,8 @@ class KDD98DataLoader:
     # Where necessary, these are included here for explicit datatype casting.
     # The rest of the features will be guessed by pandas on reading the CSV.
     dtype_specs = {}
-    for boolean in boolean_features:
-        dtype_specs[boolean] = 'str'
+    for binary in binary_features:
+        dtype_specs[binary] = 'str'
     for categorical in categorical_features:
         dtype_specs[categorical] = 'category'
     for nominal in nominal_features:
@@ -190,6 +224,8 @@ class KDD98DataLoader:
         self.pull_stored = pull_stored
         self.raw_data = None
 
+        self.reference_date = App.config("reference_date")
+
         if csv_file is not None and csv_file in [App.config("learn_file_name"),
                                                  App.config("validation_file_name")]:
             if "lrn" in csv_file.lower():
@@ -206,24 +242,31 @@ class KDD98DataLoader:
         are already dropped at this stage (see: data_loader.drop_initial)!
         """
 
-        def dateparser(date):
-            return pd.to_datetime(date,
-                                  yearfirst=True)
-
         try:
             logger.debug("trying to read csv file: "+self.raw_data_file_name)
             self.raw_data = pd.read_csv(
-                data_path+self.raw_data_file_name,
+                os.path.join(data_path, self.raw_data_file_name),
                 index_col=index_name,
                 na_values=na_codes,
-                # parse_dates=date_features,
-                # date_parser=dateparser,
+                parse_dates=date_features,
+                date_parser=dateparser,
                 dtype=self.dtype_specs,
                 low_memory=False,  # needed for mixed type columns
                 memory_map=True  # load file in memory
             )
+
+            # Fix formatting for ZIP feature
+            self.raw_data.ZIP = self.raw_data.ZIP.str.replace('-', '').replace([' ', '.'], np.nan).astype('float64')
+            # Fix binary encoding inconsistency for NOEXCH
             self.raw_data.NOEXCH = self.raw_data.NOEXCH.str.replace("X", "1")
+
+            # Fix some NA value problems:
+            self.raw_data[['MDMAUD_R', 'MDMAUD_F', 'MDMAUD_A']] = self.raw_data.loc[:,['MDMAUD_R', 'MDMAUD_F', 'MDMAUD_A']].replace('X', np.nan)
+
+            # Drop obivously redundant features
             self.raw_data = self.raw_data.drop(drop_initial, axis=1)
+
+            
         except Exception as exc:
             logger.exception(exc)
             raise

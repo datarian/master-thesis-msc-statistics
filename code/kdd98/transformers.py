@@ -11,29 +11,73 @@ import copy
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 # from category_encoders.ordinal import OrdinalEncoder
-from util.utils_catenc import get_obj_cols, convert_input, get_generated_cols
+from utils.catenc import get_obj_cols, convert_input, get_generated_cols
 import datetime
 from dateutil import relativedelta
 from dateutil.rrule import rrule, MONTHLY, YEARLY
 import pandas as pd
 import logging
 # Set up the logger
-logging.basicConfig(filename=__name__+'.log', level=logging.WARNING)
+logging.basicConfig(filename=__name__+'.log', level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
 
-__all__ = [
-    'DropSparseLowVar',
-    'BooleanFeatureRecode',
-    'MultiByteExtract',
-    'ZipCodeFormatter',
-    'ParseDates',
-    'DeltaTime',
-    'MonthsToDonation',
-    'HashingEncoder',
-    'OneHotEncoder',
-    'OrdinalEncoder'
-]
+__all__ = ['RecodeOrdinal',
+           'DropSparseLowVar',
+           'BinaryFeatureRecode',
+           'MultiByteExtract',
+           'DeltaTime',
+           'MonthsToDonation',
+           'HashingEncoder',
+           'OneHotEncoder',
+           'OrdinalEncoder']
+
+class RecodeOrdinal(BaseEstimator, TransformerMixin):
+    def __init__(self, order=None, force_coercion=True):
+        self.order = order
+        self.force_coercion = force_coercion
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X, y=None):
+        assert isinstance(X, pd.DataFrame)
+        X_trans = pd.DataFrame(index=X.index)
+
+        def make_ordered(feature):
+            try:
+                X_trans[feature] = X[feature].cat.as_ordered()
+            except AttributeError as e:
+                logger.warning("Failed to make feature ordinal. Probably not a category.\n{}".format(e))
+                if self.force_coercion:
+                    try:
+                        X_trans[c] = X[c].astype('category')
+                    except Exception as e:
+                        logger.warning(e)
+                else:
+                    raise
+            else:
+                if self.order:
+                    orig_cats = X[c].cat.categories
+                    order = self.order
+                    for cat in self.order:
+                        if not cat in orig_cats:
+                            order.remove(cat)
+                    try:
+                        X_trans[feature] = X_trans[feature].cat.reorder_categories(order, ordered=True)
+                    except ValueError as e:
+                        logger.warn("Faield to reorder ordinal feature {}."+
+                        "Probable cause: old levels neq ordered levels. \n{}".format(feature, e))
+        for c in X.columns:
+            make_ordered(c)
+
+        self.feature_names = X_trans.columns
+        self.is_transformed = True
+        return X_trans
+
+    def get_feature_names(self):
+        if self.is_transformed:
+            return self.feature_names
 
 
 class DropSparseLowVar(BaseEstimator, TransformerMixin):
@@ -176,7 +220,7 @@ class MultiByteExtract(BaseEstimator, TransformerMixin):
         # we interprete the dict's contents as rows (defaults to columns)
         temp_df = pd.DataFrame.from_dict(
             data=spread_field, orient="index")
-        temp_df.columns = ["_".join([feature.name, f])
+        temp_df.columns = ["".join([feature.name, f])
                            for f in self.field_names]
         temp_df.index.name = index_name
         # make sure all fields are categorical
@@ -201,7 +245,7 @@ class MultiByteExtract(BaseEstimator, TransformerMixin):
             return self.feature_names
 
 
-class BooleanFeatureRecode(BaseEstimator, TransformerMixin):
+class BinaryFeatureRecode(BaseEstimator, TransformerMixin):
     """
     Recodes one or more boolean feature(s), imputing missing values.
     The feature is recoded to float64, 1.0 = True, 0.0 = False,
@@ -257,98 +301,16 @@ class BooleanFeatureRecode(BaseEstimator, TransformerMixin):
             return self.feature_names
 
 
-class ZipCodeFormatter(BaseEstimator, TransformerMixin):
-
-    def __init__(self, format=True):
-        self.do_format = format
-        self.is_fitted = False
-
-    def fit(self, X, y=None):
-        assert isinstance(X, pd.DataFrame)
-        self.feature_names = list(X.columns)
-        self.is_fitted = True
-        return self
-
-    def transform(self, X, y=None):
-        zip_series = X.ZIP.copy()
-        zip_series = zip_series.str.replace('-', '')
-        zip_series.replace([' ', '.'], np.nan, inplace=True)
-
-        def fix_size(zip):
-            factor = 1
-            if zip < 1000:
-                factor = 100
-
-        zip_series = pd.DataFrame(zip_series).astype('float64')
-        return pd.DataFrame(zip_series).astype('float64')
-
-    def get_feature_names(self):
-        if self.is_fitted:
-            return self.feature_names
-
-
-class ParseDates(BaseEstimator, TransformerMixin):
-
-    def __init__(self, treat_errors='coerce', reference_date=pd.datetime(1997, 6, 1)):
-        self.is_fitted = False
-        self.treat_errors = treat_errors
-        self.reference_date = reference_date
-        self.feature_names = None
-
-    def fit(self, X, y=None):
-        assert isinstance(X, pd.DataFrame)
-        self.feature_names = X.columns
-        self.is_fitted = True
-        return self
-
-    def transform(self, X, y=None):
-
-        assert isinstance(X, pd.DataFrame)
-        X_trans = X.copy().astype("str")
-
-        def fix_format(d):
-            # If the date string is only 3 characters long,
-            # the format is probably %yy%m
-            # If after filling, we have 00 as month, make it 01
-            if not d == 'nan':
-                if len(d) == 3:
-                    d = d[:2]+"0"+d[2]
-                    if d[2:] == "00":
-                        d = d[:-1] + "1"
-            else:
-                d = np.nan
-            return d
-
-        def fix_century(d):
-            """We use the year of the last mailing as the pivot year.
-            Any year after 1997 has the wrong century set. We subtract
-            100 years to get it right."""
-            if not pd.isnull(d):
-                try:
-                    if d.year > self.reference_date.year:
-                        d = d.replace(year=d.year-100)
-                except:
-                    print("Invalid value! "+d)
-            return d
-
-        for f in X_trans.columns:
-            X_trans[f] = X_trans[f].map(fix_format)
-            try:
-                X_trans[f] = pd.to_datetime(
-                    X_trans[f], format="%y%m", errors='coerce').map(fix_century)
-            except Exception as e:
-                print(e)
-                raise
-        return X_trans
-
-    def get_feature_names(self):
-        if not self.is_fitted:
-            raise ValueError("Needs to be fitted first!")
-        return self.feature_names
-
-
 class DeltaTime(BaseEstimator, TransformerMixin):
-    """Computes the duration between a date and a reference date in months."""
+    """Computes the duration between a date and a reference date in months.
+
+    Parameters:
+    -----------
+
+    reference_date: either a single datetimelike or a series of datetimelike
+        For series, the same length as the passed dataframe is expected.
+    unit: ['months', 'years']
+    """
     def __init__(self, reference_date=pd.datetime(1997, 6, 1), unit='months'):
         self.reference_date = reference_date
         self.feature_suffix = "_DELTA_"+unit.upper()
@@ -356,11 +318,14 @@ class DeltaTime(BaseEstimator, TransformerMixin):
         self.feature_names = None
 
     def get_duration(self, date_pair):
-        if not any([(pd.isnull(v)) for v in date_pair]):
-            duration = abs(relativedelta.relativedelta(date_pair.ref, date_pair.target).years)
+        if not pd.isna(date_pair.target) and not pd.isna(date_pair.ref):
+            delta = relativedelta.relativedelta(date_pair.ref, date_pair.target)
             if self.unit.lower() == 'months':
-                duration = duration * 12 + abs(relativedelta.relativedelta(date_pair.ref, date_pair.target).months)
+                duration = (delta.years * 12) + delta.months
+            elif self.unit.lower() == 'years':
+                duration = delta.years + 1
         else:
+            logger.info("Failed to calculate time delta. Dates: {} and {}.".format(date_pair.target, date_pair.ref))
             duration = np.nan
         return duration
 
@@ -370,16 +335,21 @@ class DeltaTime(BaseEstimator, TransformerMixin):
     def transform(self, X, y=None):
         assert isinstance(X, pd.DataFrame)
 
-        X_trans = pd.DataFrame()
+        # We need to ensure we have datetime objects.
+        # The dateparser has to return int64 to work with sklearn, so
+        # we need to recast here.
+        X_trans = pd.DataFrame().astype('str')
 
         for f in X.columns:
+            X_temp = pd.DataFrame(columns=['target', 'ref'])
+            X_temp['target'] = X[f]
             if isinstance(self.reference_date, pd.Series):
                 # we have a series of reference dates
                 feature_name = f+"_"+str(self.reference_date.name)+self.feature_suffix
             else:
                 feature_name = f+self.feature_suffix
 
-            X_temp = pd.DataFrame({'target': X[f], 'ref': self.reference_date})
+            X_temp['ref'] = self.reference_date
             X_trans[feature_name] = X_temp.apply(self.get_duration,axis=1)
 
         self.feature_names = X_trans.columns
@@ -399,30 +369,33 @@ class MonthsToDonation(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         return self
 
+    def calc_diff(self, row):
+        ref = row[0]
+        target = row[1]
+        if not pd.isna(ref) and not pd.isna(target):
+            try:
+                duration = relativedelta.relativedelta(ref, target).years * 12
+                duration += relativedelta.relativedelta(ref, target).months
+            except TypeError as err:
+                logger.error("Failed to calculate time delta. " +
+                                "Dates: {} and {}\nMessage: {}".format(row[0], row[1],err))
+                duration = np.nan
+        else:
+            duration = np.nan
+        return duration
+
     def transform(self, X, y=None):
         assert isinstance(X, pd.DataFrame)
 
-        X_trans = pd.DataFrame(index=X.index).astype('float64')
-
+        X_trans = pd.DataFrame(index=X.index)
         for i in range(3, 25):
-            select = ["ADATE_"+str(i), "RDATE_"+str(i)]
-            feat_name = "MONTHS_TO_GIFT_"+str(i)
-            mailing = X[select]
-
-            def calc_diff(row):
-                if any([(pd.isnull(v)) for v in row]):
-                    d = np.NaN
-                else:
-                    d = relativedelta.relativedelta(row[1], row[0]).years * 12
-                    d += relativedelta.relativedelta(row[1], row[0]).months
-                return d
-
-            diffs = mailing.agg(calc_diff, axis=1)
+            feat_name = "MONTHS_TO_DONATION_"+str(i)
+            mailing = X[["ADATE_"+str(i), "RDATE_"+str(i)]]
+            diffs = mailing.agg(self.calc_diff, axis=1)
             X_trans = X_trans.merge(pd.DataFrame(
                 diffs, columns=[feat_name]), on=X_trans.index.name)
             self.feature_names.extend([feat_name])
-
-        self.is_transformed = True
+            self.is_transformed = True
         return X_trans
 
     def get_feature_names(self):
@@ -784,7 +757,8 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         self.impute_missing = impute_missing
         self.handle_unknown = handle_unknown
         self.use_cat_names = use_cat_names
-        self.is_fitted = False
+        self.feature_names = []
+        self.is_transformed = False
 
     @property
     def category_mapping(self):
@@ -818,8 +792,6 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         # if columns aren't passed, just use every string column
         if self.cols is None:
             self.cols = get_obj_cols(X)
-
-        # Indicate no transformation has been applied yet
 
         self.ordinal_encoder = OrdinalEncoder(
             verbose=self.verbose,
@@ -1317,7 +1289,8 @@ class OrdinalEncoder(BaseEstimator, TransformerMixin):
         else:
             mapping_out = []
             for col in cols:
-                categories = [x for x in pd.unique(
+                print(col)
+                categories = [col+"_".join(x) for x in pd.unique(
                     X[col].values) if x is not None]
                 categories_dict = {x: i + 1 for i, x in enumerate(categories)}
 

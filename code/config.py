@@ -6,6 +6,8 @@ Created on Fri Aug 24 10:37:40 2018
 """
 
 import os
+import pandas as pd
+import seaborn as sns
 
 
 class App:
@@ -17,7 +19,13 @@ class App:
         "learn_name": "kddCup98Learn",
         "validation_file_name": "cup98VAL.txt",
         "validation_name": "kddCup98Validation",
-        "random_seed": 42
+        "random_seed": 42,
+        "reference_date": pd.datetime(1997, 6, 1),
+        "color_palette": sns.cubehelix_palette(8, start=.5, rot=-.75, reverse=True, dark=0.5),
+        "color_palette_binary": sns.cubehelix_palette(2, start=.5, rot=-.75, reverse=True, dark=0.5),
+        "color_map": sns.cubehelix_palette(8, start=.5, rot=-.75, as_cmap=True, reverse=True, dark=0.5),
+        "color_map_diverging": sns.diverging_palette(10, 220, sep=80, n=20, as_cmap=True)
+
     }
 
     __setters = []
