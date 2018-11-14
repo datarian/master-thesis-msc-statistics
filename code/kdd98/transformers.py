@@ -311,10 +311,14 @@ class DeltaTime(BaseEstimator, TransformerMixin):
         For series, the same length as the passed dataframe is expected.
     unit: ['months', 'years']
     """
-    def __init__(self, reference_date=pd.datetime(1997, 6, 1), unit='months'):
+    def __init__(self, reference_date=pd.datetime(1997, 6, 1), unit='months',suffix=True):
         self.reference_date = reference_date
-        self.feature_suffix = "_DELTA_"+unit.upper()
+        if suffix:
+            self.feature_suffix = "_DELTA_"+unit.upper()
+        else:
+            self.feature_suffix = ""
         self.unit = unit
+        self.suffix = suffix
         self.feature_names = None
 
     def get_duration(self, date_pair):
