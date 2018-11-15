@@ -69,6 +69,16 @@ nominal_features = ["OSOURCE", "TCODE", "RFA_3", "RFA_4", "RFA_5", "RFA_6",
                     "RFA_19", "RFA_20", "RFA_21", "RFA_22", "RFA_23",
                     "RFA_24"]
 
+ordinal_mapping = [
+    {'col': 'MDMAUD_R', 'mapping': {'D':1, 'I':2, 'L':3, 'C':4}},
+    {'col': 'MDMAUD_A', 'mapping': {'L':1, 'C':2, 'M':3, 'T':4}}] + [{'col': c,
+        'mapping': {'A':1, 'B':2, 'C':3, 'D':4, 'E':5, 'F':6, 'G':7}}
+            for c in ["RFA_3A", "RFA_4A", "RFA_5A", "RFA_6A", "RFA_7A", "RFA_8A",
+                      "RFA_9A", "RFA_10A", "RFA_11A", "RFA_12A", "RFA_13A",
+                      "RFA_14A", "RFA_15A", "RFA_16A", "RFA_17A", "RFA_18A", "RFA_19A",
+                      "RFA_20A", "RFA_21A", "RFA_22A", "RFA_23A", "RFA_24A"]]
+
+
 us_census_features = ["POP901", "POP902", "POP903", "POP90C1", "POP90C2",
                       "POP90C3", "POP90C4", "POP90C5", "ETH1", "ETH2",
                       "ETH3", "ETH4", "ETH5", "ETH6", "ETH7", "ETH8",
@@ -150,6 +160,8 @@ giving_history = ['RAMNT_3', 'RAMNT_4', 'RAMNT_5', 'RAMNT_6',
 
 giving_history_summary = ['RAMNTALL', 'NGIFTALL', 'MINRAMNT', 'MAXRAMNT',
                           'LASTGIFT', 'TIMELAG', 'AVGGIFT']
+
+
 
 # Explicitly define NA codes globally
 # The codes are specified in the dataset documentation.
@@ -256,7 +268,7 @@ class KDD98DataLoader:
             )
 
             # Fix formatting for ZIP feature
-            self.raw_data.ZIP = self.raw_data.ZIP.str.replace('-', '').replace([' ', '.'], np.nan).astype('float64')
+            self.raw_data.ZIP = self.raw_data.ZIP.str.replace('-', '').replace([' ', '.'], np.nan).astype('int64')
             # Fix binary encoding inconsistency for NOEXCH
             self.raw_data.NOEXCH = self.raw_data.NOEXCH.str.replace("X", "1")
 
@@ -266,7 +278,7 @@ class KDD98DataLoader:
             # Drop obivously redundant features
             self.raw_data = self.raw_data.drop(drop_initial, axis=1)
 
-            
+
         except Exception as exc:
             logger.exception(exc)
             raise
