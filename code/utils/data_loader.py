@@ -69,10 +69,10 @@ nominal_features = ["OSOURCE", "TCODE", "RFA_3", "RFA_4", "RFA_5", "RFA_6",
                     "RFA_19", "RFA_20", "RFA_21", "RFA_22", "RFA_23",
                     "RFA_24"]
 
-ordinal_mapping = [
-    {'col': 'MDMAUD_R', 'mapping': {'D':1, 'I':2, 'L':3, 'C':4}},
-    {'col': 'MDMAUD_A', 'mapping': {'L':1, 'C':2, 'M':3, 'T':4}}] + [{'col': c,
-        'mapping': {'A':1, 'B':2, 'C':3, 'D':4, 'E':5, 'F':6, 'G':7}}
+ordinal_mapping_mdmaud = [
+    {'col': 'MDMAUD_R', 'mapping': {'D': 1, 'I': 2, 'L': 3, 'C': 4}},
+    {'col': 'MDMAUD_A', 'mapping': {'L': 1, 'C': 2, 'M': 3, 'T': 4}}]
+ordinal_mapping_rfa = [{'col': c, 'mapping': {'A':1, 'B':2, 'C':3, 'D':4, 'E':5, 'F':6, 'G':7}}
             for c in ["RFA_3A", "RFA_4A", "RFA_5A", "RFA_6A", "RFA_7A", "RFA_8A",
                       "RFA_9A", "RFA_10A", "RFA_11A", "RFA_12A", "RFA_13A",
                       "RFA_14A", "RFA_15A", "RFA_16A", "RFA_17A", "RFA_18A", "RFA_19A",

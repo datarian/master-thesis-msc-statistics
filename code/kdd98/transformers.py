@@ -200,7 +200,7 @@ class RecodeUrbanSocioEconomic(BaseEstimator, TransformerMixin):
         self.feature_names = None
 
     def fit(self, X, y=None):
-        self.feature_names = ["DOMAIN_Urbanicity", "DOMAINSocioEconomic"]
+        self.feature_names = ["DOMAINUrbanicity", "DOMAINSocioEconomic"]
         return self
 
     def transform(self, X, y=None):
