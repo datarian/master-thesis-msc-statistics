@@ -22,63 +22,15 @@ logging.basicConfig(filename=__name__+'.log', level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
 
-__all__ = ['RecodeOrdinal',
-           'DropSparseLowVar',
+__all__ = ['DropSparseLowVar',
            'BinaryFeatureRecode',
            'MultiByteExtract',
+           'RecodeUrbanSocioEconomic',
            'DeltaTime',
            'MonthsToDonation',
            'HashingEncoder',
            'OneHotEncoder',
            'OrdinalEncoder']
-
-class RecodeOrdinal(BaseEstimator, TransformerMixin):
-    def __init__(self, order=None, force_coercion=True):
-        self.order = order
-        self.force_coercion = force_coercion
-
-    def fit(self, X, y=None):
-        return self
-
-    def transform(self, X, y=None):
-        assert isinstance(X, pd.DataFrame)
-        X_trans = pd.DataFrame(index=X.index)
-
-        def make_ordered(feature):
-            try:
-                X_trans[feature] = X[feature].cat.as_ordered()
-            except AttributeError as e:
-                logger.warning("Failed to make feature ordinal. Probably not a category.\n{}".format(e))
-                if self.force_coercion:
-                    try:
-                        X_trans[c] = X[c].astype('category')
-                    except Exception as e:
-                        logger.warning(e)
-                else:
-                    raise
-            else:
-                if self.order:
-                    orig_cats = X[c].cat.categories
-                    order = self.order
-                    for cat in self.order:
-                        if not cat in orig_cats:
-                            order.remove(cat)
-                    try:
-                        X_trans[feature] = X_trans[feature].cat.reorder_categories(order, ordered=True)
-                    except ValueError as e:
-                        logger.warn("Faield to reorder ordinal feature {}."+
-                        "Probable cause: old levels neq ordered levels. \n{}".format(feature, e))
-        for c in X.columns:
-            make_ordered(c)
-
-        self.feature_names = X_trans.columns
-        self.is_transformed = True
-        return X_trans
-
-    def get_feature_names(self):
-        if self.is_transformed:
-            return self.feature_names
-
 
 class DropSparseLowVar(BaseEstimator, TransformerMixin):
     """ Transformer to drop:
@@ -244,6 +196,23 @@ class MultiByteExtract(BaseEstimator, TransformerMixin):
         if self.is_transformed:
             return self.feature_names
 
+class RecodeUrbanSocioEconomic(BaseEstimator, TransformerMixin):
+    def __init__(self):
+        self.feature_names = None
+
+    def fit(self, X, y=None):
+        self.feature_names = ["DOMAIN_Urbanicity", "DOMAINSocioEconomic"]
+        return self
+
+    def transform(self, X, y=None):
+        urb_dict = {'1': '1', '2': '2', '3': '2', '4': '3'}
+        X_trans = pd.DataFrame(X, columns=self.feature_names).astype('category')
+        X_trans.loc[X_trans.DOMAINUrbanicity == 'U', 'DOMAINSocioEconomic'] = X_trans.loc[X_trans.DOMAINUrbanicity == 'U', 'DOMAINSocioEconomic'].map(urb_dict)
+        X_trans.DOMAINSocioEconomic = X_trans.DOMAINSocioEconomic.cat.remove_unused_categories()
+
+    def get_feature_names(self):
+        if isinstance(self.feature_names, list):
+            return self.feature_names
 
 class BinaryFeatureRecode(BaseEstimator, TransformerMixin):
     """
