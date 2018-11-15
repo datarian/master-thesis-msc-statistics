@@ -10,19 +10,22 @@ logger = logging.getLogger(__name__)
 def get_feature_names_from_pipeline(pipeline):
     return [f[f.find('__')+2:] for f in pipeline.get_feature_names()]
 
-def get_feature_names_from_transformer_collection(transformers):
+def get_feature_names_from_transformer_collection(collection):
     try:
         # We have a pure column transformer. Concatenate the feature names
-        return [t[t.find('__')+2:] for t in transformers.get_feature_names()]
+        return [t[t.find('__')+2:] for t in collection.get_feature_names()]
     except AttributeError as e:
         # We have at least one pipeline in the collection. So do it manually
         names = []
-        for t in transformers.transformers:
-            if isinstance(t[1], Pipeline):
-                # We get the feature names from the last step
-                names.append(t[1].named_steps[t[1].steps[-1][0]].get_feature_names())
-            else:
-                names.append(t[1].get_feature_names())
+        if not isinstance(collection, Pipeline):
+            for t in collection.transformers:
+                if isinstance(t[1], Pipeline):
+                    # We get the feature names from the last step
+                    names.append(t[1].named_steps[t[1].steps[-1][0]].get_feature_names())
+                else:
+                    names.append(t[1].get_feature_names())
+        elif isinstance(collection, Pipeline):
+            names.append(collection.named_steps[collection.steps[-1][0]].get_feature_names())
         return names
 
 def update_df_with_transformed(df_old, new_features, transformer, drop=[],new_dtype=None):
