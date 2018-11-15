@@ -103,7 +103,6 @@ class DropSparseLowVar(BaseEstimator, TransformerMixin):
         return X_trans
 
     def get_feature_names(self):
-
         if not isinstance(self.is_transformed, list):
             raise ValueError("Must be transformed first.")
         return self.feature_names
@@ -209,6 +208,7 @@ class RecodeUrbanSocioEconomic(BaseEstimator, TransformerMixin):
         X_trans = pd.DataFrame(X, columns=self.feature_names).astype('category')
         X_trans.loc[X_trans.DOMAINUrbanicity == 'U', 'DOMAINSocioEconomic'] = X_trans.loc[X_trans.DOMAINUrbanicity == 'U', 'DOMAINSocioEconomic'].map(urb_dict)
         X_trans.DOMAINSocioEconomic = X_trans.DOMAINSocioEconomic.cat.remove_unused_categories()
+        return X_trans
 
     def get_feature_names(self):
         if isinstance(self.feature_names, list):
