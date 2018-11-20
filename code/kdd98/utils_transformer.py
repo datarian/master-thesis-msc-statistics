@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from sklearn.pipeline import Pipeline
 
 # Set up the logger
 import logging
@@ -14,7 +15,7 @@ def get_feature_names_from_transformer_collection(collection):
     try:
         # We have a pure column transformer. Concatenate the feature names
         return [t[t.find('__')+2:] for t in collection.get_feature_names()]
-    except AttributeError as e:
+    except AttributeError:
         # We have at least one pipeline in the collection. So do it manually
         names = []
         if not isinstance(collection, Pipeline):

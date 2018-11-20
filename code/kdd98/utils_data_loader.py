@@ -170,8 +170,6 @@ na_codes = ['', '.', ' ']
 
 def dateparser(date_features):
 
-    reference_date = App.config("reference_date")
-
     def fix_format(d):
         if not pd.isna(d):
             if len(d) == 3:
