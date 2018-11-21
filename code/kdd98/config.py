@@ -9,10 +9,11 @@ import os
 import pandas as pd
 import seaborn as sns
 
+APP_HOME = os.path.dirname(os.path.abspath(__file__))
 
 class App:
     __conf = {
-        "root_dir": os.getcwd()+"/",
+        "root_dir": APP_HOME + "/",
         "data_dir": "../data/",
         "hdf_store": "kdd_cup98_datastore.h5",
         "learn_file_name": "cup98LRN.txt",

@@ -15,6 +15,7 @@ import datetime
 from dateutil import relativedelta
 from dateutil.rrule import rrule, MONTHLY, YEARLY
 import pandas as pd
+
 import logging
 # Set up the logger
 logging.basicConfig(filename=__name__+'.log', level=logging.ERROR)

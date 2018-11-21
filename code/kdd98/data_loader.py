@@ -9,7 +9,7 @@ import os
 import pandas as pd
 import numpy as np
 import logging
-from config import App
+from kdd98.config import App
 
 # Set up the logger
 logging.basicConfig(filename=__name__+'.log', level=logging.ERROR)
@@ -160,7 +160,6 @@ giving_history = ['RAMNT_3', 'RAMNT_4', 'RAMNT_5', 'RAMNT_6',
 
 giving_history_summary = ['RAMNTALL', 'NGIFTALL', 'MINRAMNT', 'MAXRAMNT',
                           'LASTGIFT', 'TIMELAG', 'AVGGIFT']
-
 
 
 # Explicitly define NA codes globally
