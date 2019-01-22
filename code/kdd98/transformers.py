@@ -5,18 +5,20 @@ Created on Fri Aug 24 10:18:44 2018
 @author: Florian Hochstrasser
 """
 
-import sys
-import hashlib
 import copy
-import numpy as np
-from sklearn.base import BaseEstimator, TransformerMixin
-from category_encoders import OrdinalEncoder
 import datetime
-from dateutil import relativedelta
-from dateutil.rrule import rrule, MONTHLY, YEARLY
-import pandas as pd
-
+import hashlib
 import logging
+import sys
+
+import numpy as np
+import pandas as pd
+from dateutil import relativedelta
+from dateutil.rrule import MONTHLY, YEARLY, rrule
+from sklearn.base import BaseEstimator, TransformerMixin
+
+from category_encoders import OrdinalEncoder
+
 # Set up the logger
 logging.basicConfig(filename=__name__+'.log', level=logging.ERROR)
 logger = logging.getLogger(__name__)
