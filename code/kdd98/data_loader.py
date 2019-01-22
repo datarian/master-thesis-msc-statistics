@@ -5,11 +5,16 @@ Created on Fri Aug 24 10:18:44 2018
 @author: Florian Hochstrasser
 """
 
-import os
-import pandas as pd
-import numpy as np
 import logging
-from kdd98.config import App
+import os
+import pathlib
+import urllib
+import zipfile
+
+import numpy as np
+import pandas as pd
+
+from config import App
 
 # Set up the logger
 logging.basicConfig(filename=__name__+'.log', level=logging.ERROR)
@@ -31,7 +36,7 @@ index_name = "CONTROLN"
 labels = ["TARGET_B", "TARGET_D"]
 
 drop_initial = ["MDMAUD", "RFA_2"]  # These are pre-split multibyte features
-drop_redundant = ["FISTDATE", "NEXTDATE", "DOB"]
+drop_redundant = ["FISTDATE", "NEXTDATE", "DOB"] # These are contained in other features
 
 date_features = ["ODATEDW", "DOB", "ADATE_2", "ADATE_3", "ADATE_4",
                  "ADATE_5", "ADATE_6", "ADATE_7", "ADATE_8", "ADATE_9",
@@ -247,7 +252,7 @@ class KDD98DataLoader:
     def _read_csv_data(self):
         """
         Read in csv data. After successful read,
-        raw data is saved to HDF for future access. A few fetures
+        raw data is saved to HDF for future access. A few features
         are already dropped at this stage (see: data_loader.drop_initial)!
         """
 
@@ -268,12 +273,11 @@ class KDD98DataLoader:
             self.raw_data.ZIP = self.raw_data.ZIP.str.replace('-', '').replace([' ', '.'], np.nan).astype('int64')
             # Fix binary encoding inconsistency for NOEXCH
             self.raw_data.NOEXCH = self.raw_data.NOEXCH.str.replace("X", "1")
-
             # Fix some NA value problems:
             self.raw_data[['MDMAUD_R', 'MDMAUD_F', 'MDMAUD_A']] = self.raw_data.loc[:,['MDMAUD_R', 'MDMAUD_F', 'MDMAUD_A']].replace('X', np.nan)
 
             # Drop obivously redundant features
-            self.raw_data = self.raw_data.drop(drop_initial, axis=1)
+            self.raw_data.drop(drop_initial, axis=1, inplace=True)
 
 
         except Exception as exc:
@@ -329,3 +333,20 @@ class KDD98DataLoader:
                     logger.error(exc)
                     raise exc
         return self.raw_data.copy()
+
+    def fetch_online(self, url=None):
+        """Fetches the data from the specified url or from the UCI machine learning database."""
+        if not url:
+            url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/kddcup98-mld/epsilon_mirror/'
+        data_dir = pathlib.Path(App.config("data_dir"))
+        contents = [f for f in data_dir.iterdir()]
+        missing = set(App.config('download_files')) - set(contents)
+        if missing:
+            path = pathlib.Path(App.config("data_dir"))
+            for f in missing:
+                #file = os.path.join(path, f)
+                file = path / f
+                saved = urllib.request.urlretrieve(url+'/'+f, file)
+                if(pathlib.Path(f).suffix == 'zip'):
+                    with zipfile.ZipFile(file, mode='r') as archive:
+                        archive.extractall(path=data_dir)
