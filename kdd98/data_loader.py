@@ -277,8 +277,7 @@ class KDD98DataLoader:
             self.raw_data[['MDMAUD_R', 'MDMAUD_F', 'MDMAUD_A']] = self.raw_data.loc[:,['MDMAUD_R', 'MDMAUD_F', 'MDMAUD_A']].replace('X', np.nan)
 
             # Drop obivously redundant features
-            self.raw_data.drop(drop_initial, axis=1, inplace=True)
-
+            #self.raw_data.drop(drop_initial, axis=1, inplace=True)
 
         except Exception as exc:
             logger.exception(exc)

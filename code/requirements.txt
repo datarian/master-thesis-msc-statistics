@@ -1,3 +1,0 @@
-pyzipcode
-conda install -c conda-forge cartopy geopy tqdm
-conda install autopep8

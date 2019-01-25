@@ -30,9 +30,6 @@ __all__ = ['DropSparseLowVar',
            'RecodeUrbanSocioEconomic',
            'DeltaTime',
            'MonthsToDonation']
-           #'HashingEncoder',
-           #'OneHotEncoder',
-           #'OrdinalEncoder']
 
 
 class DropSparseLowVar(BaseEstimator, TransformerMixin):
