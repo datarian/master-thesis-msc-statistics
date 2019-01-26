@@ -14,7 +14,7 @@ import zipfile
 import numpy as np
 import pandas as pd
 
-from config import App
+from kdd98.config import App
 
 # Set up the logger
 logging.basicConfig(filename=__name__+'.log', level=logging.ERROR)
@@ -222,7 +222,7 @@ class KDD98DataLoader:
     for date in date_features:
         dtype_specs[date] = 'str'
 
-    def __init__(self, csv_file=None, pull_stored=True):
+    def __init__(self, csv_file=None, pull_stored=True, download_url=None):
         """
         Initializes a new object. No data is pulled rightaway. Magically
         initializes certain features based on the occurrence of either of the
@@ -237,6 +237,7 @@ class KDD98DataLoader:
         self.raw_data_file_name = csv_file
         self.pull_stored = pull_stored
         self.raw_data = None
+        self.download_url = download_url
 
         self.reference_date = App.config("reference_date")
 
@@ -257,7 +258,14 @@ class KDD98DataLoader:
         """
 
         try:
-            logger.debug("trying to read csv file: "+self.raw_data_file_name)
+            if not os.path.isfile(os.path.join(data_path, self.raw_data_file_name)):
+                try:
+                    logger.info("Data not stored locally. Downloading...")
+                    self.fetch_online(self.download_url)
+                except urllib.error.HTTPError:
+                    logger.error("Failed to download dataset from: {}.".format(self.download_url))
+
+            logger.info("Reading csv file: "+self.raw_data_file_name)
             self.raw_data = pd.read_csv(
                 os.path.join(data_path, self.raw_data_file_name),
                 index_col=index_name,
@@ -278,7 +286,6 @@ class KDD98DataLoader:
 
             # Drop obivously redundant features
             #self.raw_data.drop(drop_initial, axis=1, inplace=True)
-
         except Exception as exc:
             logger.exception(exc)
             raise
@@ -293,7 +300,7 @@ class KDD98DataLoader:
         if not self.pull_stored:
             raise ValueError("HDF loading prohibited by options set.")
         try:
-            logger.debug("Loading "+self.raw_dataset+" from HDF.")
+            logger.info("Loading "+self.raw_dataset+" from HDF.")
             self.raw_data = pd.read_hdf(hdf_store,
                                         key=self.raw_dataset,
                                         mode='r')
@@ -333,19 +340,25 @@ class KDD98DataLoader:
                     raise exc
         return self.raw_data.copy()
 
-    def fetch_online(self, url=None):
-        """Fetches the data from the specified url or from the UCI machine learning database."""
+    def fetch_online(self, url=None, dl_dir = None):
+        """Fetches the data from the specified url or from the UCI machine learning database.
+
+        Params:
+        url:    Optional url to fetch from. Default is UCI machine learning database."""
         if not url:
-            url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/kddcup98-mld/epsilon_mirror/'
-        data_dir = pathlib.Path(App.config("data_dir"))
-        contents = [f for f in data_dir.iterdir()]
-        missing = set(App.config('download_files')) - set(contents)
-        if missing:
+            url = App.config("download_url")
+
+        if dl_dir:
+            path = pathlib.Path(dl_dir)
+        else:
             path = pathlib.Path(App.config("data_dir"))
+        contents = [f for f in path.iterdir()]
+        missing = set(App.config('download_files')) - set(contents)
+        print("Files missing: {}".format(missing))
+        if missing:
             for f in missing:
-                #file = os.path.join(path, f)
                 file = path / f
-                saved = urllib.request.urlretrieve(url+'/'+f, file)
-                if(pathlib.Path(f).suffix == 'zip'):
+                urllib.request.urlretrieve(url+'/'+f, file)
+                if(pathlib.Path(f).suffix == '.zip'):
                     with zipfile.ZipFile(file, mode='r') as archive:
-                        archive.extractall(path=data_dir)
+                        archive.extractall(path=path)
