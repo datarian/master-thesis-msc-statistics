@@ -6,18 +6,19 @@ Created on Fri Aug 24 10:37:40 2018
 """
 
 import os
+import pathlib
 
 import pandas as pd
 import seaborn as sns
 
-APP_HOME = os.path.dirname(os.path.abspath(__file__))
+APP_HOME = pathlib.Path(__file__).resolve()
 
 __all__ = ['App']
 
 class App:
     __conf = {
         "root_dir": APP_HOME + "/",
-        "data_dir": "../data/",
+        "data_dir": APP_HOME.parent / "data",
         "download_files": ['cup98lrn.zip', 'cup98val.zip', 'cup98doc.txt', 'cup98dic.txt', 'instruct.txt', 'valtargt.readme', 'valtargt.txt', 'readme'],
         "download_url": "https://archive.ics.uci.edu/ml/machine-learning-databases/kddcup98-mld/epsilon_mirror/",
         "hdf_store": "kdd_cup98_datastore.h5",
