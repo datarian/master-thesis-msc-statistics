@@ -17,7 +17,7 @@ __all__ = ['App']
 
 class App:
     __conf = {
-        "root_dir": APP_HOME + "/",
+        "root_dir": APP_HOME.parent,
         "data_dir": APP_HOME.parent / "data",
         "download_files": ['cup98lrn.zip', 'cup98val.zip', 'cup98doc.txt', 'cup98dic.txt', 'instruct.txt', 'valtargt.readme', 'valtargt.txt', 'readme'],
         "download_url": "https://archive.ics.uci.edu/ml/machine-learning-databases/kddcup98-mld/epsilon_mirror/",
