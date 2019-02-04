@@ -17,7 +17,7 @@ import pandas as pd
 from kdd98.config import App
 
 # Set up the logger
-logging.basicConfig(filename=__name__+'.log', level=logging.ERROR)
+logging.basicConfig(filename=__name__+'.log', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -25,7 +25,8 @@ logger = logging.getLogger(__name__)
 # Main config
 data_path = App.config("data_dir")
 hdf_data_file_name = App.config("hdf_store")
-hdf_store = os.path.join(App.config("data_dir"), App.config("hdf_store"))
+hdf_store = pathlib.Path(data_path.resolve(), hdf_data_file_name)
+#hdf_store = os.path.join(App.config("data_dir"), App.config("hdf_store"))
 
 #######################################################################
 # Dicts and data structures to recode / reformat various variables
@@ -258,7 +259,8 @@ class KDD98DataLoader:
         """
 
         try:
-            if not os.path.isfile(os.path.join(data_path, self.raw_data_file_name)):
+            data_file = data_path / self.raw_data_file_name
+            if not data_file.is_file():
                 try:
                     logger.info("Data not stored locally. Downloading...")
                     self.fetch_online(self.download_url)
