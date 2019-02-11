@@ -4,7 +4,7 @@ A data analysis performed with python's tools. Data comes from the KDD Cup 1998,
 
 # Project structure
 
-* data contains the data files and documentation of the original KDD Cup 1998 
+* data contains the data files and documentation of the original KDD Cup 1998
 * code/jupyter_notebooks holds jupyter notebooks to recreate the analysis
 * other folders in code/ are python modules supporting the analysis
 

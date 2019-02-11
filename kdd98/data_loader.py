@@ -14,11 +14,31 @@ import zipfile
 import numpy as np
 import pandas as pd
 
+
 from kdd98.config import App
 
 # Set up the logger
 logging.basicConfig(filename=__name__+'.log', level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+__all__ = [
+    'KDD98DataLoader',
+    'index_name',
+    'targets',
+    'date_features',
+    'promo_history_dates',
+    'binary_features',
+    'categorical_features',
+    'nominal_features',
+    'ordinal_mapping_mdmaud',
+    'ordinal_mapping_rfa',
+    'interest_features',
+    'don_summary_dates',
+    'promo_history_summary',
+    'giving_history_dates',
+    'giving_history',
+    'giving_history_summary'
+]
 
 
 #######################################################################
@@ -26,7 +46,6 @@ logger = logging.getLogger(__name__)
 data_path = App.config("data_dir")
 hdf_data_file_name = App.config("hdf_store")
 hdf_store = pathlib.Path(data_path.resolve(), hdf_data_file_name)
-#hdf_store = os.path.join(App.config("data_dir"), App.config("hdf_store"))
 
 #######################################################################
 # Dicts and data structures to recode / reformat various variables
@@ -34,7 +53,7 @@ hdf_store = pathlib.Path(data_path.resolve(), hdf_data_file_name)
 
 # Some features of particular interest
 index_name = "CONTROLN"
-labels = ["TARGET_B", "TARGET_D"]
+targets = ["TARGET_B", "TARGET_D"]
 
 drop_initial = ["MDMAUD", "RFA_2"]  # These are pre-split multibyte features
 drop_redundant = ["FISTDATE", "NEXTDATE", "DOB"] # These are contained in other features
@@ -78,12 +97,12 @@ nominal_features = ["OSOURCE", "TCODE", "RFA_3", "RFA_4", "RFA_5", "RFA_6",
 ordinal_mapping_mdmaud = [
     {'col': 'MDMAUD_R', 'mapping': {'D': 1, 'I': 2, 'L': 3, 'C': 4}},
     {'col': 'MDMAUD_A', 'mapping': {'L': 1, 'C': 2, 'M': 3, 'T': 4}}]
+
 ordinal_mapping_rfa = [{'col': c, 'mapping': {'A':1, 'B':2, 'C':3, 'D':4, 'E':5, 'F':6, 'G':7}}
             for c in ["RFA_3A", "RFA_4A", "RFA_5A", "RFA_6A", "RFA_7A", "RFA_8A",
                       "RFA_9A", "RFA_10A", "RFA_11A", "RFA_12A", "RFA_13A",
                       "RFA_14A", "RFA_15A", "RFA_16A", "RFA_17A", "RFA_18A", "RFA_19A",
                       "RFA_20A", "RFA_21A", "RFA_22A", "RFA_23A", "RFA_24A"]]
-
 
 us_census_features = ["POP901", "POP902", "POP903", "POP90C1", "POP90C2",
                       "POP90C3", "POP90C4", "POP90C5", "ETH1", "ETH2",
@@ -269,6 +288,7 @@ class KDD98DataLoader:
 
             logger.info("Reading csv file: "+self.raw_data_file_name)
             self.raw_data = pd.read_csv(
+
                 os.path.join(data_path, self.raw_data_file_name),
                 index_col=index_name,
                 na_values=na_codes,
