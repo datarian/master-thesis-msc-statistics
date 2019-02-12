@@ -314,13 +314,12 @@ class KDD98DataLoader:
                 memory_map=True  # load file in memory
             )
 
-            self.clean_data = Cleaner(data_loader=self).clean()
-
         except Exception as exc:
             logger.exception(exc)
             raise
         else:
             self._save_hdf(self.raw_data, self.raw_data_name)
+            self.clean_data = Cleaner(data_loader=self).clean()
             self._save_hdf(self.clean_data, self.clean_data_name)
 
     def _load_hdf(self, key_name):
