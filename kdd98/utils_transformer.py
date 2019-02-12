@@ -39,7 +39,7 @@ def update_df_with_transformed(df_old, new_features, transformer, drop=[], new_d
                                   index=df_old.index)
     if new_dtype:
         transformed_df = transformed_df.astype(new_dtype)
-    df_old.merge(transformed_df, on=df_old.index.name, copy=False)
+    df_old = df_old.merge(transformed_df, on=df_old.index.name, copy=False)
     if len(drop) > 0:
         df_old.drop(drop, axis=1, inplace=True)
     return df_old
