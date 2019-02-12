@@ -361,8 +361,8 @@ class KDD98DataLoader:
         else:
             dset = self.clean_data
             name = self.clean_data_name
-
-        if not dset:
+        logger.info("Trying to return {:1}".format(name))
+        if not isinstance(dset, pd.DataFrame):
             try:
                 dset = self._load_hdf(name)
             except(OSError, IOError, ValueError, KeyError) as exc:
