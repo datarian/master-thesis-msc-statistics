@@ -330,8 +330,8 @@ class KDD98DataLoader:
             raise ValueError("HDF loading prohibited by options set.")
         try:
             logger.info("Loading "+self.raw_data_name+" from HDF.")
-            self.raw_data = pd.read_hdf(hdf_store,
-                                        key=self.raw_data_name,
+            return pd.read_hdf(hdf_store,
+                                        key=key_name,
                                         mode='r')
         except (KeyError) as error:
             # If something goes wrong, pass the exception on to the caller
@@ -364,7 +364,7 @@ class KDD98DataLoader:
 
         if not dset:
             try:
-                self._load_hdf(name)
+                dset = self._load_hdf(name)
             except(OSError, IOError, ValueError, KeyError) as exc:
                 # The hdf file is not there, or nothing saved under
                 # the key we tried to query.
@@ -415,7 +415,7 @@ class Cleaner:
         self.dl = data_loader
         assert(self.dl.raw_data_file_name in [App.config(
             'learn_file_name'), App.config('validation_file_name')])
-        self.dataset = self.dl.get_dataset()
+        self.dataset = self.dl.get_dataset("raw")
 
     def clean(self):
 
