@@ -28,21 +28,21 @@ logger = logging.getLogger(__name__)
 __all__ = [
     'KDD98DataLoader',
     'Cleaner',
-    'index_name',
-    'targets',
-    'date_features',
-    'promo_history_dates',
-    'binary_features',
-    'categorical_features',
-    'nominal_features',
-    'ordinal_mapping_mdmaud',
-    'ordinal_mapping_rfa',
-    'interest_features',
-    'don_summary_dates',
-    'promo_history_summary',
-    'giving_history_dates',
-    'giving_history',
-    'giving_history_summary'
+    'INDEX_NAME',
+    'TARGETS',
+    'DATE_FEATURES',
+    'PROMO_HISTORY_DATES',
+    'BINARY_FEATURES',
+    'CATEGORICAL_FEATURES',
+    'NOMINAL_FEATURES',
+    'ORDINAL_MAPPING_MDMAUD',
+    'ORDINAL_MAPPING_RFA',
+    'INTEREST_FEATURES',
+    'DON_SUMMARY_DATES',
+    'PROMO_HISTORY_SUMMARY',
+    'GIVING_HISTORY_DATES',
+    'GIVING_HISTORY',
+    'GIVING_HISTORY_SUMMARY'
 ]
 
 
@@ -57,14 +57,14 @@ hdf_store = pathlib.Path(data_path.resolve(), hdf_data_file_name)
 # and collections of related features
 
 # Some features of particular interest
-index_name = "CONTROLN"
-targets = ["TARGET_B", "TARGET_D"]
+INDEX_NAME = "CONTROLN"
+TARGETS = ["TARGET_B", "TARGET_D"]
 
-drop_initial = ["MDMAUD", "RFA_2"]  # These are pre-split multibyte features
+DROP_INITIAL = ["MDMAUD", "RFA_2"]  # These are pre-split multibyte features
 # These are contained in other features
 drop_redundant = ["FISTDATE", "NEXTDATE", "DOB"]
 
-date_features = ["ODATEDW", "DOB", "ADATE_2", "ADATE_3", "ADATE_4",
+DATE_FEATURES = ["ODATEDW", "DOB", "ADATE_2", "ADATE_3", "ADATE_4",
                  "ADATE_5", "ADATE_6", "ADATE_7", "ADATE_8", "ADATE_9",
                  "ADATE_10", "ADATE_11", "ADATE_12", "ADATE_13",
                  "ADATE_14", "ADATE_15", "ADATE_16", "ADATE_17",
@@ -78,7 +78,7 @@ date_features = ["ODATEDW", "DOB", "ADATE_2", "ADATE_3", "ADATE_4",
                  "RDATE_23", "RDATE_24", "LASTDATE", "MINRDATE",
                  "MAXRDATE", "FISTDATE", "NEXTDATE", "MAXADATE"]
 
-binary_features = ["MAILCODE", "NOEXCH", "RECSWEEP", "RECINHSE", "RECP3",
+BINARY_FEATURES = ["MAILCODE", "NOEXCH", "RECSWEEP", "RECINHSE", "RECP3",
                    "RECPGVG", "AGEFLAG", "HOMEOWNR", "MAJOR", "COLLECT1",
                    "BIBLE", "CATLG", "HOMEE", "PETS", "CDPLAY", "STEREO",
                    "PCOWNERS", "PHOTO", "CRAFTS", "FISHER", "GARDENIN",
@@ -86,7 +86,7 @@ binary_features = ["MAILCODE", "NOEXCH", "RECSWEEP", "RECINHSE", "RECP3",
                    "PEPSTRFL", "TARGET_B", "HPHONE_D", "VETERANS"]
 
 # Already usable nominal features
-categorical_features = ["TCODE", "DOMAIN", "STATE", "PVASTATE", "CLUSTER", "INCOME",
+CATEGORICAL_FEATURES = ["TCODE", "DOMAIN", "STATE", "PVASTATE", "CLUSTER", "INCOME",
                         "CHILD03", "CHILD07", "CHILD12", "CHILD18", "GENDER",
                         "DATASRCE", "SOLP3", "SOLIH", "WEALTH1", "WEALTH2",
                         "GEOCODE", "LIFESRC", "RFA_2R", "RFA_2A",
@@ -94,23 +94,23 @@ categorical_features = ["TCODE", "DOMAIN", "STATE", "PVASTATE", "CLUSTER", "INCO
                         "GEOCODE2", "TARGET_D"]
 
 # Nominal features needing further cleaning treatment
-nominal_features = ["OSOURCE", "TCODE", "RFA_3", "RFA_4", "RFA_5", "RFA_6",
+NOMINAL_FEATURES = ["OSOURCE", "TCODE", "RFA_3", "RFA_4", "RFA_5", "RFA_6",
                     "RFA_7", "RFA_8", "RFA_9", "RFA_10", "RFA_11", "RFA_12",
                     "RFA_13", "RFA_14", "RFA_15", "RFA_16", "RFA_17", "RFA_18",
                     "RFA_19", "RFA_20", "RFA_21", "RFA_22", "RFA_23",
                     "RFA_24"]
 
-ordinal_mapping_mdmaud = [
+ORDINAL_MAPPING_MDMAUD = [
     {'col': 'MDMAUD_R', 'mapping': {'D': 1, 'I': 2, 'L': 3, 'C': 4}},
     {'col': 'MDMAUD_A', 'mapping': {'L': 1, 'C': 2, 'M': 3, 'T': 4}}]
 
-ordinal_mapping_rfa = [{'col': c, 'mapping': {'A': 1, 'B': 2, 'C': 3, 'D': 4, 'E': 5, 'F': 6, 'G': 7}}
+ORDINAL_MAPPING_RFA = [{'col': c, 'mapping': {'A': 1, 'B': 2, 'C': 3, 'D': 4, 'E': 5, 'F': 6, 'G': 7}}
                        for c in ["RFA_3A", "RFA_4A", "RFA_5A", "RFA_6A", "RFA_7A", "RFA_8A",
                                  "RFA_9A", "RFA_10A", "RFA_11A", "RFA_12A", "RFA_13A",
                                  "RFA_14A", "RFA_15A", "RFA_16A", "RFA_17A", "RFA_18A", "RFA_19A",
                                  "RFA_20A", "RFA_21A", "RFA_22A", "RFA_23A", "RFA_24A"]]
 
-us_census_features = ["POP901", "POP902", "POP903", "POP90C1", "POP90C2",
+US_CENSUS_FEATURES = ["POP901", "POP902", "POP903", "POP90C1", "POP90C2",
                       "POP90C3", "POP90C4", "POP90C5", "ETH1", "ETH2",
                       "ETH3", "ETH4", "ETH5", "ETH6", "ETH7", "ETH8",
                       "ETH9", "ETH10", "ETH11", "ETH12", "ETH13", "ETH14",
@@ -158,44 +158,44 @@ us_census_features = ["POP901", "POP902", "POP903", "POP90C1", "POP90C2",
                       "HC14", "HC15", "HC16", "HC17", "HC18", "HC19",
                       "HC20", "HC21", "MHUC1", "MHUC2", "AC1", "AC2"]
 
-interest_features = ["COLLECT1", "VETERANS", "BIBLE", "CATLG", "HOMEE", "PETS",
+INTEREST_FEATURES = ["COLLECT1", "VETERANS", "BIBLE", "CATLG", "HOMEE", "PETS",
                      "CDPLAY", "STEREO", "PCOWNERS", "PHOTO", "CRAFTS",
                      "FISHER", "GARDENIN", "BOATS", "WALKER", "KIDSTUFF",
                      "CARDS", "PLATES"]
 
-promo_history_dates = ["ADATE_3", "ADATE_4", "ADATE_5", "ADATE_6",
+PROMO_HISTORY_DATES = ["ADATE_3", "ADATE_4", "ADATE_5", "ADATE_6",
                        "ADATE_7", "ADATE_8", "ADATE_9", "ADATE_10",
                        "ADATE_11", "ADATE_12", "ADATE_13",  "ADATE_14",
                        "ADATE_15", "ADATE_16", "ADATE_17", "ADATE_18",
                        "ADATE_19", "ADATE_20", "ADATE_21", "ADATE_22",
                        "ADATE_23", "ADATE_24"]
 
-don_summary_dates = ["LASTDATE", "MINRDATE", "MAXRDATE", "MAXADATE"]
+DON_SUMMARY_DATES = ["LASTDATE", "MINRDATE", "MAXRDATE", "MAXADATE"]
 
-promo_history_summary = ['CARDPROM', 'MAXADATE', 'NUMPROM', 'CARDPM12',
+PROMO_HISTORY_SUMMARY = ['CARDPROM', 'MAXADATE', 'NUMPROM', 'CARDPM12',
                          'NUMPRM12']
 
-giving_history_dates = ['RDATE_3', 'RDATE_4', 'RDATE_5', 'RDATE_6', 'RDATE_7',
+GIVING_HISTORY_DATES = ['RDATE_3', 'RDATE_4', 'RDATE_5', 'RDATE_6', 'RDATE_7',
                         'RDATE_8', 'RDATE_9', 'RDATE_10', 'RDATE_11',
                         'RDATE_12', 'RDATE_13', 'RDATE_14', 'RDATE_15',
                         'RDATE_16', 'RDATE_17', 'RDATE_18', 'RDATE_19',
                         'RDATE_20', 'RDATE_21', 'RDATE_22', 'RDATE_23',
                         'RDATE_24']
 
-giving_history = ['RAMNT_3', 'RAMNT_4', 'RAMNT_5', 'RAMNT_6',
+GIVING_HISTORY = ['RAMNT_3', 'RAMNT_4', 'RAMNT_5', 'RAMNT_6',
                   'RAMNT_7', 'RAMNT_8', 'RAMNT_9', 'RAMNT_10', 'RAMNT_11',
                   'RAMNT_12', 'RAMNT_13', 'RAMNT_14', 'RAMNT_15',
                   'RAMNT_16', 'RAMNT_17', 'RAMNT_18', 'RAMNT_19',
                   'RAMNT_20', 'RAMNT_21', 'RAMNT_22', 'RAMNT_23',
                   'RAMNT_24']
 
-giving_history_summary = ['RAMNTALL', 'NGIFTALL', 'MINRAMNT', 'MAXRAMNT',
+GIVING_HISTORY_SUMMARY = ['RAMNTALL', 'NGIFTALL', 'MINRAMNT', 'MAXRAMNT',
                           'LASTGIFT', 'TIMELAG', 'AVGGIFT']
 
 
 # Explicitly define NA codes globally
 # The codes are specified in the dataset documentation.
-na_codes = ['', '.', ' ']
+NA_CODES = ['', '.', ' ']
 
 
 def dateparser(date_features):
@@ -242,13 +242,13 @@ class KDD98DataLoader:
     # Where necessary, these are included here for explicit datatype casting.
     # The rest of the features will be guessed by pandas on reading the CSV.
     dtype_specs = {}
-    for binary in binary_features:
+    for binary in BINARY_FEATURES:
         dtype_specs[binary] = 'str'
-    for categorical in categorical_features:
+    for categorical in CATEGORICAL_FEATURES:
         dtype_specs[categorical] = 'category'
-    for nominal in nominal_features:
+    for nominal in NOMINAL_FEATURES:
         dtype_specs[nominal] = 'str'
-    for date in date_features:
+    for date in DATE_FEATURES:
         dtype_specs[date] = 'str'
 
     def __init__(self, csv_file=None, pull_stored=True, download_url=None):
@@ -266,7 +266,9 @@ class KDD98DataLoader:
         self.raw_data_file_name = csv_file
         self.pull_stored = pull_stored
         self.raw_data = None
+        self.raw_data_name = None
         self.clean_data = None
+        self.clean_data_name = None
         self.download_url = download_url
 
         self.reference_date = App.config("reference_date")
@@ -294,7 +296,7 @@ class KDD98DataLoader:
             if not data_file.is_file():
                 try:
                     logger.info("Data not stored locally. Downloading...")
-                    self.fetch_online(self.download_url)
+                    self._fetch_online(self.download_url)
                 except urllib.error.HTTPError:
                     logger.error(
                         "Failed to download dataset from: {}.".format(self.download_url))
@@ -303,9 +305,9 @@ class KDD98DataLoader:
             self.raw_data = pd.read_csv(
 
                 os.path.join(data_path, self.raw_data_file_name),
-                index_col=index_name,
-                na_values=na_codes,
-                parse_dates=date_features,
+                index_col=INDEX_NAME,
+                na_values=NA_CODES,
+                parse_dates=DATE_FEATURES,
                 date_parser=dateparser,
                 dtype=self.dtype_specs,
                 low_memory=False,  # needed for mixed type columns
@@ -335,7 +337,7 @@ class KDD98DataLoader:
                                         mode='r')
         except (KeyError) as error:
             # If something goes wrong, pass the exception on to the caller
-            logger.warning(error)
+            logger.INFO("Key not found in HDF store. Reading from CSV.")
             raise error
         except(OSError, FileNotFoundError) as error:
             logger.info("HDF file not found. Will read from CSV.")
@@ -361,7 +363,7 @@ class KDD98DataLoader:
         else:
             dset = self.clean_data
             name = self.clean_data_name
-        logger.info("Trying to return {:1}".format(name))
+        logger.info("Will return dataset {:1}".format(name))
         if not isinstance(dset, pd.DataFrame):
             try:
                 dset = self._load_hdf(name)
@@ -382,7 +384,7 @@ class KDD98DataLoader:
     def get_clean_dataset(self):
         return self.get_dataset("clean")
 
-    def fetch_online(self, url=None, dl_dir=None):
+    def _fetch_online(self, url=None, dl_dir=None):
         """
         Fetches the data from the specified url or from the UCI machine learning database.
 
@@ -420,6 +422,7 @@ class Cleaner:
     def clean(self):
 
         # Binary features
+        logger.info("Starting cleaning of raw dataset {:1}".format(self.dl.raw_data_name))
         binary_transformers = ColumnTransformer([
             ("binary_x_bl",
              BinaryFeatureRecode(
@@ -461,7 +464,7 @@ class Cleaner:
         multibyte_transformer = ColumnTransformer([
             ("spread",
              MultiByteExtract(["R", "F", "A"]),
-             self.dl.nominal_features[2:])
+             NOMINAL_FEATURES[2:])
         ])
 
         domain_transformer = ColumnTransformer([
