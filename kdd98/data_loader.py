@@ -13,9 +13,8 @@ import zipfile
 
 import numpy as np
 import pandas as pd
-
-
 from kdd98.config import App
+from kdd98.cleaner import Cleaner
 
 # Set up the logger
 logging.basicConfig(filename=__name__+'.log', level=logging.INFO)
@@ -56,7 +55,8 @@ index_name = "CONTROLN"
 targets = ["TARGET_B", "TARGET_D"]
 
 drop_initial = ["MDMAUD", "RFA_2"]  # These are pre-split multibyte features
-drop_redundant = ["FISTDATE", "NEXTDATE", "DOB"] # These are contained in other features
+# These are contained in other features
+drop_redundant = ["FISTDATE", "NEXTDATE", "DOB"]
 
 date_features = ["ODATEDW", "DOB", "ADATE_2", "ADATE_3", "ADATE_4",
                  "ADATE_5", "ADATE_6", "ADATE_7", "ADATE_8", "ADATE_9",
@@ -85,7 +85,7 @@ categorical_features = ["TCODE", "DOMAIN", "STATE", "PVASTATE", "CLUSTER", "INCO
                         "DATASRCE", "SOLP3", "SOLIH", "WEALTH1", "WEALTH2",
                         "GEOCODE", "LIFESRC", "RFA_2R", "RFA_2A",
                         "RFA_2F", "MDMAUD_R", "MDMAUD_F", "MDMAUD_A",
-                        "GEOCODE2","TARGET_D"]
+                        "GEOCODE2", "TARGET_D"]
 
 # Nominal features needing further cleaning treatment
 nominal_features = ["OSOURCE", "TCODE", "RFA_3", "RFA_4", "RFA_5", "RFA_6",
@@ -98,11 +98,11 @@ ordinal_mapping_mdmaud = [
     {'col': 'MDMAUD_R', 'mapping': {'D': 1, 'I': 2, 'L': 3, 'C': 4}},
     {'col': 'MDMAUD_A', 'mapping': {'L': 1, 'C': 2, 'M': 3, 'T': 4}}]
 
-ordinal_mapping_rfa = [{'col': c, 'mapping': {'A':1, 'B':2, 'C':3, 'D':4, 'E':5, 'F':6, 'G':7}}
-            for c in ["RFA_3A", "RFA_4A", "RFA_5A", "RFA_6A", "RFA_7A", "RFA_8A",
-                      "RFA_9A", "RFA_10A", "RFA_11A", "RFA_12A", "RFA_13A",
-                      "RFA_14A", "RFA_15A", "RFA_16A", "RFA_17A", "RFA_18A", "RFA_19A",
-                      "RFA_20A", "RFA_21A", "RFA_22A", "RFA_23A", "RFA_24A"]]
+ordinal_mapping_rfa = [{'col': c, 'mapping': {'A': 1, 'B': 2, 'C': 3, 'D': 4, 'E': 5, 'F': 6, 'G': 7}}
+                       for c in ["RFA_3A", "RFA_4A", "RFA_5A", "RFA_6A", "RFA_7A", "RFA_8A",
+                                 "RFA_9A", "RFA_10A", "RFA_11A", "RFA_12A", "RFA_13A",
+                                 "RFA_14A", "RFA_15A", "RFA_16A", "RFA_17A", "RFA_18A", "RFA_19A",
+                                 "RFA_20A", "RFA_21A", "RFA_22A", "RFA_23A", "RFA_24A"]]
 
 us_census_features = ["POP901", "POP902", "POP903", "POP90C1", "POP90C2",
                       "POP90C3", "POP90C4", "POP90C5", "ETH1", "ETH2",
@@ -209,16 +209,19 @@ def dateparser(date_features):
                 if d.year > ref_date.year:
                     d = d.replace(year=(d.year-100))
             except Exception as err:
-                logger.warning("Failed to fix century for date {}, reason: {}".format(d, err))
+                logger.warning(
+                    "Failed to fix century for date {}, reason: {}".format(d, err))
                 d = pd.NaT
         else:
             d = pd.NaT
         return d
 
     try:
-        date_features = [fix_century(pd.to_datetime(fix_format(d), format="%y%m", errors="coerce")) for d in date_features]
+        date_features = [fix_century(pd.to_datetime(fix_format(
+            d), format="%y%m", errors="coerce")) for d in date_features]
     except Exception as e:
-        logger.warn("Failed to parse date array {}.\nReason: {}".format(date_features, e))
+        logger.warn(
+            "Failed to parse date array {}.\nReason: {}".format(date_features, e))
     return date_features
 
 
@@ -257,6 +260,7 @@ class KDD98DataLoader:
         self.raw_data_file_name = csv_file
         self.pull_stored = pull_stored
         self.raw_data = None
+        self.clean_data = None
         self.download_url = download_url
 
         self.reference_date = App.config("reference_date")
@@ -264,9 +268,11 @@ class KDD98DataLoader:
         if csv_file is not None and csv_file in [App.config("learn_file_name"),
                                                  App.config("validation_file_name")]:
             if "lrn" in csv_file.lower():
-                self.raw_dataset = App.config("learn_name")
+                self.raw_data_name = App.config("learn_raw_name")
+                self.clean_data_name = App.config("learn_clean_name")
             elif "val" in csv_file.lower():
-                self.raw_dataset = App.config("validation_name")
+                self.raw_data_name = App.config("validation_raw_name")
+                self.clean_data_name = App.config("validation_clean_name")
         else:
             raise NameError("Set csv_file to either training- or test-file.")
 
@@ -284,7 +290,8 @@ class KDD98DataLoader:
                     logger.info("Data not stored locally. Downloading...")
                     self.fetch_online(self.download_url)
                 except urllib.error.HTTPError:
-                    logger.error("Failed to download dataset from: {}.".format(self.download_url))
+                    logger.error(
+                        "Failed to download dataset from: {}.".format(self.download_url))
 
             logger.info("Reading csv file: "+self.raw_data_file_name)
             self.raw_data = pd.read_csv(
@@ -299,20 +306,14 @@ class KDD98DataLoader:
                 memory_map=True  # load file in memory
             )
 
-            # Fix formatting for ZIP feature
-            self.raw_data.ZIP = self.raw_data.ZIP.str.replace('-', '').replace([' ', '.'], np.nan).astype('int64')
-            # Fix binary encoding inconsistency for NOEXCH
-            self.raw_data.NOEXCH = self.raw_data.NOEXCH.str.replace("X", "1")
-            # Fix some NA value problems:
-            self.raw_data[['MDMAUD_R', 'MDMAUD_F', 'MDMAUD_A']] = self.raw_data.loc[:,['MDMAUD_R', 'MDMAUD_F', 'MDMAUD_A']].replace('X', np.nan)
+            self.clean_data = Cleaner(data_loader=self).clean()
 
-            # Drop obivously redundant features
-            #self.raw_data.drop(drop_initial, axis=1, inplace=True)
         except Exception as exc:
             logger.exception(exc)
             raise
         else:
-            self._save_hdf(self.raw_dataset)
+            self._save_hdf(self.raw_data, self.raw_data_name)
+            self._save_hdf(self.clean_data, self.clean_data_name)
 
     def _load_hdf(self, key_name):
         """ Loads data from hdf store """
@@ -322,9 +323,9 @@ class KDD98DataLoader:
         if not self.pull_stored:
             raise ValueError("HDF loading prohibited by options set.")
         try:
-            logger.info("Loading "+self.raw_dataset+" from HDF.")
+            logger.info("Loading "+self.raw_data_name+" from HDF.")
             self.raw_data = pd.read_hdf(hdf_store,
-                                        key=self.raw_dataset,
+                                        key=self.raw_data_name,
                                         mode='r')
         except (KeyError) as error:
             # If something goes wrong, pass the exception on to the caller
@@ -334,24 +335,30 @@ class KDD98DataLoader:
             logger.info("HDF file not found. Will read from CSV.")
             raise error
 
-    def _save_hdf(self, key_name):
+    def _save_hdf(self, data, key_name):
         """ Save Pandas dataframe to hdf store"""
         try:
-            self.raw_data.to_hdf(hdf_store,
+            data.to_hdf(hdf_store,
                                  key=key_name,
                                  format='table')
         except Exception as exc:
             logger.error(exc)
             raise exc
 
-    def get_dataset(self):
-        """
-        Returns the raw dataset without any transformations applied,
-        as read from the csv file.
-        """
-        if self.raw_data is None:
+    def get_dataset(self, type):
+
+        dset = None
+
+        if type == 'raw':
+            dset = self.raw_data
+            name = self.raw_data_name
+        else:
+            dset = self.clean_data
+            name = self.clean_data_name
+
+        if not dset:
             try:
-                self._load_hdf(self.raw_dataset)
+                self._load_hdf(name)
             except(OSError, IOError, ValueError, KeyError) as exc:
                 # The hdf file is not there, or nothing saved under
                 # the key we tried to query.
@@ -360,13 +367,23 @@ class KDD98DataLoader:
                 except Exception as exc:
                     logger.error(exc)
                     raise exc
-        return self.raw_data.copy()
 
-    def fetch_online(self, url=None, dl_dir = None):
-        """Fetches the data from the specified url or from the UCI machine learning database.
+        return dset.copy()
+
+    def get_raw_dataset(self):
+        return self.get_dataset("raw")
+
+    def get_clean_dataset(self):
+        return self.get_dataset("clean")
+
+    def fetch_online(self, url=None, dl_dir=None):
+        """
+        Fetches the data from the specified url or from the UCI machine learning database.
 
         Params:
-        url:    Optional url to fetch from. Default is UCI machine learning database."""
+        url:    Optional url to fetch from. Default is UCI machine learning database.
+        """
+
         if not url:
             url = App.config("download_url")
 
