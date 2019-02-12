@@ -330,7 +330,7 @@ class KDD98DataLoader:
         if not self.pull_stored:
             raise ValueError("HDF loading prohibited by options set.")
         try:
-            logger.info("Loading "+self.raw_data_name+" from HDF.")
+            logger.info("Trying to load {:1} from HDF.".format(key_name))
             return pd.read_hdf(hdf_store,
                                         key=key_name,
                                         mode='r')
@@ -498,12 +498,15 @@ class Cleaner:
         binarys = binary_transformers.fit_transform(self.dataset)
         self.dataset = ut.update_df_with_transformed(
             self.dataset, binarys, binary_transformers)
+
         multibytes = multibyte_transformer.fit_transform(self.dataset)
         self.dataset = ut.update_df_with_transformed(
-            self.dataset, multibytes, multibyte_transformer, drop=self.dl.nominal_features, new_dtype="category")
+            self.dataset, multibytes, multibyte_transformer, drop=NOMINAL_FEATURES, new_dtype="category")
+
         domains = domain_transformer.fit_transform(self.dataset)
         self.dataset = ut.update_df_with_transformed(
             self.dataset, domains, domain_transformer)
+
         ordinals = ordinal_transformer.fit_transform(self.dataset)
         self.dataset = ut.update_df_with_transformed(
             self.dataset, ordinals, ordinal_transformer)
