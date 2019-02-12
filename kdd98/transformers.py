@@ -32,6 +32,7 @@ __all__ = ['ColumnSelector',
            'DeltaTime',
            'MonthsToDonation']
 
+
 class ColumnSelector(BaseEstimator, TransformerMixin):
     def __init__(self, columns):
         self.columns = columns
@@ -46,7 +47,8 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
             return X[self.columns]
         except KeyError:
             cols_error = list(set(self.columns) - set(X.columns))
-            raise KeyError("The DataFrame does not include the columns: %s" % cols_error)
+            raise KeyError(
+                "The DataFrame does not include the columns: %s" % cols_error)
 
 
 class DropSparseLowVar(BaseEstimator, TransformerMixin):
@@ -187,9 +189,9 @@ class MultiByteExtract(BaseEstimator, TransformerMixin):
         # Create the dataframe, orient=index means
         # we interprete the dict's contents as rows (defaults to columns)
         temp_df = pd.DataFrame.from_dict(
-            data=spread_field, orient="index")
-        temp_df.columns = ["".join([feature.name, f])
-                           for f in self.field_names]
+            data=spread_field,
+            orient="index",
+            columns=["".join([feature.name, f]) for f in self.field_names])
         temp_df.index.name = index_name
         # make sure all fields are categorical
         temp_df = temp_df.astype("category")
@@ -200,7 +202,7 @@ class MultiByteExtract(BaseEstimator, TransformerMixin):
         X_trans = pd.DataFrame(index=X.index)
         for f in X.columns:
             new_df = self._spread(X[f], X.index.name)
-            X_trans = X_trans.merge(new_df, on=X.index.name, copy=False)
+            X_trans = X_trans.merge(new_df, on=X.index.name)
         self.feature_names = list(X_trans.columns)
         self.is_transformed = True
         if not self.drop_orig:
@@ -212,6 +214,7 @@ class MultiByteExtract(BaseEstimator, TransformerMixin):
         if self.is_transformed:
             return self.feature_names
 
+
 class RecodeUrbanSocioEconomic(BaseEstimator, TransformerMixin):
     def __init__(self):
         self.feature_names = None
@@ -222,14 +225,17 @@ class RecodeUrbanSocioEconomic(BaseEstimator, TransformerMixin):
 
     def transform(self, X, y=None):
         urb_dict = {'1': '1', '2': '2', '3': '2', '4': '3'}
-        X_trans = pd.DataFrame(X, columns=self.feature_names).astype('category')
-        X_trans.loc[X_trans.DOMAINUrbanicity == 'U', 'DOMAINSocioEconomic'] = X_trans.loc[X_trans.DOMAINUrbanicity == 'U', 'DOMAINSocioEconomic'].map(urb_dict)
+        X_trans = pd.DataFrame(
+            X, columns=self.feature_names).astype('category')
+        X_trans.loc[X_trans.DOMAINUrbanicity == 'U',
+                    'DOMAINSocioEconomic'] = X_trans.loc[X_trans.DOMAINUrbanicity == 'U', 'DOMAINSocioEconomic'].map(urb_dict)
         X_trans.DOMAINSocioEconomic = X_trans.DOMAINSocioEconomic.cat.remove_unused_categories()
         return X_trans
 
     def get_feature_names(self):
         if isinstance(self.feature_names, list):
             return self.feature_names
+
 
 class BinaryFeatureRecode(BaseEstimator, TransformerMixin):
     """
@@ -297,7 +303,8 @@ class DeltaTime(BaseEstimator, TransformerMixin):
         For series, the same length as the passed dataframe is expected.
     unit: ['months', 'years']
     """
-    def __init__(self, reference_date=pd.datetime(1997, 6, 1), unit='months',suffix=True):
+
+    def __init__(self, reference_date=pd.datetime(1997, 6, 1), unit='months', suffix=True):
         self.reference_date = reference_date
         if suffix:
             self.feature_suffix = "_DELTA_"+unit.upper()
@@ -309,13 +316,15 @@ class DeltaTime(BaseEstimator, TransformerMixin):
 
     def get_duration(self, date_pair):
         if not pd.isna(date_pair.target) and not pd.isna(date_pair.ref):
-            delta = relativedelta.relativedelta(date_pair.ref, date_pair.target)
+            delta = relativedelta.relativedelta(
+                date_pair.ref, date_pair.target)
             if self.unit.lower() == 'months':
                 duration = (delta.years * 12) + delta.months
             elif self.unit.lower() == 'years':
                 duration = delta.years + 1
         else:
-            logger.info("Failed to calculate time delta. Dates: {} and {}.".format(date_pair.target, date_pair.ref))
+            logger.info("Failed to calculate time delta. Dates: {} and {}.".format(
+                date_pair.target, date_pair.ref))
             duration = np.nan
         return duration
 
@@ -335,12 +344,13 @@ class DeltaTime(BaseEstimator, TransformerMixin):
             X_temp['target'] = X[f]
             if isinstance(self.reference_date, pd.Series):
                 # we have a series of reference dates
-                feature_name = f+"_"+str(self.reference_date.name)+self.feature_suffix
+                feature_name = f+"_" + \
+                    str(self.reference_date.name)+self.feature_suffix
             else:
                 feature_name = f+self.feature_suffix
 
             X_temp['ref'] = self.reference_date
-            X_trans[feature_name] = X_temp.apply(self.get_duration,axis=1)
+            X_trans[feature_name] = X_temp.apply(self.get_duration, axis=1)
 
         self.feature_names = X_trans.columns
 
@@ -368,7 +378,7 @@ class MonthsToDonation(BaseEstimator, TransformerMixin):
                 duration += relativedelta.relativedelta(ref, target).months
             except TypeError as err:
                 logger.error("Failed to calculate time delta. " +
-                                "Dates: {} and {}\nMessage: {}".format(row[0], row[1],err))
+                             "Dates: {} and {}\nMessage: {}".format(row[0], row[1], err))
                 duration = np.nan
         else:
             duration = np.nan

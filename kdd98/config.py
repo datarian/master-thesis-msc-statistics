@@ -15,6 +15,7 @@ APP_HOME = pathlib.Path(__file__).resolve().parent
 
 __all__ = ['App']
 
+
 class App:
     __conf = {
         "root_dir": pathlib.Path(APP_HOME.resolve().parent),

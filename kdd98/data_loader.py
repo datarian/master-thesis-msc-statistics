@@ -339,8 +339,8 @@ class KDD98DataLoader:
         """ Save Pandas dataframe to hdf store"""
         try:
             data.to_hdf(hdf_store,
-                                 key=key_name,
-                                 format='table')
+                        key=key_name,
+                        format='table')
         except Exception as exc:
             logger.error(exc)
             raise exc
