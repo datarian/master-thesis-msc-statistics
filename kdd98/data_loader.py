@@ -475,11 +475,11 @@ class Cleaner:
 
         ordinal_transformer = ColumnTransformer([
             ("order_ordinals",
-             OrdinalEncoder(mapping=self.dl.ordinal_mapping_mdmaud,
+             OrdinalEncoder(mapping=ORDINAL_MAPPING_MDMAUD,
                             handle_unknown='ignore'),
              ['MDMAUD_R', 'MDMAUD_A']),
             ("order_multibytes",
-             OrdinalEncoder(mapping=self.dl.ordinal_mapping_rfa,
+             OrdinalEncoder(mapping=ORDINAL_MAPPING_RFA,
                             handle_unknown='ignore'),
              list(self.dataset.filter(like="RFA_", axis=1).columns))
         ])
