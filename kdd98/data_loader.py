@@ -336,7 +336,7 @@ class KDD98DataLoader:
                                         mode='r')
         except (KeyError) as error:
             # If something goes wrong, pass the exception on to the caller
-            logger.INFO("Key not found in HDF store. Reading from CSV.")
+            logger.info("Key not found in HDF store. Reading from CSV.")
             raise error
         except(OSError, FileNotFoundError) as error:
             logger.info("HDF file not found. Will read from CSV.")
