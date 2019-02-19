@@ -4,7 +4,7 @@ import shutil
 import unittest
 
 import kdd98.data_loader as dl
-from kdd98.config import App
+from kdd98.config import Config
 
 class TestDataLoader(unittest.TestCase):
 
@@ -21,5 +21,5 @@ class TestDataLoaderDownload(TestDataLoader):
 
     def test_retrieve_online(self):
         os.chdir(os.path.dirname(os.path.realpath(__file__)))
-        loader = dl.KDD98DataLoader(App.config("learn_file_name"))
+        loader = dl.KDD98DataLoader(Config.get("learn_file_name"))
         loader._fetch_online(dl_dir="./test_download")

@@ -17,7 +17,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 
 import kdd98.utils_transformer as ut
-from kdd98.config import App
+from kdd98.config import Config
 from kdd98.transformers import (BinaryFeatureRecode, DeltaTime,
                                 MonthsToDonation, MultiByteExtract,
                                 OrdinalEncoder, RecodeUrbanSocioEconomic)
@@ -50,8 +50,8 @@ __all__ = [
 
 #######################################################################
 # Main config
-data_path = App.config("data_dir")
-hdf_data_file_name = App.config("hdf_store")
+data_path = Config.get("data_dir")
+hdf_data_file_name = Config.get("hdf_store")
 hdf_store = pathlib.Path(data_path.resolve(), hdf_data_file_name)
 
 #######################################################################
@@ -218,7 +218,7 @@ def dateparser(date_features):
         return d
 
     def fix_century(d):
-        ref_date = App.config("reference_date")
+        ref_date = Config.get("reference_date")
         if not pd.isna(d):
             try:
                 if d.year > ref_date.year:
@@ -279,15 +279,15 @@ class KDD98DataLoader:
         self._clean_data = pd.DataFrame()
 
         self.download_url = download_url
-        self.reference_date = App.config("reference_date")
+        self.reference_date = Config.get("reference_date")
 
-        if csv_file is not None and csv_file in App.config("learn_file_name", "learn_test_file_name", "validation_file_name"):
+        if csv_file is not None and csv_file in Config.get("learn_file_name", "learn_test_file_name", "validation_file_name"):
             self.raw_data_name = pathlib.Path(csv_file).stem # new
             logger.info("Set raw data file name to: {:1}".format(self.raw_data_name))
             if "lrn" in csv_file.lower():
-                self.clean_data_name = App.config("learn_clean_name")
+                self.clean_data_name = Config.get("learn_clean_name")
             elif "val" in csv_file.lower():
-                self.clean_data_name = App.config("validation_clean_name")
+                self.clean_data_name = Config.get("validation_clean_name")
         else:
             raise ValueError("Set csv_file to either training- or test-file.")
 
@@ -370,7 +370,7 @@ class KDD98DataLoader:
         """
 
         try:
-            data_file = App.config("data_dir") / self.raw_data_file_name
+            data_file = Config.get("data_dir") / self.raw_data_file_name
             if not data_file.is_file():
                 logger.info("Data not stored locally. Downloading...")
                 try:
@@ -381,7 +381,7 @@ class KDD98DataLoader:
 
             logger.info("Reading csv file: "+self.raw_data_file_name)
             self.raw_data = pd.read_csv(
-                pathlib.Path(App.config("data_dir"), self.raw_data_file_name),
+                pathlib.Path(Config.get("data_dir"), self.raw_data_file_name),
                 index_col=INDEX_NAME,
                 na_values=NA_CODES,
                 parse_dates=DATE_FEATURES,
@@ -451,14 +451,14 @@ class KDD98DataLoader:
         """
 
         if not url:
-            url = App.config("download_url")
+            url = Config.get("download_url")
 
         if dl_dir:
             path = pathlib.Path(dl_dir)
         else:
-            path = pathlib.Path(App.config("data_dir"))
+            path = pathlib.Path(Config.get("data_dir"))
         contents = [f for f in path.iterdir()]
-        missing = set(App.config('download_files')) - set(contents)
+        missing = set(Config.get('download_files')) - set(contents)
         print("Files missing: {}".format(missing))
         if missing:
             for f in missing:
@@ -473,7 +473,7 @@ class Cleaner:
 
     def __init__(self, data_loader):
         self.dl = data_loader
-        assert(self.dl.raw_data_file_name in App.config("learn_file_name", "learn_test_file_name", "validation_file_name"))
+        assert(self.dl.raw_data_file_name in Config.get("learn_file_name", "learn_test_file_name", "validation_file_name"))
 
     def clean(self):
         data = self.dl.raw_data.copy(deep=True)

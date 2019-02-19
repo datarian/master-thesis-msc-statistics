@@ -11,16 +11,16 @@ import pathlib
 import pandas as pd
 import seaborn as sns
 
-APP_HOME = pathlib.Path(__file__).resolve().parent
+PKG_HOME = pathlib.Path(__file__).resolve().parent
 
-__all__ = ['App']
+__all__ = ['Config']
 
 
-class App:
+class Config:
     __conf = {
-        "root_dir": pathlib.Path(APP_HOME.resolve().parent),
-        "data_dir": pathlib.Path(APP_HOME.resolve().parent, "data"),
-        "cache_dir": pathlib.Path(APP_HOME.resolve().parent, "cache"),
+        "root_dir": pathlib.Path(PKG_HOME.resolve().parent),
+        "data_dir": pathlib.Path(PKG_HOME.resolve().parent, "data"),
+        "cache_dir": pathlib.Path(PKG_HOME.resolve().parent, "cache"),
         "download_files": ['cup98lrn.zip', 'cup98val.zip', 'cup98doc.txt', 'cup98dic.txt', 'instruct.txt', 'valtargt.readme', 'valtargt.txt', 'readme'],
         "download_url": "https://archive.ics.uci.edu/ml/machine-learning-databases/kddcup98-mld/epsilon_mirror/",
         "hdf_store": "kdd_cup98_datastore.h5",
@@ -31,7 +31,7 @@ class App:
         "validation_file_name": "cup98VAL.txt",
         "validation_raw_name": "kddCup98Validation_raw",
         "validation_clean_name": "kddCup98Validation_clean",
-        "model_store": pathlib.Path(APP_HOME.resolve().parent, "models"),
+        "model_store": pathlib.Path(PKG_HOME.resolve().parent, "models"),
         "random_seed": 42,
         "reference_date": pd.datetime(1997, 6, 1),
         "color_palette": sns.cubehelix_palette(8, start=.5, rot=-.75, reverse=True, dark=0.5),
@@ -40,20 +40,20 @@ class App:
         "color_map_diverging": sns.diverging_palette(10, 220, sep=80, n=20, as_cmap=True)
     }
 
-    __setters = []
+    __setters = ["data_dir"]
 
     @staticmethod
-    def config(*keys):
+    def get(*keys):
         """
         Returns one or more config keys either as a single object
         or a list of objects.
         """
-        vals = [App.__conf[val] for val in keys]
+        vals = [Config.__conf[val] for val in keys]
         return vals[0] if len(vals) == 1 else vals
 
     @staticmethod
     def set(key, value):
-        if key in App.__setters:
-            App.__conf[key] = value
+        if key in Config.__setters:
+            Config.__conf[key] = value
         else:
             raise NameError("This config value is not settable.")
