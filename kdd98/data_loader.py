@@ -578,4 +578,9 @@ class Cleaner:
                 data[f] = data[f].astype("category").cat.as_ordered()
 
         data.drop(columns=drop_features, inplace=True)
-        return data
+        
+        remaining_object_features = data.select_dtypes(include="object").columns.values.tolist()
+        if remaining_object_features:
+            raise ValueError("There are remaining unhandled features: {}".format(remaining_object_features))
+        else:
+            return data
