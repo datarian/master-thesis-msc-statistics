@@ -88,7 +88,7 @@ BINARY_FEATURES = ["MAILCODE", "NOEXCH", "RECSWEEP", "RECINHSE", "RECP3",
                    "PEPSTRFL", "TARGET_B", "HPHONE_D", "VETERANS"]
 
 # Already usable nominal features
-CATEGORICAL_FEATURES = ["TCODE", "DOMAIN", "STATE", "PVASTATE", "CLUSTER", "INCOME",
+CATEGORICAL_FEATURES = ["OSOURCE", "TCODE", "DOMAIN", "STATE", "PVASTATE", "CLUSTER", "INCOME",
                         "CHILD03", "CHILD07", "CHILD12", "CHILD18", "GENDER",
                         "DATASRCE", "SOLP3", "SOLIH", "WEALTH1", "WEALTH2",
                         "GEOCODE", "LIFESRC", "RFA_2R", "RFA_2A",
@@ -353,9 +353,10 @@ class KDD98DataLoader:
                 try:
                     cln = Cleaner(self)
                     self.clean_data = cln.clean()
-                    self._save_hdf(self.clean_data, self.clean_data_name)
                 except Exception as e:
                     logger.error("Failed to clean raw data.\nReason: {}".format(e))
+                    raise e
+                self._save_hdf(self.clean_data, self.clean_data_name)
             else:
                 try:
                     self._read_csv_data()
@@ -410,7 +411,6 @@ class KDD98DataLoader:
             logger.info("Trying to load {:1} from HDF.".format(key_name))
             dataset = pd.read_hdf(store,
                                key=key_name)
-            store.close()
         except (KeyError) as error:
             # If something goes wrong, pass the exception on to the caller
             logger.info("Key not found in HDF store. Reading from CSV.")
@@ -418,6 +418,8 @@ class KDD98DataLoader:
         except(OSError, FileNotFoundError) as error:
             logger.info("HDF file not found. Will read from CSV.")
             raise error
+        finally:
+            store.close()
         return dataset
 
     def _save_hdf(self, data, key_name):
@@ -565,7 +567,7 @@ class Cleaner:
         ])
         ordinals = ordinal_transformer.fit_transform(data)
         data = ut.update_df_with_transformed(
-            data, ordinals, ordinal_transformer)
+            data, ordinals, ordinal_transformer, new_dtype="category")
 
         # Ensure the remaining, already numeric ordinal features are in the correct pandas data type
         remaining_ordinals = ['WEALTH1','WEALTH2','INCOME']+data.filter(
@@ -578,9 +580,9 @@ class Cleaner:
                 data[f] = data[f].astype("category").cat.as_ordered()
 
         data.drop(columns=drop_features, inplace=True)
-        
+
         remaining_object_features = data.select_dtypes(include="object").columns.values.tolist()
         if remaining_object_features:
-            raise ValueError("There are remaining unhandled features: {}".format(remaining_object_features))
-        else:
-            return data
+            logger.warning("After cleaning, the following features were left untreated and automatically coerced to 'Categorical' (nominal): {}".format(remaining_object_features))
+            data[remaining_object_features] = data[remaining_object_features].astype("category")
+        return data
