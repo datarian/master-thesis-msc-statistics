@@ -13,17 +13,19 @@ import zipfile
 
 import numpy as np
 import pandas as pd
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+
 import kdd98.utils_transformer as ut
 from kdd98.config import App
 from kdd98.transformers import (BinaryFeatureRecode, DeltaTime,
                                 MonthsToDonation, MultiByteExtract,
                                 OrdinalEncoder, RecodeUrbanSocioEconomic)
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
 
 # Set up the logger
 logging.basicConfig(filename=__name__+'.log', level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 __all__ = [
     'KDD98DataLoader',
@@ -62,7 +64,7 @@ TARGETS = ["TARGET_B", "TARGET_D"]
 
 DROP_INITIAL = ["MDMAUD", "RFA_2"]  # These are pre-split multibyte features
 # These are contained in other features
-drop_redundant = ["FISTDATE", "NEXTDATE", "DOB"]
+DROP_REDUNDANT = ["FISTDATE", "NEXTDATE", "DOB"]
 
 DATE_FEATURES = ["ODATEDW", "DOB", "ADATE_2", "ADATE_3", "ADATE_4",
                  "ADATE_5", "ADATE_6", "ADATE_7", "ADATE_8", "ADATE_9",
@@ -105,10 +107,12 @@ ORDINAL_MAPPING_MDMAUD = [
     {'col': 'MDMAUD_A', 'mapping': {'L': 1, 'C': 2, 'M': 3, 'T': 4}}]
 
 ORDINAL_MAPPING_RFA = [{'col': c, 'mapping': {'A': 1, 'B': 2, 'C': 3, 'D': 4, 'E': 5, 'F': 6, 'G': 7}}
-                       for c in ["RFA_3A", "RFA_4A", "RFA_5A", "RFA_6A", "RFA_7A", "RFA_8A",
-                                 "RFA_9A", "RFA_10A", "RFA_11A", "RFA_12A", "RFA_13A",
-                                 "RFA_14A", "RFA_15A", "RFA_16A", "RFA_17A", "RFA_18A", "RFA_19A",
-                                 "RFA_20A", "RFA_21A", "RFA_22A", "RFA_23A", "RFA_24A"]]
+                       for c in ['RFA_2A', 'RFA_3A', 'RFA_4A', 'RFA_5A',
+                                 'RFA_6A', 'RFA_7A', 'RFA_8A', 'RFA_9A',
+                                 'RFA_10A', 'RFA_11A', 'RFA_12A', 'RFA_13A',
+                                 'RFA_14A', 'RFA_15A', 'RFA_16A', 'RFA_17A',
+                                 'RFA_18A', 'RFA_19A', 'RFA_20A', 'RFA_21A',
+                                 'RFA_22A', 'RFA_23A', 'RFA_24A']]
 
 US_CENSUS_FEATURES = ["POP901", "POP902", "POP903", "POP90C1", "POP90C2",
                       "POP90C3", "POP90C4", "POP90C5", "ETH1", "ETH2",
@@ -198,7 +202,12 @@ GIVING_HISTORY_SUMMARY = ['RAMNTALL', 'NGIFTALL', 'MINRAMNT', 'MAXRAMNT',
 NA_CODES = ['', '.', ' ']
 
 
+# The parser used on the date features
 def dateparser(date_features):
+    """
+    Parses date features in YYMM format, fixes input errors
+    and aligns datetime64 dates with a reference date
+    """
 
     def fix_format(d):
         if not pd.isna(d):
@@ -264,38 +273,107 @@ class KDD98DataLoader:
         pull_stored: Whether to attempt loading raw data from HDF store.
         """
         self.raw_data_file_name = csv_file
-        self.pull_stored = pull_stored
-        self.raw_data = None
         self.raw_data_name = None
-        self.clean_data = None
         self.clean_data_name = None
-        self.download_url = download_url
+        self._raw_data = pd.DataFrame()
+        self._clean_data = pd.DataFrame()
 
+        self.download_url = download_url
         self.reference_date = App.config("reference_date")
 
-        if csv_file is not None and csv_file in [App.config("learn_file_name"),
-                                                 App.config("validation_file_name")]:
+        if csv_file is not None and csv_file in App.config("learn_file_name", "learn_test_file_name", "validation_file_name"):
+            self.raw_data_name = pathlib.Path(csv_file).stem # new
+            logger.info("Set raw data file name to: {:1}".format(self.raw_data_name))
             if "lrn" in csv_file.lower():
-                self.raw_data_name = App.config("learn_raw_name")
                 self.clean_data_name = App.config("learn_clean_name")
             elif "val" in csv_file.lower():
-                self.raw_data_name = App.config("validation_raw_name")
                 self.clean_data_name = App.config("validation_clean_name")
         else:
-            raise NameError("Set csv_file to either training- or test-file.")
+            raise ValueError("Set csv_file to either training- or test-file.")
+
+    @property
+    def raw_data(self):
+        if self._raw_data.empty:
+            self.provide("raw")
+        return self._raw_data
+
+    @raw_data.setter
+    def raw_data(self, value):
+        self._raw_data = value
+
+    @property
+    def clean_data(self):
+        if self._clean_data.empty:
+            self.provide("clean")
+        return self._clean_data
+
+    @clean_data.setter
+    def clean_data(self, value):
+        self._clean_data = value
+
+    def provide(self, type):
+        """
+        Provides data by first checking the hdf store, then loading csv data.
+
+        If clean data is requested, the returned pandas object has:
+        - binary
+        - numerical (float, int)
+        - ordinal / nominal categorical
+        - all missing values np.nan
+        - dates in np.datetime64
+
+        data in it.
+
+        Params
+        ------
+        type    One of ["raw", "clean"]. Raw is as read by pandas, clean is with cleaning operations applied.
+        """
+        assert(type in ["raw", "clean"])
+        if type == "raw":
+            key = self.raw_data_name
+        else:
+            key = self.clean_data_name
+        try:
+            # First, try to load the data from hdf
+            # and set the object
+            data = self._load_hdf(key)
+            if type == "raw":
+                self.raw_data = data
+            else:
+                self.clean_data = data
+        except:
+            # If it fails and we ask for clean data,
+            # try to find the raw data in hdf and, if present,
+            # load it
+            if key == self.clean_data_name:
+                try:
+                    self.provide("raw")
+                except Exception as e:
+                    logger.error("Failed to provide raw data. Cannot provide clean data.\nReason: {:1}".format(e))
+                try:
+                    cln = Cleaner(self)
+                    self.clean_data = cln.clean()
+                    self._save_hdf(self.clean_data, self.clean_data_name)
+                except Exception as e:
+                    logger.error("Failed to clean raw data.\nReason: {}".format(e))
+            else:
+                try:
+                    self._read_csv_data()
+                except Exception as error:
+                    logger.error(
+                        "Failed to load data from csv file {:1}!".format(self.raw_data_file_name))
+                    raise error
 
     def _read_csv_data(self):
         """
-        Read in csv data. After successful read,
-        raw data is saved to HDF for future access. A few features
-        are already dropped at this stage (see: data_loader.drop_initial)!
+        Read in csv data. After successful read, raw data is saved to HDF for future access.
         """
 
         try:
-            data_file = data_path / self.raw_data_file_name
+            data_file = App.config("data_dir") / self.raw_data_file_name
             if not data_file.is_file():
+                logger.info("Data not stored locally. Downloading...")
                 try:
-                    logger.info("Data not stored locally. Downloading...")
                     self._fetch_online(self.download_url)
                 except urllib.error.HTTPError:
                     logger.error(
@@ -303,8 +381,7 @@ class KDD98DataLoader:
 
             logger.info("Reading csv file: "+self.raw_data_file_name)
             self.raw_data = pd.read_csv(
-
-                os.path.join(data_path, self.raw_data_file_name),
+                pathlib.Path(App.config("data_dir"), self.raw_data_file_name),
                 index_col=INDEX_NAME,
                 na_values=NA_CODES,
                 parse_dates=DATE_FEATURES,
@@ -313,27 +390,27 @@ class KDD98DataLoader:
                 low_memory=False,  # needed for mixed type columns
                 memory_map=True  # load file in memory
             )
-
         except Exception as exc:
-            logger.exception(exc)
+            logger.error(exc)
             raise
-        else:
-            self._save_hdf(self.raw_data, self.raw_data_name)
-            self.clean_data = Cleaner(data_loader=self).clean()
-            self._save_hdf(self.clean_data, self.clean_data_name)
+        self._save_hdf(self.raw_data, self.raw_data_name)
 
     def _load_hdf(self, key_name):
-        """ Loads data from hdf store """
+        """ Loads data from hdf store.
+        Raises an error if the key or the file is not found.
 
-        # If data should not be pulled, throw an exception to make sure
-        # data is loaded from csv
-        if not self.pull_stored:
-            raise ValueError("HDF loading prohibited by options set.")
+        Params
+        ------
+        key_name    The key to load
+
+        """
+
         try:
+            store = pd.HDFStore(hdf_store, mode="r")
             logger.info("Trying to load {:1} from HDF.".format(key_name))
-            return pd.read_hdf(hdf_store,
-                                        key=key_name,
-                                        mode='r')
+            dataset = pd.read_hdf(store,
+                               key=key_name)
+            store.close()
         except (KeyError) as error:
             # If something goes wrong, pass the exception on to the caller
             logger.info("Key not found in HDF store. Reading from CSV.")
@@ -341,47 +418,29 @@ class KDD98DataLoader:
         except(OSError, FileNotFoundError) as error:
             logger.info("HDF file not found. Will read from CSV.")
             raise error
+        return dataset
 
     def _save_hdf(self, data, key_name):
-        """ Save Pandas dataframe to hdf store"""
+        """ Save a pandas dataframe to hdf store. The hdf format 'table' is
+        used, which is slower but supports pandas data types. Theoretically,
+        it also allows to query the object and return subsets.
+
+        Params
+        ------
+        data    A pandas dataframe or other object
+        key_name    The key name to store the object at.
+        """
         try:
-            data.to_hdf(hdf_store,
+            store = pd.HDFStore(hdf_store, mode="a")
+            data.to_hdf(store,
                         key=key_name,
-                        format='table')
+                        format="table",
+                        mode="a")
         except Exception as exc:
             logger.error(exc)
             raise exc
-
-    def get_dataset(self, type):
-
-        dset = None
-
-        if type == 'raw':
-            dset = self.raw_data
-            name = self.raw_data_name
-        else:
-            dset = self.clean_data
-            name = self.clean_data_name
-        logger.info("Will return dataset {:1}".format(name))
-        if not isinstance(dset, pd.DataFrame):
-            try:
-                dset = self._load_hdf(name)
-            except(OSError, IOError, ValueError, KeyError) as exc:
-                # The hdf file is not there, or nothing saved under
-                # the key we tried to query.
-                try:
-                    self._read_csv_data()
-                except Exception as exc:
-                    logger.error(exc)
-                    raise exc
-
-        return dset.copy()
-
-    def get_raw_dataset(self):
-        return self.get_dataset("raw")
-
-    def get_clean_dataset(self):
-        return self.get_dataset("clean")
+        finally:
+            store.close()
 
     def _fetch_online(self, url=None, dl_dir=None):
         """
@@ -414,14 +473,27 @@ class Cleaner:
 
     def __init__(self, data_loader):
         self.dl = data_loader
-        assert(self.dl.raw_data_file_name in [App.config(
-            'learn_file_name'), App.config('validation_file_name')])
-        self.dataset = self.dl.get_dataset("raw")
+        assert(self.dl.raw_data_file_name in App.config("learn_file_name", "learn_test_file_name", "validation_file_name"))
 
     def clean(self):
+        data = self.dl.raw_data.copy(deep=True)
+        logger.info("Starting cleaning of raw dataset")
 
-        # Binary features
-        logger.info("Starting cleaning of raw dataset {:1}".format(self.dl.raw_data_name))
+        # Transforming the data and rebuilding the pandas dataframe
+        drop_features = []
+        # Some features are redundant, these are removed here
+        drop_features.extend(DROP_INITIAL)
+        drop_features.extend(DROP_REDUNDANT)
+
+        # Fix formatting for ZIP feature
+        data.ZIP = data.ZIP.str.replace(
+            '-', '').replace([' ', '.'], np.nan).astype('int64')
+        # Fix binary encoding inconsistency for NOEXCH
+        data.NOEXCH = data.NOEXCH.str.replace("X", "1")
+        # Fix some NA value problems:
+        data[['MDMAUD_R', 'MDMAUD_F', 'MDMAUD_A']] = data.loc[:, ['MDMAUD_R', 'MDMAUD_F', 'MDMAUD_A']].replace('X', np.nan)
+
+        # Binary Features
         binary_transformers = ColumnTransformer([
             ("binary_x_bl",
              BinaryFeatureRecode(
@@ -456,59 +528,54 @@ class Cleaner:
              ['HPHONE_D']
              )
         ])
+        binarys = binary_transformers.fit_transform(data)
+        data = ut.update_df_with_transformed(
+            data, binarys, binary_transformers)
 
-        # Categorical Features
-
-        # Ordinals
+        # Multibyte Categoricals
         multibyte_transformer = ColumnTransformer([
-            ("spread",
+            ("spread_rfa",
              MultiByteExtract(["R", "F", "A"]),
-             NOMINAL_FEATURES[2:])
-        ])
-
-        domain_transformer = ColumnTransformer([
-            ("spread_domain",
+             NOMINAL_FEATURES[2:]),
+             ("spread_domain",
              MultiByteExtract(["Urbanicity", "SocioEconomic"]),
              ["DOMAIN"])
         ])
+        multibytes = multibyte_transformer.fit_transform(data)
+        # The original multibyte-features are dropped at a later stage
+        drop_features.extend(NOMINAL_FEATURES[2:])
+        drop_features.append("DOMAIN")
 
+        data = ut.update_df_with_transformed(
+            data, multibytes, multibyte_transformer, new_dtype="category")
+
+        # Ordinals
+        # This transformation MUST be defined and applied after splitting
+        # multibyte features!
         ordinal_transformer = ColumnTransformer([
-            ("order_ordinals",
+            ("order_mdmaud",
              OrdinalEncoder(mapping=ORDINAL_MAPPING_MDMAUD,
                             handle_unknown='ignore'),
              ['MDMAUD_R', 'MDMAUD_A']),
-            ("order_multibytes",
+            ("order_rfa",
              OrdinalEncoder(mapping=ORDINAL_MAPPING_RFA,
                             handle_unknown='ignore'),
-             list(self.dataset.filter(like="RFA_", axis=1).columns))
+                            list(data.filter(regex=r"RFA_\d{1,2}A", axis=1).columns.values)),
+            ("recode_socioecon", RecodeUrbanSocioEconomic(), ["DOMAINUrbanicity", "DOMAINSocioEconomic"])
         ])
+        ordinals = ordinal_transformer.fit_transform(data)
+        data = ut.update_df_with_transformed(
+            data, ordinals, ordinal_transformer)
 
-        # Transforming the data and rebuilding the pandas dataframe
+        # Ensure the remaining, already numeric ordinal features are in the correct pandas data type
+        remaining_ordinals = ['WEALTH1','WEALTH2','INCOME']+data.filter(
+            regex=r"RFA_\d{1,2}F").columns.values.tolist()
 
-        # Fix formatting for ZIP feature
-        self.dataset.ZIP = self.dataset.ZIP.str.replace(
-            '-', '').replace([' ', '.'], np.nan).astype('int64')
-        # Fix binary encoding inconsistency for NOEXCH
-        self.dataset.NOEXCH = self.dataset.NOEXCH.str.replace("X", "1")
+        for f in data[remaining_ordinals]:
+            try:
+                data[f] = data[f].cat.as_ordered()
+            except AttributeError:
+                data[f] = data[f].astype("category").cat.as_ordered()
 
-        # Fix some NA value problems:
-        self.dataset[['MDMAUD_R', 'MDMAUD_F', 'MDMAUD_A']] = self.dataset.loc[:, [
-            'MDMAUD_R', 'MDMAUD_F', 'MDMAUD_A']].replace('X', np.nan)
-
-        binarys = binary_transformers.fit_transform(self.dataset)
-        self.dataset = ut.update_df_with_transformed(
-            self.dataset, binarys, binary_transformers)
-
-        multibytes = multibyte_transformer.fit_transform(self.dataset)
-        self.dataset = ut.update_df_with_transformed(
-            self.dataset, multibytes, multibyte_transformer, drop=NOMINAL_FEATURES, new_dtype="category")
-
-        domains = domain_transformer.fit_transform(self.dataset)
-        self.dataset = ut.update_df_with_transformed(
-            self.dataset, domains, domain_transformer)
-
-        ordinals = ordinal_transformer.fit_transform(self.dataset)
-        self.dataset = ut.update_df_with_transformed(
-            self.dataset, ordinals, ordinal_transformer)
-
-        return self.dataset
+        data.drop(columns=drop_features, inplace=True)
+        return data

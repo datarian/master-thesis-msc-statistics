@@ -145,18 +145,17 @@ class MultiByteExtract(BaseEstimator, TransformerMixin):
     drop_orig: Whether to drop the original multibyte feature or not.
     """
 
-    def __init__(self, field_names, impute=False, drop_orig=True):
+    def __init__(self, field_names, impute=False):
         self.field_names = field_names
         # determines how many bytes to extract
         self.sigbytes = len(self.field_names)
         self.impute = impute
-        self.drop_orig = drop_orig
         self.feature_names = []
         self.is_transformed = False
 
     def fit(self, X, y=None):
         assert isinstance(X, pd.DataFrame)
-        self.feature_names = list(X.columns)
+        self.feature_names = list(X.columns.values)
         return self
 
     def _fill_missing(self):
@@ -205,10 +204,7 @@ class MultiByteExtract(BaseEstimator, TransformerMixin):
             X_trans = X_trans.merge(new_df, on=X.index.name)
         self.feature_names = list(X_trans.columns)
         self.is_transformed = True
-        if not self.drop_orig:
-            return X.merge(X_trans, on=X.index.name)
-        else:
-            return X_trans
+        return X_trans
 
     def get_feature_names(self):
         if self.is_transformed:

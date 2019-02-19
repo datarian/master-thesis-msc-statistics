@@ -20,10 +20,12 @@ class App:
     __conf = {
         "root_dir": pathlib.Path(APP_HOME.resolve().parent),
         "data_dir": pathlib.Path(APP_HOME.resolve().parent, "data"),
+        "cache_dir": pathlib.Path(APP_HOME.resolve().parent, "cache"),
         "download_files": ['cup98lrn.zip', 'cup98val.zip', 'cup98doc.txt', 'cup98dic.txt', 'instruct.txt', 'valtargt.readme', 'valtargt.txt', 'readme'],
         "download_url": "https://archive.ics.uci.edu/ml/machine-learning-databases/kddcup98-mld/epsilon_mirror/",
         "hdf_store": "kdd_cup98_datastore.h5",
         "learn_file_name": "cup98LRN.txt",
+        "learn_test_file_name": "cup98LRN_snip.txt",
         "learn_raw_name": "kddCup98Learn_raw",
         "learn_clean_name": "kddCup98Learn_clean",
         "validation_file_name": "cup98VAL.txt",
@@ -41,12 +43,17 @@ class App:
     __setters = []
 
     @staticmethod
-    def config(name):
-        return App.__conf[name]
+    def config(*keys):
+        """
+        Returns one or more config keys either as a single object
+        or a list of objects.
+        """
+        vals = [App.__conf[val] for val in keys]
+        return vals[0] if len(vals) == 1 else vals
 
     @staticmethod
-    def set(name, value):
-        if name in App.__setters:
-            App.__conf[name] = value
+    def set(key, value):
+        if key in App.__setters:
+            App.__conf[key] = value
         else:
             raise NameError("This config value is not settable.")
