@@ -532,7 +532,7 @@ class Cleaner:
         ])
         binarys = binary_transformers.fit_transform(data)
         data = ut.update_df_with_transformed(
-            data, binarys, binary_transformers)
+            data, binarys, binary_transformers, new_dtype="int64")
 
         # Multibyte Categoricals
         multibyte_transformer = ColumnTransformer([
