@@ -199,7 +199,7 @@ GIVING_HISTORY_SUMMARY = ['RAMNTALL', 'NGIFTALL', 'MINRAMNT', 'MAXRAMNT',
 
 # Explicitly define NA codes globally
 # The codes are specified in the dataset documentation.
-NA_CODES = ['', '.', ' ']
+NA_CODES = ['', '.']
 
 
 # The parser used on the date features
@@ -499,7 +499,7 @@ class Cleaner:
         binary_transformers = ColumnTransformer([
             ("binary_x_bl",
              BinaryFeatureRecode(
-                 value_map={'true': 'X', 'false': ' '}, correct_noisy=False),
+                 value_map={'true': 'X', 'false': np.nan}, correct_noisy=False),
              ['PEPSTRFL', 'MAJOR', 'RECINHSE',
                  'RECP3', 'RECPGVG', 'RECSWEEP']
              ),
@@ -532,7 +532,7 @@ class Cleaner:
         ])
         binarys = binary_transformers.fit_transform(data)
         data = ut.update_df_with_transformed(
-            data, binarys, binary_transformers, new_dtype="int64")
+            data, binarys, binary_transformers)
 
         # Multibyte Categoricals
         multibyte_transformer = ColumnTransformer([

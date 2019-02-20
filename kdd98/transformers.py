@@ -266,11 +266,12 @@ class BinaryFeatureRecode(BaseEstimator, TransformerMixin):
             if type(self.correct_noisy) is dict:
                 vmap = self.correct_noisy
             else:
-                vmap = {'1': 1.0, '0': 1.0, ' ': 0.0}
+                vmap = {'1': 1.0, '0': 1.0, '': 0.0}
         else:
-            vmap = {'1': 1.0, '0': 0.0, ' ': np.nan}
+            vmap = {'1': 1.0, '0': 0.0, '': np.nan}
         vmap[self.value_map.get('true')] = 1.0
         vmap[self.value_map.get('false')] = 0.0
+        print("For {:1}, the value map is: {:2}".format(self.feature_names, self.value_map))
         temp_df = X.copy()
         try:
             for feature in X:
