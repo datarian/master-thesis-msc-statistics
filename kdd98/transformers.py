@@ -16,6 +16,7 @@ import pandas as pd
 from dateutil import relativedelta
 from dateutil.rrule import MONTHLY, YEARLY, rrule
 from sklearn.base import BaseEstimator, TransformerMixin
+from kdd98.config import Config
 
 from category_encoders import OrdinalEncoder
 
@@ -288,8 +289,39 @@ class BinaryFeatureRecode(BaseEstimator, TransformerMixin):
         if self.is_fit:
             return self.feature_names
 
+class DateHandler:
 
-class DeltaTime(BaseEstimator, TransformerMixin):
+    # The parser used on the date features
+    def parse_date(self, date_feature):
+        """
+        Parses date features in YYMM format, fixes input errors
+        and aligns datetime64 dates with a reference date
+        """
+
+        def fix_century(d):
+            ref_date = Config.get("reference_date")
+            if not pd.isna(d):
+                try:
+                    if d.year > ref_date.year:
+                        d = d.replace(year=(d.year-100))
+                except Exception as err:
+                    logger.warning(
+                        "Failed to fix century for date {}, reason: {}".format(d, err))
+                    d = pd.NaT
+            else:
+                d = pd.NaT
+            return d
+
+        try:
+            date_feature = pd.to_datetime(date_feature, format="%y%m", errors="coerce").map(fix_century)
+        except Exception as e:
+            message = "Failed to parse date array {}.\nReason: {}".format(date_feature, e)
+            logger.error(message)
+            raise RuntimeError(message)
+        return date_feature
+
+
+class DeltaTime(BaseEstimator, TransformerMixin, DateHandler):
     """Computes the duration between a date and a reference date in months.
 
     Parameters:
@@ -337,7 +369,10 @@ class DeltaTime(BaseEstimator, TransformerMixin):
 
         for f in X.columns:
             X_temp = pd.DataFrame(columns=['target', 'ref'])
-            X_temp['target'] = X[f]
+            try:
+                X_temp['target'] = self.parse_date(X[f])
+            except RuntimeError as e:
+                raise e
             if isinstance(self.reference_date, pd.Series):
                 # we have a series of reference dates
                 feature_name = f+"_" + \
@@ -356,7 +391,7 @@ class DeltaTime(BaseEstimator, TransformerMixin):
         return self.feature_names
 
 
-class MonthsToDonation(BaseEstimator, TransformerMixin):
+class MonthsToDonation(BaseEstimator, TransformerMixin, DateHandler):
 
     def __init__(self):
         self.feature_names = list()
@@ -368,6 +403,7 @@ class MonthsToDonation(BaseEstimator, TransformerMixin):
     def calc_diff(self, row):
         ref = row[0]
         target = row[1]
+
         if not pd.isna(ref) and not pd.isna(target):
             try:
                 duration = relativedelta.relativedelta(ref, target).years * 12
@@ -386,7 +422,12 @@ class MonthsToDonation(BaseEstimator, TransformerMixin):
         X_trans = pd.DataFrame(index=X.index)
         for i in range(3, 25):
             feat_name = "MONTHS_TO_DONATION_"+str(i)
-            mailing = X[["ADATE_"+str(i), "RDATE_"+str(i)]]
+            mailing = X.loc[:,["ADATE_"+str(i), "RDATE_"+str(i)]]
+            try:
+                mailing.loc[:,"ADATE_"+str(i)] = self.parse_date(mailing.loc[:,"ADATE_"+str(i)])
+                mailing.loc[:,"RDATE_"+str(i)] = self.parse_date(mailing.loc[:,"RDATE_"+str(i)])
+            except RuntimeError as e:
+                raise e
             diffs = mailing.agg(self.calc_diff, axis=1)
             X_trans = X_trans.merge(pd.DataFrame(
                 diffs, columns=[feat_name]), on=X_trans.index.name)

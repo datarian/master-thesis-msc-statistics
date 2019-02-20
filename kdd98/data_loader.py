@@ -385,8 +385,6 @@ class KDD98DataLoader:
                 pathlib.Path(Config.get("data_dir"), self.raw_data_file_name),
                 index_col=INDEX_NAME,
                 na_values=NA_CODES,
-                parse_dates=DATE_FEATURES,
-                date_parser=dateparser,
                 dtype=self.dtype_specs,
                 low_memory=False,  # needed for mixed type columns
                 memory_map=True  # load file in memory
@@ -487,6 +485,16 @@ class Cleaner:
         drop_features.extend(DROP_INITIAL)
         drop_features.extend(DROP_REDUNDANT)
 
+        # Fix input errors for date features
+        # The parser used on the date features
+        def fix_format(d):
+            if not pd.isna(d):
+                if len(d) == 3:
+                    d = '0'+d
+            return d
+
+        data[DATE_FEATURES] = data.loc[:,DATE_FEATURES].applymap(fix_format)
+
         # Fix formatting for ZIP feature
         data.ZIP = data.ZIP.str.replace(
             '-', '').replace([' ', '.'], np.nan).astype('int64')
@@ -582,7 +590,8 @@ class Cleaner:
         data.drop(columns=drop_features, inplace=True)
 
         remaining_object_features = data.select_dtypes(include="object").columns.values.tolist()
-        if remaining_object_features:
-            logger.warning("After cleaning, the following features were left untreated and automatically coerced to 'Categorical' (nominal): {}".format(remaining_object_features))
-            data[remaining_object_features] = data[remaining_object_features].astype("category")
+        remaining_without_dates = [r for r in remaining_object_features if r not in DATE_FEATURES]
+        if remaining_without_dates:
+            logger.warning("After cleaning, the following features were left untreated and automatically coerced to 'Categorical' (nominal): {}".format(remaining_without_dates))
+            data[remaining_without_dates] = data[remaining_without_dates].astype("category")
         return data
