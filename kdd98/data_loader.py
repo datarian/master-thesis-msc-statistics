@@ -500,7 +500,7 @@ class Cleaner:
             ("binary_x_bl",
              BinaryFeatureRecode(
                  value_map={'true': 'X', 'false': ' '}, correct_noisy=False),
-             ['PEPSTRFL', 'NOEXCH', 'MAJOR', 'RECINHSE',
+             ['PEPSTRFL', 'MAJOR', 'RECINHSE',
                  'RECP3', 'RECPGVG', 'RECSWEEP']
              ),
             ("binary_y_n",
@@ -527,7 +527,7 @@ class Cleaner:
             ("binary_1_0",
              BinaryFeatureRecode(
                  value_map={'true': '1', 'false': '0'}, correct_noisy=False),
-             ['HPHONE_D']
+             ['HPHONE_D', 'NOEXCH']
              )
         ])
         binarys = binary_transformers.fit_transform(data)
