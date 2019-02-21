@@ -484,7 +484,7 @@ class Cleaner:
 
         for f in features:
             try:
-                data.drop(f, inplace=True)
+                data.drop(f, axis=1, inplace=True)
             except KeyError:
                 logger.info("Tried dropping feature {}, but it was not present in the data. Possibly alreay removed earlier.".format(f))
         return data
@@ -569,7 +569,7 @@ class Cleaner:
         multibytes = multibyte_transformer.fit_transform(data)
         # The original multibyte-features are dropped at a later stage
         drop_features.update(NOMINAL_FEATURES[2:])
-        drop_features.update("DOMAIN")
+        drop_features.update(["DOMAIN"])
 
         data = ut.update_df_with_transformed(
             data, multibytes, multibyte_transformer, new_dtype="category")
@@ -603,6 +603,7 @@ class Cleaner:
                 data[f] = data[f].astype("category").cat.as_ordered()
 
         # Now, drop all features marked for removal
+        logger.info("About to drop these features in cleaning: {}".format(drop_features))
         data = self.drop_if_exists(data, drop_features)
 
         remaining_object_features = data.select_dtypes(include="object").columns.values.tolist()
@@ -616,6 +617,7 @@ class Cleaner:
     def preprocess(self):
 
         data = self.dl.clean_data.copy(deep=True)
+        logger.info("Starting preprocessing of clean dataset")
 
         drop_features = set()
 
@@ -643,5 +645,10 @@ class Cleaner:
         drop_features.update(DATE_FEATURES)
 
         data = self.drop_if_exists(data, drop_features)
+
+        # Imputation
+
+        # For the donation amounts per campaign, NaN actually means 0 dollars donated, so change this accordingly.
+        data[GIVING_HISTORY] = data.loc[:,GIVING_HISTORY].fillna(0, axis=1)
 
         return data
