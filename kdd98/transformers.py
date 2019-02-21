@@ -16,9 +16,9 @@ import pandas as pd
 from dateutil import relativedelta
 from dateutil.rrule import MONTHLY, YEARLY, rrule
 from sklearn.base import BaseEstimator, TransformerMixin
-from kdd98.config import Config
 
 from category_encoders import OrdinalEncoder
+from kdd98.config import Config
 
 # Set up the logger
 logging.basicConfig(filename=__name__+'.log', level=logging.ERROR)

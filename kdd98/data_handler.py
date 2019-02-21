@@ -318,25 +318,17 @@ class KDD98DataLoader:
         }
 
         assert(type in ["raw", "clean", "preproc"])
-#        if type == "raw":
-#            key = self.raw_data_name
-#        else:
-#            key = self.clean_data_name
+
         try:
             # First, try to load the data from hdf
             # and set the object
             data = self._load_hdf(name_mapper[type]["key"])
             name_mapper[type]["data_attrib"] = data
-#            if type == "raw":
-#                self.raw_data = data
-#            else:
-#                self.clean_data = data
         except:
             # If it fails and we ask for clean data,
             # try to find the raw data in hdf and, if present,
             # load it. If we ask for preprocessed data, try to find
             # cleaned data in hdf and load if present.
-#            if key == self.clean_data_name:
             if type == "clean":
                 try:
                     self.provide("raw")
@@ -644,6 +636,7 @@ class Cleaner:
 
         drop_features.update(DATE_FEATURES)
 
+
         data = self.drop_if_exists(data, drop_features)
 
         # Imputation
@@ -652,3 +645,6 @@ class Cleaner:
         data[GIVING_HISTORY] = data.loc[:,GIVING_HISTORY].fillna(0, axis=1)
 
         return data
+
+class Engineer:
+    pass
