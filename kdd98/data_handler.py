@@ -345,7 +345,7 @@ class KDD98DataLoader:
                 try:
                     self.provide("clean")
                 except Exception as e:
-                    logger.error("Failed to provide clean data. Cannot provide preprocessed data.\nReason: {:1}".format(e))
+                    logger.error("Failed to provide clean data. Cannot provide preprocessed data.\nReason: {}".format(e))
                 try:
                     pre = Cleaner(self)
                     self.preprocessed_data = pre.preprocess()
@@ -632,7 +632,7 @@ class Cleaner:
             ("membership_years", DeltaTime(unit='years'),['ODATEDW'])
         ])
         timedeltas = timedelta_transformer.fit_transform(data)
-        ut.update_df_with_transformed(data, timedeltas, timedelta_transformer)
+        data = ut.update_df_with_transformed(data, timedeltas, timedelta_transformer)
 
         drop_features.update(DATE_FEATURES)
 

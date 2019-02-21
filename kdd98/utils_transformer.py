@@ -45,8 +45,8 @@ def update_df_with_transformed(df_old, new_features, transformer, drop=[], new_d
     else:
         to_merge = [f for f in feat_names if f not in df_old.columns.values.tolist()]
         to_replace = [f for f in feat_names if f in df_old.columns.values.tolist()]
-        df_old[to_replace] = transformed_df[to_replace]
-        df_new = df_old.merge(transformed_df[to_merge], on=df_old.index.name)
+        df_old[to_replace] = transformed_df.loc[:,to_replace]
+        df_new = df_old.merge(transformed_df.loc[:,to_merge], on=df_old.index.name)
     if len(drop) > 0:
         df_new.drop(drop, axis=1, inplace=True)
     return df_new
