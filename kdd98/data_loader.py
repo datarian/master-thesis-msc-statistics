@@ -202,44 +202,6 @@ GIVING_HISTORY_SUMMARY = ['RAMNTALL', 'NGIFTALL', 'MINRAMNT', 'MAXRAMNT',
 NA_CODES = ['', '.', ' ']
 
 
-# The parser used on the date features
-def dateparser(date_features):
-    """
-    Parses date features in YYMM format, fixes input errors
-    and aligns datetime64 dates with a reference date
-    """
-
-    def fix_format(d):
-        if not pd.isna(d):
-            if len(d) == 3:
-                d = '0'+d
-        else:
-            d = pd.NaT
-        return d
-
-    def fix_century(d):
-        ref_date = Config.get("reference_date")
-        if not pd.isna(d):
-            try:
-                if d.year > ref_date.year:
-                    d = d.replace(year=(d.year-100))
-            except Exception as err:
-                logger.warning(
-                    "Failed to fix century for date {}, reason: {}".format(d, err))
-                d = pd.NaT
-        else:
-            d = pd.NaT
-        return d
-
-    try:
-        date_features = [fix_century(pd.to_datetime(fix_format(
-            d), format="%y%m", errors="coerce")) for d in date_features]
-    except Exception as e:
-        logger.warn(
-            "Failed to parse date array {}.\nReason: {}".format(date_features, e))
-    return date_features
-
-
 class KDD98DataLoader:
     """ Handles dataset loading and stores datasets in hdf store
     for speedy future access.
@@ -277,6 +239,7 @@ class KDD98DataLoader:
         self.clean_data_name = None
         self._raw_data = pd.DataFrame()
         self._clean_data = pd.DataFrame()
+        self._preprocessed_data = pd.DataFrame()
 
         self.download_url = download_url
         self.reference_date = Config.get("reference_date")
@@ -286,8 +249,10 @@ class KDD98DataLoader:
             logger.info("Set raw data file name to: {:1}".format(self.raw_data_name))
             if "lrn" in csv_file.lower():
                 self.clean_data_name = Config.get("learn_clean_name")
+                self.preproc_data_name = Config.get("learn_preproc_name")
             elif "val" in csv_file.lower():
                 self.clean_data_name = Config.get("validation_clean_name")
+                self.preproc_data_name = Config.get("validation_preproc_name")
         else:
             raise ValueError("Set csv_file to either training- or test-file.")
 
@@ -311,6 +276,16 @@ class KDD98DataLoader:
     def clean_data(self, value):
         self._clean_data = value
 
+    @property
+    def preprocessed_data(self):
+        if self._preprocessed_data.empty:
+            self.provide("preproc")
+        return self._preprocessed_data
+
+    @preprocessed_data.setter
+    def preprocessed_data(self, value):
+        self._preprocessed_data = value
+
     def provide(self, type):
         """
         Provides data by first checking the hdf store, then loading csv data.
@@ -322,30 +297,47 @@ class KDD98DataLoader:
         - all missing values np.nan
         - dates in np.datetime64
 
+        If preprocessed data is requested, the returned pandas object has
+        - the contents of cleaned data
+        - date features transformed to time deltas
+        - encoded categoricals
+
         data in it.
 
         Params
         ------
-        type    One of ["raw", "clean"]. Raw is as read by pandas, clean is with cleaning operations applied.
+        type    One of ["raw", "clean", "preproc"]. Raw is as read by pandas, clean is with cleaning operations applied.
         """
-        assert(type in ["raw", "clean"])
-        if type == "raw":
-            key = self.raw_data_name
-        else:
-            key = self.clean_data_name
+        name_mapper = {
+            "raw": {"key": self.raw_data_name,
+                    "data_attrib": getattr(self, "_raw_data")},
+            "clean": {"key": self.clean_data_name,
+                      "data_attrib": getattr(self, "_clean_data")},
+            "preproc": {"key": self.preproc_data_name,
+                        "data_attrib": getattr(self, "_preprocessed_data")}
+        }
+
+        assert(type in ["raw", "clean", "preproc"])
+#        if type == "raw":
+#            key = self.raw_data_name
+#        else:
+#            key = self.clean_data_name
         try:
             # First, try to load the data from hdf
             # and set the object
-            data = self._load_hdf(key)
-            if type == "raw":
-                self.raw_data = data
-            else:
-                self.clean_data = data
+            data = self._load_hdf(name_mapper[type]["key"])
+            name_mapper[type]["data_attrib"] = data
+#            if type == "raw":
+#                self.raw_data = data
+#            else:
+#                self.clean_data = data
         except:
             # If it fails and we ask for clean data,
             # try to find the raw data in hdf and, if present,
-            # load it
-            if key == self.clean_data_name:
+            # load it. If we ask for preprocessed data, try to find
+            # cleaned data in hdf and load if present.
+#            if key == self.clean_data_name:
+            if type == "clean":
                 try:
                     self.provide("raw")
                 except Exception as e:
@@ -357,6 +349,18 @@ class KDD98DataLoader:
                     logger.error("Failed to clean raw data.\nReason: {}".format(e))
                     raise e
                 self._save_hdf(self.clean_data, self.clean_data_name)
+            elif type == "preproc":
+                try:
+                    self.provide("clean")
+                except Exception as e:
+                    logger.error("Failed to provide clean data. Cannot provide preprocessed data.\nReason: {:1}".format(e))
+                try:
+                    pre = Cleaner(self)
+                    self.preprocessed_data = pre.preprocess()
+                except Exception as e:
+                    logger.error("Failed to preprocess clean data.\nReason: {}".format(e))
+                    raise e
+                self._save_hdf(self.preprocessed_data, self.preproc_data_name)
             else:
                 try:
                     self._read_csv_data()
@@ -474,16 +478,27 @@ class Cleaner:
     def __init__(self, data_loader):
         self.dl = data_loader
         assert(self.dl.raw_data_file_name in Config.get("learn_file_name", "learn_test_file_name", "validation_file_name"))
+        self.dimension_cols = None
+
+    def drop_if_exists(self, data, features):
+
+        for f in features:
+            try:
+                data.drop(f, inplace=True)
+            except KeyError:
+                logger.info("Tried dropping feature {}, but it was not present in the data. Possibly alreay removed earlier.".format(f))
+        return data
+
 
     def clean(self):
         data = self.dl.raw_data.copy(deep=True)
         logger.info("Starting cleaning of raw dataset")
 
         # Transforming the data and rebuilding the pandas dataframe
-        drop_features = []
+        drop_features = set()
         # Some features are redundant, these are removed here
-        drop_features.extend(DROP_INITIAL)
-        drop_features.extend(DROP_REDUNDANT)
+        drop_features.update(DROP_INITIAL)
+        drop_features.update(DROP_REDUNDANT)
 
         # Fix input errors for date features
         # The parser used on the date features
@@ -553,8 +568,8 @@ class Cleaner:
         ])
         multibytes = multibyte_transformer.fit_transform(data)
         # The original multibyte-features are dropped at a later stage
-        drop_features.extend(NOMINAL_FEATURES[2:])
-        drop_features.append("DOMAIN")
+        drop_features.update(NOMINAL_FEATURES[2:])
+        drop_features.update("DOMAIN")
 
         data = ut.update_df_with_transformed(
             data, multibytes, multibyte_transformer, new_dtype="category")
@@ -587,11 +602,46 @@ class Cleaner:
             except AttributeError:
                 data[f] = data[f].astype("category").cat.as_ordered()
 
-        data.drop(columns=drop_features, inplace=True)
+        # Now, drop all features marked for removal
+        data = self.drop_if_exists(data, drop_features)
 
         remaining_object_features = data.select_dtypes(include="object").columns.values.tolist()
         remaining_without_dates = [r for r in remaining_object_features if r not in DATE_FEATURES]
+
         if remaining_without_dates:
             logger.warning("After cleaning, the following features were left untreated and automatically coerced to 'Categorical' (nominal): {}".format(remaining_without_dates))
             data[remaining_without_dates] = data[remaining_without_dates].astype("category")
+        return data
+
+    def preprocess(self):
+
+        data = self.dl.clean_data.copy(deep=True)
+
+        drop_features = set()
+
+        # Treat date features. These are converted to time deltas
+        # in either months or years
+        don_hist_transformer = ColumnTransformer([
+            ("months_to_donation",
+            MonthsToDonation(),
+            PROMO_HISTORY_DATES+GIVING_HISTORY_DATES
+            )
+        ])
+        donation_responses = don_hist_transformer.fit_transform(data)
+        data = ut.update_df_with_transformed(
+            data, donation_responses, don_hist_transformer)
+
+        drop_features.update(PROMO_HISTORY_DATES+GIVING_HISTORY_DATES)
+
+        timedelta_transformer = ColumnTransformer([
+            ("time_last_donation", DeltaTime(unit='months'), ['LASTDATE','MINRDATE','MAXRDATE','MAXADATE']),
+            ("membership_years", DeltaTime(unit='years'),['ODATEDW'])
+        ])
+        timedeltas = timedelta_transformer.fit_transform(data)
+        ut.update_df_with_transformed(data, timedeltas, timedelta_transformer)
+
+        drop_features.update(DATE_FEATURES)
+
+        data = self.drop_if_exists(data, drop_features)
+
         return data
