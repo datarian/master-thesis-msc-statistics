@@ -199,7 +199,7 @@ GIVING_HISTORY_SUMMARY = ['RAMNTALL', 'NGIFTALL', 'MINRAMNT', 'MAXRAMNT',
 
 # Explicitly define NA codes globally
 # The codes are specified in the dataset documentation.
-NA_CODES = ['', '.', ' ']
+NA_CODES = ['', '.']
 
 
 class KDD98DataLoader:
@@ -310,11 +310,11 @@ class KDD98DataLoader:
         """
         name_mapper = {
             "raw": {"key": self.raw_data_name,
-                    "data_attrib": getattr(self, "_raw_data")},
+                    "data_attrib": "_raw_data"},
             "clean": {"key": self.clean_data_name,
-                      "data_attrib": getattr(self, "_clean_data")},
+                      "data_attrib": "_clean_data"},
             "preproc": {"key": self.preproc_data_name,
-                        "data_attrib": getattr(self, "_preprocessed_data")}
+                        "data_attrib": "_preprocessed_data"}
         }
 
         assert(type in ["raw", "clean", "preproc"])
@@ -323,7 +323,7 @@ class KDD98DataLoader:
             # First, try to load the data from hdf
             # and set the object
             data = self._load_hdf(name_mapper[type]["key"])
-            name_mapper[type]["data_attrib"] = data
+            setattr(self, name_mapper[type]["data_attrib"], data)
         except:
             # If it fails and we ask for clean data,
             # try to find the raw data in hdf and, if present,
@@ -522,7 +522,7 @@ class Cleaner:
              BinaryFeatureRecode(
                  value_map={'true': 'Y', 'false': 'N'}, correct_noisy=False),
              ['COLLECT1', 'VETERANS', 'BIBLE', 'CATLG', 'HOMEE', 'PETS', 'CDPLAY', 'STEREO',
-              'PCOWNERS', 'PHOTO', 'CRAFTS', 'FISHER', 'GARDENIN',  'BOATS', 'WALKER', 'KIDSTUFF',
+              'PCOWNERS', 'PHOTO', 'CRAFTS', 'FISHER', 'GARDENIN', 'BOATS', 'WALKER', 'KIDSTUFF',
               'CARDS', 'PLATES']
              ),
             ("binary_e_i",
@@ -604,6 +604,7 @@ class Cleaner:
         if remaining_without_dates:
             logger.warning("After cleaning, the following features were left untreated and automatically coerced to 'Categorical' (nominal): {}".format(remaining_without_dates))
             data[remaining_without_dates] = data[remaining_without_dates].astype("category")
+        logger.info("Cleaning completed...")
         return data
 
     def preprocess(self):
@@ -625,6 +626,7 @@ class Cleaner:
         data = ut.update_df_with_transformed(
             data, donation_responses, don_hist_transformer)
 
+        logger.info("About to drop these features in preprocessing: {}".format(drop_features))
         drop_features.update(PROMO_HISTORY_DATES+GIVING_HISTORY_DATES)
 
         timedelta_transformer = ColumnTransformer([
@@ -644,6 +646,7 @@ class Cleaner:
         # For the donation amounts per campaign, NaN actually means 0 dollars donated, so change this accordingly.
         data[GIVING_HISTORY] = data.loc[:,GIVING_HISTORY].fillna(0, axis=1)
 
+        logger.info("Preprocessing completed...")
         return data
 
 class Engineer:
