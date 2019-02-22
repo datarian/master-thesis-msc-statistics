@@ -602,7 +602,7 @@ class Cleaner:
         remaining_without_dates = [r for r in remaining_object_features if r not in DATE_FEATURES]
 
         if remaining_without_dates:
-            logger.warning("After cleaning, the following features were left untreated and automatically coerced to "Categorical" (nominal): {}".format(remaining_without_dates))
+            logger.warning("After cleaning, the following features were left untreated and automatically coerced to 'category' (nominal): {}".format(remaining_without_dates))
             data[remaining_without_dates] = data[remaining_without_dates].astype("category")
         logger.info("Cleaning completed...")
         return data
