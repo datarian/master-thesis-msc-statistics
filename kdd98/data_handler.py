@@ -497,52 +497,52 @@ class Cleaner:
         def fix_format(d):
             if not pd.isna(d):
                 if len(d) == 3:
-                    d = '0'+d
+                    d = "0"+d
             return d
 
         data[DATE_FEATURES] = data.loc[:,DATE_FEATURES].applymap(fix_format)
 
         # Fix formatting for ZIP feature
         data.ZIP = data.ZIP.str.replace(
-            '-', '').replace([' ', '.'], np.nan).astype('int64')
+            "-", "").replace([" ", "."], np.nan).astype("int64")
         # Fix binary encoding inconsistency for NOEXCH
         data.NOEXCH = data.NOEXCH.str.replace("X", "1")
         # Fix some NA value problems:
-        data[['MDMAUD_R', 'MDMAUD_F', 'MDMAUD_A']] = data.loc[:, ['MDMAUD_R', 'MDMAUD_F', 'MDMAUD_A']].replace('X', np.nan)
+        data[["MDMAUD_R", "MDMAUD_F", "MDMAUD_A"]] = data.loc[:, ["MDMAUD_R", "MDMAUD_F", "MDMAUD_A"]].replace("X", np.nan)
 
         # Binary Features
         binary_transformers = ColumnTransformer([
             ("binary_x_bl",
              BinaryFeatureRecode(
-                 value_map={'true': 'X', 'false': ' '}, correct_noisy=False),
-             ['PEPSTRFL', 'MAJOR', 'RECINHSE',
-                 'RECP3', 'RECPGVG', 'RECSWEEP']
+                 value_map={"true": "X", "false": " "}, correct_noisy=False),
+             ["PEPSTRFL", "MAJOR", "RECINHSE",
+                 "RECP3", "RECPGVG", "RECSWEEP"]
              ),
             ("binary_y_n",
              BinaryFeatureRecode(
-                 value_map={'true': 'Y', 'false': 'N'}, correct_noisy=False),
-             ['COLLECT1', 'VETERANS', 'BIBLE', 'CATLG', 'HOMEE', 'PETS', 'CDPLAY', 'STEREO',
-              'PCOWNERS', 'PHOTO', 'CRAFTS', 'FISHER', 'GARDENIN', 'BOATS', 'WALKER', 'KIDSTUFF',
-              'CARDS', 'PLATES']
+                 value_map={"true": "Y", "false": "N"}, correct_noisy=False),
+             ["COLLECT1", "VETERANS", "BIBLE", "CATLG", "HOMEE", "PETS", "CDPLAY", "STEREO",
+              "PCOWNERS", "PHOTO", "CRAFTS", "FISHER", "GARDENIN", "BOATS", "WALKER", "KIDSTUFF",
+              "CARDS", "PLATES"]
              ),
             ("binary_e_i",
              BinaryFeatureRecode(
-                 value_map={'true': "E", 'false': 'I'}, correct_noisy=False),
-             ['AGEFLAG']
+                 value_map={"true": "E", "false": "I"}, correct_noisy=False),
+             ["AGEFLAG"]
              ),
             ("binary_h_u",
              BinaryFeatureRecode(
-                 value_map={'true': "H", 'false': 'U'}, correct_noisy=False),
-             ['HOMEOWNR']),
+                 value_map={"true": "H", "false": "U"}, correct_noisy=False),
+             ["HOMEOWNR"]),
             ("binary_b_bl",
              BinaryFeatureRecode(
-                 value_map={'true': 'B', 'false': ' '}, correct_noisy=False),
-             ['MAILCODE']
+                 value_map={"true": "B", "false": " "}, correct_noisy=False),
+             ["MAILCODE"]
              ),
             ("binary_1_0",
              BinaryFeatureRecode(
-                 value_map={'true': '1', 'false': '0'}, correct_noisy=False),
-             ['HPHONE_D', 'NOEXCH']
+                 value_map={"true": "1", "false": "0"}, correct_noisy=False),
+             ["HPHONE_D", "NOEXCH"]
              )
         ])
         binarys = binary_transformers.fit_transform(data)
@@ -572,11 +572,11 @@ class Cleaner:
         ordinal_transformer = ColumnTransformer([
             ("order_mdmaud",
              OrdinalEncoder(mapping=ORDINAL_MAPPING_MDMAUD,
-                            handle_unknown='ignore'),
-             ['MDMAUD_R', 'MDMAUD_A']),
+                            handle_unknown="ignore"),
+             ["MDMAUD_R", "MDMAUD_A"]),
             ("order_rfa",
              OrdinalEncoder(mapping=ORDINAL_MAPPING_RFA,
-                            handle_unknown='ignore'),
+                            handle_unknown="ignore"),
                             list(data.filter(regex=r"RFA_\d{1,2}A", axis=1).columns.values)),
             ("recode_socioecon", RecodeUrbanSocioEconomic(), ["DOMAINUrbanicity", "DOMAINSocioEconomic"])
         ])
@@ -585,7 +585,7 @@ class Cleaner:
             data, ordinals, ordinal_transformer, new_dtype="category")
 
         # Ensure the remaining, already numeric ordinal features are in the correct pandas data type
-        remaining_ordinals = ['WEALTH1','WEALTH2','INCOME']+data.filter(
+        remaining_ordinals = ["WEALTH1","WEALTH2","INCOME"]+data.filter(
             regex=r"RFA_\d{1,2}F").columns.values.tolist()
 
         for f in data[remaining_ordinals]:
@@ -602,7 +602,7 @@ class Cleaner:
         remaining_without_dates = [r for r in remaining_object_features if r not in DATE_FEATURES]
 
         if remaining_without_dates:
-            logger.warning("After cleaning, the following features were left untreated and automatically coerced to 'Categorical' (nominal): {}".format(remaining_without_dates))
+            logger.warning("After cleaning, the following features were left untreated and automatically coerced to "Categorical" (nominal): {}".format(remaining_without_dates))
             data[remaining_without_dates] = data[remaining_without_dates].astype("category")
         logger.info("Cleaning completed...")
         return data
@@ -630,8 +630,8 @@ class Cleaner:
         drop_features.update(PROMO_HISTORY_DATES+GIVING_HISTORY_DATES)
 
         timedelta_transformer = ColumnTransformer([
-            ("time_last_donation", DeltaTime(unit='months'), ['LASTDATE','MINRDATE','MAXRDATE','MAXADATE']),
-            ("membership_years", DeltaTime(unit='years'),['ODATEDW'])
+            ("time_last_donation", DeltaTime(unit="months"), ["LASTDATE","MINRDATE","MAXRDATE","MAXADATE"]),
+            ("membership_years", DeltaTime(unit="years"),["ODATEDW"])
         ])
         timedeltas = timedelta_transformer.fit_transform(data)
         data = ut.update_df_with_transformed(data, timedeltas, timedelta_transformer)
