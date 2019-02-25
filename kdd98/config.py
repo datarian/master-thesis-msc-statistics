@@ -38,7 +38,7 @@ class Config:
         "reference_date": pd.datetime(1997, 6, 1),
         "color_palette": sns.cubehelix_palette(8, start=.5, rot=-.75, reverse=True, dark=0.5),
         "color_palette_binary": sns.cubehelix_palette(2, start=.5, rot=-.75, reverse=True, dark=0.5),
-        "color_map": sns.cubehelix_palette(8, start=.5, rot=-.75, as_cmap=True, reverse=True, dark=0.5),
+        "color_map": sns.cubehelix_palette(8, start=.5, rot=-.75, as_cmap=True, reverse=False, dark=0.5),
         "color_map_diverging": sns.diverging_palette(10, 220, sep=80, n=20, as_cmap=True)
     }
 
