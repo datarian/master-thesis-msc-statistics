@@ -172,7 +172,7 @@ INTEREST_FEATURES = ["COLLECT1", "VETERANS", "BIBLE", "CATLG", "HOMEE", "PETS",
                      "FISHER", "GARDENIN", "BOATS", "WALKER", "KIDSTUFF",
                      "CARDS", "PLATES"]
 
-PROMO_HISTORY_DATES = ["ADATE_3", "ADATE_4", "ADATE_5", "ADATE_6",
+PROMO_HISTORY_DATES = ["ADATE_2", "ADATE_3", "ADATE_4", "ADATE_5", "ADATE_6",
                        "ADATE_7", "ADATE_8", "ADATE_9", "ADATE_10",
                        "ADATE_11", "ADATE_12", "ADATE_13",  "ADATE_14",
                        "ADATE_15", "ADATE_16", "ADATE_17", "ADATE_18",
@@ -702,7 +702,7 @@ class Cleaner:
                                 ("membership_years", DeltaTime(unit="years"),["ODATEDW"])
                               ]),
                 "file": "timedelta_transformer.pkl",
-                "drop": []
+                "drop": ["ODATE", "LASTDATE","MINRDATE","MAXRDATE","MAXADATE"]
             },
             "hashing": {
                 "transformer": ColumnTransformer([
