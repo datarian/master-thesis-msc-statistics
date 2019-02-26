@@ -476,7 +476,12 @@ class Cleaner:
         self.dl = data_loader
         assert(self.dl.raw_data_file_name in Config.get("learn_file_name", "learn_test_file_name", "validation_file_name"))
         self.dimension_cols = None
-        pathlib.Path(Config.get("model_store")).mkdir(parents=True,exist_ok=True)
+        try:
+            pathlib.Path(Config.get("model_store")).mkdir(parents=True,exist_ok=True)
+        except Exception as e:
+            message = "Failed to create model store directory '{}'.\nCheck permissions!".format(pathlib.Path(Config.get("model_store")))
+            logger.error(message)
+            raise(RuntimeError(message))
 
     def drop_if_exists(self, data, features):
 
@@ -524,8 +529,11 @@ class Cleaner:
                     with open(pathlib.Path(Config.get("model_store", c["file"]), "rb")) as ms:
                         transformer = pkl.load(ms)
                 except Exception as e:
-                    logger.error("Failed to load fitted transformer {}. Aborting preprocessing...".format(t))
-                    raise(e)
+                    message = "Failed to load fitted transformer {}.\n"\
+                              "Call function with fit=True first to learn the transformers.\n"\
+                              "Aborting preprocessing...".format(t)
+                    logger.error(message)
+                    raise(RuntimeError(message))
                 transformed = transformer.transform(data)
                 data = ut.update_df_with_transformed(data, transformed, transformer)
                 drop_features.update(c["drop"])
@@ -716,7 +724,7 @@ class Cleaner:
                                 ("membership_years", DeltaTime(unit="years"),["ODATEDW"])
                               ]),
                 "file": "timedelta_transformer.pkl",
-                "drop": ["ODATE", "LASTDATE","MINRDATE","MAXRDATE","MAXADATE"]
+                "drop": ["ODATEDW", "LASTDATE","MINRDATE","MAXRDATE","MAXADATE"]
             },
             "hashing": {
                 "transformer": ColumnTransformer([
