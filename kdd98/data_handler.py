@@ -8,8 +8,10 @@ Created on Fri Aug 24 10:18:44 2018
 import logging
 import os
 import pathlib
+import pickle as pkl
 import urllib
 import zipfile
+from collections import OrderedDict
 
 import numpy as np
 import pandas as pd
@@ -17,10 +19,13 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 
 import kdd98.utils_transformer as ut
+from category_encoders import HashingEncoder
 from kdd98.config import Config
-from kdd98.transformers import (BinaryFeatureRecode, DeltaTime,
-                                MonthsToDonation, MultiByteExtract,
-                                OrdinalEncoder, RecodeUrbanSocioEconomic)
+from kdd98.transformers import (BinaryFeatureRecode, DateFormatter, DeltaTime,
+                                MDMAUDFormatter, MonthsToDonation,
+                                MultiByteExtract, NOEXCHFormatter,
+                                OrdinalEncoder, RecodeUrbanSocioEconomic,
+                                ZipFormatter)
 
 # Set up the logger
 logging.basicConfig(filename=__name__+'.log', level=logging.INFO)
@@ -96,7 +101,7 @@ CATEGORICAL_FEATURES = ["OSOURCE", "TCODE", "DOMAIN", "STATE", "PVASTATE", "CLUS
                         "GEOCODE2", "TARGET_D"]
 
 # Nominal features needing further cleaning treatment
-NOMINAL_FEATURES = ["OSOURCE", "TCODE", "RFA_3", "RFA_4", "RFA_5", "RFA_6",
+NOMINAL_FEATURES = ["OSOURCE", "TCODE", "RFA_2", "RFA_3", "RFA_4", "RFA_5", "RFA_6",
                     "RFA_7", "RFA_8", "RFA_9", "RFA_10", "RFA_11", "RFA_12",
                     "RFA_13", "RFA_14", "RFA_15", "RFA_16", "RFA_17", "RFA_18",
                     "RFA_19", "RFA_20", "RFA_21", "RFA_22", "RFA_23",
@@ -471,6 +476,7 @@ class Cleaner:
         self.dl = data_loader
         assert(self.dl.raw_data_file_name in Config.get("learn_file_name", "learn_test_file_name", "validation_file_name"))
         self.dimension_cols = None
+        pathlib.Path(Config.get("model_store")).mkdir(parents=True,exist_ok=True)
 
     def drop_if_exists(self, data, features):
 
@@ -481,118 +487,169 @@ class Cleaner:
                 logger.info("Tried dropping feature {}, but it was not present in the data. Possibly alreay removed earlier.".format(f))
         return data
 
+    def process_transformers(self, data, transformer_config, fit=True):
+        data = data.copy(deep=True)
+        drop_features = set()
 
-    def clean(self):
+        for t, c in transformer_config.items():
+            logging.info("Working on transformer {}".format(t))
+            transformed = None
+            if fit:
+                transformer = c["transformer"]
+                try:
+                    transformed = transformer.fit_transform(data)
+                except Exception as e:
+                    logger.error("Failed to apply transformer {} for reason: {}".format(t,e))
+                    print(e)
+                data = ut.update_df_with_transformed(data, transformed, transformer)
+                drop_features.update(c["drop"])
+                with open(pathlib.Path(Config.get("model_store"),c["file"]), "wb") as ms:
+                    pkl.dump(transformer, ms)
+            else:
+                try:
+                    with open(pathlib.Path(Config.get("model_store", c["file"]), "rb")) as ms:
+                        transformer = pkl.load(ms)
+                except Exception as e:
+                    logger.error("Failed to load fitted transformer {}. Aborting preprocessing...".format(t))
+                    raise(e)
+                transformed = transformer.transform(data)
+                data = ut.update_df_with_transformed(data, transformed, transformer)
+                drop_features.update(c["drop"])
+
+        return (data, drop_features)
+
+    def clean(self, fit=False):
+        """
+        Performs cleaning operations on a raw dataset as read in by pandas.read_csv.
+
+        Params
+        ------
+        fit:    Whether to learn the transformations on training data
+                Default False. If false, saved transformers are loaded
+                and applied to test / validation data.
+        """
         data = self.dl.raw_data.copy(deep=True)
         logger.info("Starting cleaning of raw dataset")
 
-        # Transforming the data and rebuilding the pandas dataframe
         drop_features = set()
+
+        transformers = OrderedDict({
+            "dates": {
+                "transformer": ColumnTransformer([
+                    ("date_format",
+                    DateFormatter(),
+                    DATE_FEATURES)
+                ]),
+                "file": "date_format_transformer.pkl",
+                "drop": []
+            },
+            "zipcode": {
+                "transformer": ColumnTransformer([
+                    ("zip_format",
+                    ZipFormatter(),
+                    ["ZIP"])
+                ]),
+                "file": "zip_format_transformer.pkl",
+                "drop": []
+            },
+            "noexch": {
+                "transformer": ColumnTransformer([
+                    ("noexch_format",
+                    NOEXCHFormatter(),
+                    ["NOEXCH"])
+                ]),
+                "file": "noexch_format_transformer.pkl",
+                "drop": []
+            },
+            "mdmaud": {
+                "transformer": ColumnTransformer([
+                    ("format_mdmaud",
+                    MDMAUDFormatter(),
+                    ["MDMAUD_R", "MDMAUD_F", "MDMAUD_A"])
+                ]),
+                "file": "mdmaud_format_transformer.pkl",
+                "drop": []
+            },
+            "binary": {
+                "transformer": ColumnTransformer([
+                    ("binary_x_bl",
+                    BinaryFeatureRecode(
+                        value_map={"true": "X", "false": " "}, correct_noisy=False),
+                    ["PEPSTRFL", "MAJOR", "RECINHSE", "RECP3", "RECPGVG", "RECSWEEP"]
+                    ),
+                    ("binary_y_n",
+                    BinaryFeatureRecode(
+                        value_map={"true": "Y", "false": "N"}, correct_noisy=False),
+                    ["COLLECT1", "VETERANS", "BIBLE", "CATLG", "HOMEE", "PETS", "CDPLAY", "STEREO", "PCOWNERS", "PHOTO", "CRAFTS", "FISHER", "GARDENIN", "BOATS", "WALKER", "KIDSTUFF", "CARDS", "PLATES"]
+                    ),
+                    ("binary_e_i",
+                    BinaryFeatureRecode(
+                        value_map={"true": "E", "false": "I"}, correct_noisy=False),
+                    ["AGEFLAG"]
+                    ),
+                    ("binary_h_u",
+                    BinaryFeatureRecode(
+                        value_map={"true": "H", "false": "U"}, correct_noisy=False),
+                    ["HOMEOWNR"]),
+                    ("binary_b_bl",
+                    BinaryFeatureRecode(
+                        value_map={"true": "B", "false": " "}, correct_noisy=False),
+                    ["MAILCODE"]
+                    ),
+                    ("binary_1_0",
+                    BinaryFeatureRecode(
+                        value_map={"true": "1", "false": "0"}, correct_noisy=False),
+                    ["HPHONE_D", "NOEXCH"]
+                    )
+                ]),
+                "file": "binary_transformer.pkl",
+                "drop": []
+            },
+            "multibyte": {
+                "transformer": ColumnTransformer([
+                                ("spread_rfa",
+                                MultiByteExtract(["R", "F", "A"]),
+                                NOMINAL_FEATURES[2:]),
+                                ("spread_domain",
+                                MultiByteExtract(["Urbanicity", "SocioEconomic"]),
+                                ["DOMAIN"])
+                            ]),
+                "file": "multibyte_transformer.pkl",
+                "drop": NOMINAL_FEATURES[2:]+["DOMAIN"]
+            },
+            "ordinal": {
+                "transformer": ColumnTransformer([
+                                ("order_mdmaud",
+                                OrdinalEncoder(mapping=ORDINAL_MAPPING_MDMAUD,
+                                                handle_unknown="ignore"),
+                                ["MDMAUD_R", "MDMAUD_A"]),
+                                ("order_rfa",
+                                OrdinalEncoder(mapping=ORDINAL_MAPPING_RFA,
+                                                handle_unknown="ignore"),
+                                                ["RFA_"+str(i)+"A" for i in range(2,25)]),
+                                ("recode_socioecon", RecodeUrbanSocioEconomic(), ["DOMAINUrbanicity", "DOMAINSocioEconomic"])
+                            ]),
+                "file": "ordinal_transformer.pkl",
+                "drop": []
+            },
+            "extraordinals": {
+                "transformer": ColumnTransformer([
+                    ("order_remaining",
+                    OrdinalEncoder(handle_unknown="ignore"),
+                    ["WEALTH1","WEALTH2","INCOME"]+["RFA_"+str(i)+"F" for i in range(2,25)])
+                ]),
+                "file": "extra_ordinals_transformer.pkl",
+                "drop": []
+            }
+        })
+
+        data, drop_features = self.process_transformers(data, transformers, fit)
+
+        # Transforming the data and rebuilding the pandas dataframe
+
         # Some features are redundant, these are removed here
         drop_features.update(DROP_INITIAL)
         drop_features.update(DROP_REDUNDANT)
-
-        # Fix input errors for date features
-        # The parser used on the date features
-        def fix_format(d):
-            if not pd.isna(d):
-                if len(d) == 3:
-                    d = "0"+d
-            return d
-
-        data[DATE_FEATURES] = data.loc[:,DATE_FEATURES].applymap(fix_format)
-
-        # Fix formatting for ZIP feature
-        data.ZIP = data.ZIP.str.replace(
-            "-", "").replace([" ", "."], np.nan).astype("int64")
-        # Fix binary encoding inconsistency for NOEXCH
-        data.NOEXCH = data.NOEXCH.str.replace("X", "1")
-        # Fix some NA value problems:
-        data[["MDMAUD_R", "MDMAUD_F", "MDMAUD_A"]] = data.loc[:, ["MDMAUD_R", "MDMAUD_F", "MDMAUD_A"]].replace("X", np.nan)
-
-        # Binary Features
-        binary_transformers = ColumnTransformer([
-            ("binary_x_bl",
-             BinaryFeatureRecode(
-                 value_map={"true": "X", "false": " "}, correct_noisy=False),
-             ["PEPSTRFL", "MAJOR", "RECINHSE",
-                 "RECP3", "RECPGVG", "RECSWEEP"]
-             ),
-            ("binary_y_n",
-             BinaryFeatureRecode(
-                 value_map={"true": "Y", "false": "N"}, correct_noisy=False),
-             ["COLLECT1", "VETERANS", "BIBLE", "CATLG", "HOMEE", "PETS", "CDPLAY", "STEREO",
-              "PCOWNERS", "PHOTO", "CRAFTS", "FISHER", "GARDENIN", "BOATS", "WALKER", "KIDSTUFF",
-              "CARDS", "PLATES"]
-             ),
-            ("binary_e_i",
-             BinaryFeatureRecode(
-                 value_map={"true": "E", "false": "I"}, correct_noisy=False),
-             ["AGEFLAG"]
-             ),
-            ("binary_h_u",
-             BinaryFeatureRecode(
-                 value_map={"true": "H", "false": "U"}, correct_noisy=False),
-             ["HOMEOWNR"]),
-            ("binary_b_bl",
-             BinaryFeatureRecode(
-                 value_map={"true": "B", "false": " "}, correct_noisy=False),
-             ["MAILCODE"]
-             ),
-            ("binary_1_0",
-             BinaryFeatureRecode(
-                 value_map={"true": "1", "false": "0"}, correct_noisy=False),
-             ["HPHONE_D", "NOEXCH"]
-             )
-        ])
-        binarys = binary_transformers.fit_transform(data)
-        data = ut.update_df_with_transformed(
-            data, binarys, binary_transformers)
-
-        # Multibyte Categoricals
-        multibyte_transformer = ColumnTransformer([
-            ("spread_rfa",
-             MultiByteExtract(["R", "F", "A"]),
-             NOMINAL_FEATURES[2:]),
-             ("spread_domain",
-             MultiByteExtract(["Urbanicity", "SocioEconomic"]),
-             ["DOMAIN"])
-        ])
-        multibytes = multibyte_transformer.fit_transform(data)
-        # The original multibyte-features are dropped at a later stage
-        drop_features.update(NOMINAL_FEATURES[2:])
-        drop_features.update(["DOMAIN"])
-
-        data = ut.update_df_with_transformed(
-            data, multibytes, multibyte_transformer, new_dtype="category")
-
-        # Ordinals
-        # This transformation MUST be defined and applied after splitting
-        # multibyte features!
-        ordinal_transformer = ColumnTransformer([
-            ("order_mdmaud",
-             OrdinalEncoder(mapping=ORDINAL_MAPPING_MDMAUD,
-                            handle_unknown="ignore"),
-             ["MDMAUD_R", "MDMAUD_A"]),
-            ("order_rfa",
-             OrdinalEncoder(mapping=ORDINAL_MAPPING_RFA,
-                            handle_unknown="ignore"),
-                            list(data.filter(regex=r"RFA_\d{1,2}A", axis=1).columns.values)),
-            ("recode_socioecon", RecodeUrbanSocioEconomic(), ["DOMAINUrbanicity", "DOMAINSocioEconomic"])
-        ])
-        ordinals = ordinal_transformer.fit_transform(data)
-        data = ut.update_df_with_transformed(
-            data, ordinals, ordinal_transformer, new_dtype="category")
-
-        # Ensure the remaining, already numeric ordinal features are in the correct pandas data type
-        remaining_ordinals = ["WEALTH1","WEALTH2","INCOME"]+data.filter(
-            regex=r"RFA_\d{1,2}F").columns.values.tolist()
-
-        for f in data[remaining_ordinals]:
-            try:
-                data[f] = data[f].cat.as_ordered()
-            except AttributeError:
-                data[f] = data[f].astype("category").cat.as_ordered()
 
         # Now, drop all features marked for removal
         logger.info("About to drop these features in cleaning: {}".format(drop_features))
@@ -607,45 +664,68 @@ class Cleaner:
         logger.info("Cleaning completed...")
         return data
 
-    def preprocess(self):
+    def preprocess(self, fit=False):
+        """
+        Applies several transformers to preprocess data.
+
+        Params
+        ------
+        fit:    boolean indicating whether the transformers should be learned
+                (on training data) or learned and saved transformers should
+                be applied to test / validation data. Default False
+        """
 
         data = self.dl.clean_data.copy(deep=True)
         logger.info("Starting preprocessing of clean dataset")
 
+        # Set of feature names to be dropped after transformations
         drop_features = set()
 
-        # Treat date features. These are converted to time deltas
-        # in either months or years
-        don_hist_transformer = ColumnTransformer([
-            ("months_to_donation",
-            MonthsToDonation(),
-            PROMO_HISTORY_DATES+GIVING_HISTORY_DATES
-            )
-        ])
-        donation_responses = don_hist_transformer.fit_transform(data)
-        data = ut.update_df_with_transformed(
-            data, donation_responses, don_hist_transformer)
+        # Definition of transformers to be applied. If they are applied
+        # to training data, they should be fitted and transformed.
+        # For test / validation data, call the function with fit=False
+        # to only transform and result with the same transformations
+        # as the training set.
+        transformers = transformers = OrderedDict({
+            "donation_hist": {
+                "transformer": ColumnTransformer([
+                                ("months_to_donation",
+                                MonthsToDonation(),
+                                PROMO_HISTORY_DATES+GIVING_HISTORY_DATES
+                                )
+                            ]),
+                "file": "donation_responses_transformer.pkl",
+                "drop": PROMO_HISTORY_DATES+GIVING_HISTORY_DATES
+            },
+            "timedelta": {
+                "transformer": ColumnTransformer([
+                                ("time_last_donation", DeltaTime(unit="months"), ["LASTDATE","MINRDATE","MAXRDATE","MAXADATE"]),
+                                ("membership_years", DeltaTime(unit="years"),["ODATEDW"])
+                              ]),
+                "file": "timedelta_transformer.pkl",
+                "drop": []
+            },
+            "hashing": {
+                "transformer": ColumnTransformer([
+                                ("hash_osource", HashingEncoder(), ['OSOURCE']),
+                                ("hash_tcode", HashingEncoder(), ['TCODE']),
+                                ("hash_zip", HashingEncoder(), ['ZIP'])
+        ]),
+                "file": "hashing_transformer.pkl",
+                "drop": ['OSOURCE', 'TCODE', 'ZIP']
+            }
+        })
 
-        logger.info("About to drop these features in preprocessing: {}".format(drop_features))
-        drop_features.update(PROMO_HISTORY_DATES+GIVING_HISTORY_DATES)
-
-        timedelta_transformer = ColumnTransformer([
-            ("time_last_donation", DeltaTime(unit="months"), ["LASTDATE","MINRDATE","MAXRDATE","MAXADATE"]),
-            ("membership_years", DeltaTime(unit="years"),["ODATEDW"])
-        ])
-        timedeltas = timedelta_transformer.fit_transform(data)
-        data = ut.update_df_with_transformed(data, timedeltas, timedelta_transformer)
-
-        drop_features.update(DATE_FEATURES)
-
-
-        data = self.drop_if_exists(data, drop_features)
+        # Perform transformations
+        data, drop_features = self.process_transformers(data, transformers, fit)
 
         # Imputation
 
         # For the donation amounts per campaign, NaN actually means 0 dollars donated, so change this accordingly.
         data[GIVING_HISTORY] = data.loc[:,GIVING_HISTORY].fillna(0, axis=1)
 
+        logger.info("About to drop these features in preprocessing: {}".format(drop_features))
+        data = self.drop_if_exists(data, drop_features)
         logger.info("Preprocessing completed...")
         return data
 

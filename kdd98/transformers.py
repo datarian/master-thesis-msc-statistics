@@ -30,6 +30,10 @@ __all__ = ['ColumnSelector',
            'BinaryFeatureRecode',
            'MultiByteExtract',
            'RecodeUrbanSocioEconomic',
+           'DateFormatter',
+           'ZipFormatter',
+           'NOEXCHFormatter',
+           'MDMAUDFormatter',
            'DeltaTime',
            'MonthsToDonation']
 
@@ -287,6 +291,100 @@ class BinaryFeatureRecode(BaseEstimator, TransformerMixin):
 
     def get_feature_names(self):
         if self.is_fit:
+            return self.feature_names
+
+class DateFormatter(BaseEstimator, TransformerMixin):
+    """
+    Fixes input errors for date features
+    """
+    def __init__(self):
+        self.feature_names = None
+
+    def fit(self, X, y=None):
+        self.feature_names = X.columns.values.tolist()
+        return self
+
+    def _fix_format(self, d):
+            if not pd.isna(d):
+                if len(d) == 3:
+                    d = "0"+d
+            return d
+
+    def transform(self, X, y=None):
+        assert isinstance(X, pd.DataFrame)
+
+        X = X.applymap(self._fix_format)
+        return X
+
+    def get_feature_names(self):
+        if self.feature_names:
+            return self.feature_names
+
+class ZipFormatter(BaseEstimator, TransformerMixin):
+    """
+    Fixes input errors for zip codes
+    """
+    def __init__(self):
+        self.feature_names = None
+
+    def fit(self, X, y=None):
+        self.feature_names = X.columns.values.tolist()
+        self.is_fitted = True
+        return self
+
+    def transform(self, X, y=None):
+        assert(isinstance(X, pd.DataFrame))
+        for f in self.feature_names:
+            X[f] = X[f].str.replace("-", "").replace([" ", "."], np.nan).astype("int64")
+        return X
+
+    def get_feature_names(self):
+        return self.feature_names
+
+class NOEXCHFormatter(BaseEstimator, TransformerMixin):
+    """
+    Fixes input errors for zip codes
+    """
+    def __init__(self):
+        self.feature_names = None
+
+    def fit(self, X, y=None):
+        self.feature_names = X.columns.values.tolist()
+        return self
+
+    def transform(self, X, y=None):
+        assert(isinstance(X, pd.DataFrame))
+        for f in self.feature_names:
+            X[f] = X[f].str.replace("X", "1")
+        return X
+
+    def get_feature_names(self):
+        if not isinstance(self.feature_names, list):
+            raise ValueError("Estimator has to be fitted to return feature names.")
+        else:
+            return self.feature_names
+
+class MDMAUDFormatter(BaseEstimator, TransformerMixin):
+    """
+    Fixes input errors for MDMAUD features
+    """
+    def __init__(self):
+        self.feature_names = None
+
+    def fit(self, X, y=None):
+        self.feature_names = X.columns.values.tolist()
+        return self
+
+    def transform(self, X, y=None):
+        assert(isinstance(X, pd.DataFrame))
+
+        X = X.replace("X", np.nan)
+        return X
+
+    def get_feature_names(self):
+        if not isinstance(self.feature_names, list):
+            raise ValueError("Estimator has to be fitted to return feature names.")
+        else:
             return self.feature_names
 
 class DateHandler:

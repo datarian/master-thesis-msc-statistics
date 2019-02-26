@@ -33,20 +33,20 @@ def get_feature_names_from_transformer_collection(collection):
     return names
 
 
-def update_df_with_transformed(df_old, new_features, transformer, drop=[], new_dtype=None):
+def update_df_with_transformed(df_old, new_features, transformer, new_dtype=None):
     feat_names = get_feature_names_from_transformer_collection(transformer)
     transformed_df = pd.DataFrame(data=new_features, columns=feat_names,
                                   index=df_old.index)
     if new_dtype:
         transformed_df = transformed_df.astype(new_dtype)
     if all(f in df_old.columns.values.tolist() for f in feat_names):
-        df_old[feat_names] = transformed_df
+        for f in feat_names:
+            df_old[f] = transformed_df.loc[:,f]
         df_new = df_old
     else:
         to_merge = [f for f in feat_names if f not in df_old.columns.values.tolist()]
         to_replace = [f for f in feat_names if f in df_old.columns.values.tolist()]
-        df_old[to_replace] = transformed_df.loc[:,to_replace]
+        for f in to_replace:
+            df_old[f] = transformed_df.loc[:,f]
         df_new = df_old.merge(transformed_df.loc[:,to_merge], on=df_old.index.name)
-    if len(drop) > 0:
-        df_new.drop(drop, axis=1, inplace=True)
     return df_new
