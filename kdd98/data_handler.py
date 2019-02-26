@@ -1126,7 +1126,7 @@ class Cleaner:
                     ["HPHONE_D", "NOEXCH"]
                     )
                 ]),
-                "dtype": None,
+                "dtype": "Int64",
                 "file": "binary_transformer.pkl",
                 "drop": []
             },
