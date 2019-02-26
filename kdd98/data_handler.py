@@ -1107,7 +1107,7 @@ class Cleaner:
                         value_map={"true": "1", "false": "0"}, correct_noisy=False),
                     ["HPHONE_D", "NOEXCH"]
                     )
-                ]),
+                ],n_jobs=-1),
                 "dtype": None,
                 "file": "binary_transformer.pkl",
                 "drop": []
@@ -1120,7 +1120,7 @@ class Cleaner:
                                 ("spread_domain",
                                 MultiByteExtract(["Urbanicity", "SocioEconomic"]),
                                 ["DOMAIN"])
-                            ]),
+                            ],n_jobs=-1),
                 "dtype": None,
                 "file": "multibyte_transformer.pkl",
                 "drop": NOMINAL_FEATURES[2:]+["DOMAIN"]
@@ -1136,7 +1136,7 @@ class Cleaner:
                                                 handle_unknown="ignore"),
                                                 ["RFA_"+str(i)+"A" for i in range(2,25)]),
                                 ("recode_socioecon", RecodeUrbanSocioEconomic(), ["DOMAINUrbanicity", "DOMAINSocioEconomic"])
-                            ]),
+                            ],n_jobs=-1),
                 "dtype": None,
                 "file": "ordinal_transformer.pkl",
                 "drop": []
@@ -1223,11 +1223,11 @@ class Cleaner:
                                 ("hash_tcode", HashingEncoder(), ['TCODE']),
                                 ("hash_zip", HashingEncoder(), ['ZIP']),
                                 ("hash_state", HashingEncoder(), ['STATE']),
-                                ("hash_cluster")
+                                ("hash_cluster", HashingEncoder(), ['CLUSTER'])
                               ]),
                 "dtype": None,
                 "file": "hashing_transformer.pkl",
-                "drop": ['OSOURCE', 'TCODE', 'ZIP']
+                "drop": ['OSOURCE', 'TCODE', 'ZIP', 'STATE', 'CLUSTER']
             }
         })
 
