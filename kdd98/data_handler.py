@@ -488,11 +488,25 @@ class Cleaner:
         return data
 
     def process_transformers(self, data, transformer_config, fit=True):
+        """
+        Works on a set of predefined transformers, applying each one consecutively
+        to the data. It also keeps a list of obsolete features that can be removed
+        afterwards.
+
+        Params
+        ------
+        data:   The dataset to process
+        transformer_config: A dict containing an ordered sequence of transformers to apply.
+                            See corresponding methods Cleaner.clean() and Cleaner.preprocess()
+        fit:    Whether to train the transformers on the data (learning data set) or only
+                apply fitted transformers (test/validation data). Default True
+
+        """
         data = data.copy(deep=True)
         drop_features = set()
 
         for t, c in transformer_config.items():
-            logging.info("Working on transformer {}".format(t))
+            logging.info("Working on transformer '{}'".format(t))
             transformed = None
             if fit:
                 transformer = c["transformer"]
