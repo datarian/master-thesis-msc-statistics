@@ -518,15 +518,14 @@ class Cleaner:
 
         return (data, drop_features)
 
-    def clean(self, fit=False):
+    def clean(self, fit=True):
         """
         Performs cleaning operations on a raw dataset as read in by pandas.read_csv.
 
         Params
         ------
-        fit:    Whether to learn the transformations on training data
-                Default False. If false, saved transformers are loaded
-                and applied to test / validation data.
+        fit:    Whether to learn the transformations on training data. If              false, saved transformers are loaded
+                and applied to test / validation data. Default True
         """
         data = self.dl.raw_data.copy(deep=True)
         logger.info("Starting cleaning of raw dataset")
@@ -664,7 +663,7 @@ class Cleaner:
         logger.info("Cleaning completed...")
         return data
 
-    def preprocess(self, fit=False):
+    def preprocess(self, fit=True):
         """
         Applies several transformers to preprocess data.
 
