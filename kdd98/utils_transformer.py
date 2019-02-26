@@ -38,7 +38,11 @@ def update_df_with_transformed(df_old, new_features, transformer, new_dtype=None
     transformed_df = pd.DataFrame(data=new_features, columns=feat_names,
                                   index=df_old.index)
     if new_dtype:
-        transformed_df = transformed_df.astype(new_dtype)
+        if new_dtype == "Int64":
+            transformed_df = transformed_df.astype("float64")
+            transformed_df = transformed_df.astype("Int64")
+        else:
+            transformed_df = transformed_df.astype(new_dtype)
     if all(f in df_old.columns.values.tolist() for f in feat_names):
         for f in feat_names:
             df_old[f] = transformed_df.loc[:,f]
@@ -48,5 +52,5 @@ def update_df_with_transformed(df_old, new_features, transformer, new_dtype=None
         to_replace = [f for f in feat_names if f in df_old.columns.values.tolist()]
         for f in to_replace:
             df_old[f] = transformed_df.loc[:,f]
-        df_new = df_old.merge(transformed_df.loc[:,to_merge], on=df_old.index.name)
+        df_new = df_old.join(transformed_df.loc[:,to_merge], how="inner")
     return df_new

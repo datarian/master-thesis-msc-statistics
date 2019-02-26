@@ -1060,7 +1060,7 @@ class Cleaner:
                     DateFormatter(),
                     DATE_FEATURES)
                 ]),
-                "dtype": None,
+                "dtype": "Int64",
                 "file": "date_format_transformer.pkl",
                 "drop": []
             },
@@ -1080,7 +1080,7 @@ class Cleaner:
                     NOEXCHFormatter(),
                     ["NOEXCH"])
                 ]),
-                "dtype": None,
+                "dtype": "Int64",
                 "file": "noexch_format_transformer.pkl",
                 "drop": []
             },
