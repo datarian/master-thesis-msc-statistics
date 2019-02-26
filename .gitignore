@@ -109,3 +109,6 @@ data/*.h5
 .Rproj.user
 .vscode/
 mathesis-kdd-cup.code-workspace
+
+# Saved models
+models/*.pkl
