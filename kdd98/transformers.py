@@ -34,7 +34,8 @@ __all__ = ['DropSparseLowVar',
            'NOEXCHFormatter',
            'MDMAUDFormatter',
            'DeltaTime',
-           'MonthsToDonation']
+           'MonthsToDonation',
+           'Hasher']
 
 
 class DropSparseLowVar(BaseEstimator, TransformerMixin):
@@ -544,12 +545,17 @@ class MonthsToDonation(BaseEstimator, TransformerMixin, DateHandler):
 
 class Hasher(BaseEstimator, TransformerMixin):
 
-    def __init__(self, verbose=0, n_components=8, cols=None, drop_invariant=False, return_df=True, hash_method='MD5'):
-        self.he = HashingEncoder(verbose=verbose, n_components = n_components, cols=cols, drop_invariant=drop_invariant, return_df=return_df, hash_method=hash_method)
+    def __init__(self, verbose=0, n_components=8, cols=None, drop_invariant=False, hash_method='md5'):
+        self.verbose=verbose
+        self.n_components=n_components
+        self.cols = cols
+        self.drop_invariant=drop_invariant
+        self.hash_method=hash_method
+        self.he = HashingEncoder(verbose=self.verbose, n_components=self.n_components, cols=self.cols, drop_invariant=self.drop_invariant, return_df=True, hash_method=self.hash_method)
         self.feature_names = None
 
     def fit(self, X, y=None):
-        self.he = self.he.fit(X, y)
+        self.he.fit(X, y)
         return self
 
     def transform(self, X, y=None):
