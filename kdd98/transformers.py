@@ -123,7 +123,7 @@ class MultiByteExtract(BaseEstimator, TransformerMixin):
 
     Params:
     -------
-    field_names: A list with the new names for each byte
+    new_features: A list with the new names for each byte
                     that is to be spread
 
     impute: False means missing / malformatted entries will be coded NaN
@@ -132,24 +132,19 @@ class MultiByteExtract(BaseEstimator, TransformerMixin):
     drop_orig: Whether to drop the original multibyte feature or not.
     """
 
-    def __init__(self, field_names, impute=False):
-        self.field_names = field_names
+    def __init__(self, new_features):
+        self.new_features = new_features
         # determines how many bytes to extract
-        self.sigbytes = len(self.field_names)
-        self.impute = impute
+        self.sigbytes = len(self.new_features)
         self.feature_names = None
-        self.is_transformed = False
 
     def fit(self, X, y=None):
         assert isinstance(X, pd.DataFrame)
-        self.feature_names =X.columns.values.tolist()
+        self.feature_names = X.columns.values.tolist()
         return self
 
     def _fill_missing(self):
-        if not self.impute:
             return [np.nan]*self.sigbytes
-        else:
-            return [self.impute]*self.sigbytes
 
     def _spread(self, feature, index_name):
         """ Fills the byte dataset for each record
@@ -164,8 +159,8 @@ class MultiByteExtract(BaseEstimator, TransformerMixin):
             for row in pd.DataFrame(feature).itertuples(name=None):
                 # row[0] is the index, row[1] the content of the cell
                 if not row[1] is np.nan:
-                    if len(row[1]) == self.sigbytes:
-                        spread_field[row[0]] = list(row[1])
+                    if len(str(row[1])) == self.sigbytes:
+                        spread_field[row[0]] = list(str(row[1]))
                     else:
                         # The field is invalid
                         spread_field[row[0]] = self._fill_missing()
@@ -181,7 +176,7 @@ class MultiByteExtract(BaseEstimator, TransformerMixin):
         temp_df = pd.DataFrame.from_dict(
             data=spread_field,
             orient="index",
-            columns=["".join([feature.name, f]) for f in self.field_names])
+            columns=["".join([feature.name, f]) for f in self.new_features])
         temp_df.index.name = index_name
         # make sure all fields are categorical
         temp_df = temp_df.astype("category")
