@@ -531,7 +531,7 @@ class MonthsToDonation(BaseEstimator, TransformerMixin, DateHandler):
                     diffs, columns=[feat_name], index=X_trans.index), how="inner")
                 self.feature_names.extend([feat_name])
             except Exception as e:
-                logger.error("Failed to transform '{}' on featurefor reason {}".format(self.__class__.__name, e))
+                logger.error("Failed to transform '{}' on featurefor reason {}".format(self.__class__.__name__, e))
                 raise e
         return X_trans
 
