@@ -557,9 +557,12 @@ class Hasher(BaseEstimator, TransformerMixin):
 
         features = X.columns.values.tolist()
 
-        X_trans = self.he.transform()
+        X_trans = self.he.transform(X,y)
         generated_features = self.he.get_feature_names()
         self.feature_names = [f+"_"+g for f in features for g in generated_features]
+        X_trans.columns = self.feature_names
+
+        return X_trans
 
         def get_feature_names(self):
             if isinstance(self.feature_names, list):
