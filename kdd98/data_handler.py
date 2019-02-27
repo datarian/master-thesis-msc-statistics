@@ -19,7 +19,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 
 import kdd98.utils_transformer as ut
-from category_encoders import HashingEncoder
+from category_encoders import BinaryEncoder
 from kdd98.config import Config
 from kdd98.transformers import (BinaryFeatureRecode, DateFormatter, DeltaTime,
                                 MDMAUDFormatter, MonthsToDonation,
@@ -960,6 +960,8 @@ class Cleaner:
                 logger.info("Tried dropping feature {}, but it was not present in the data. Possibly alreay removed earlier.".format(f))
         return data
 
+
+
     def process_transformers(self, data, transformer_config, fit=True):
         """
         Works on a set of predefined transformers, applying each one consecutively
@@ -1191,17 +1193,30 @@ class Cleaner:
         # Set of feature names to be dropped after transformations
         drop_features = set()
 
+
+        # First off, low variance and sparse features are removed. These were found interactively.
+
+        # Cutoff for sparse features is 20%, meaning each feature that has more than 20% missing values is dropped.
+        # Low variance is interpreted as zero variance = constant features
+        LOW_VAR_SPARSE = {'RAMNT_24', 'PETS', 'STEREO', 'CARDS', 'CDPLAY', 'MDMAUD_R', 'SOLIH', 'RAMNT_20', 'CHILD18', 'RAMNT_11', 'GARDENIN', 'RAMNT_15', 'RAMNT_17', 'PCOWNERS', 'RAMNT_13', 'FISHER', 'RAMNT_21', 'HOMEE', 'BIBLE', 'PHOTO', 'RAMNT_19', 'RAMNT_7', 'BOATS', 'CHILD03', 'PVASTATE', 'SOLP3', 'CATLG', 'CRAFTS', 'GEOCODE', 'RAMNT_9', 'RAMNT_4', 'PLATES', 'VETERANS', 'KIDSTUFF', 'RFA_2R', 'RAMNT_3', 'RAMNT_6', 'CHILD12', 'NOEXCH', 'COLLECT1', 'RAMNT_23', 'CHILD07', 'RAMNT_5', 'NUMCHLD', 'RAMNT_10', 'MDMAUD_A', 'WALKER'}
+
+        def filter_features(features):
+            return list(set(features)-LOW_VAR_SPARSE)
+
+        logger.info("About to drop these sparse / constant features: {}".format(LOW_VAR_SPARSE))
+        data = self.drop_if_exists(data, LOW_VAR_SPARSE)
+
         # Definition of transformers to be applied. If they are applied
         # to training data, they should be fitted and transformed.
         # For test / validation data, call the function with fit=False
         # to only transform and result with the same transformations
         # as the training set.
-        transformers = transformers = OrderedDict({
+        transformers = OrderedDict({
             "donation_hist": {
                 "transformer": ColumnTransformer([
                                 ("months_to_donation",
                                 MonthsToDonation(),
-                                PROMO_HISTORY_DATES+GIVING_HISTORY_DATES
+                                filter_features(PROMO_HISTORY_DATES+GIVING_HISTORY_DATES)
                                 )
                             ]),
                 "dtype": None,
@@ -1210,26 +1225,59 @@ class Cleaner:
             },
             "timedelta": {
                 "transformer": ColumnTransformer([
-                                ("time_last_donation", DeltaTime(unit="months"), ["LASTDATE","MINRDATE","MAXRDATE","MAXADATE"]),
-                                ("membership_years", DeltaTime(unit="years"),["ODATEDW"])
+                                ("time_last_donation", DeltaTime(unit="months"), filter_features(["LASTDATE","MINRDATE","MAXRDATE","MAXADATE"])),
+                                ("membership_years", DeltaTime(unit="years"), filter_features(["ODATEDW"]))
                               ]),
                 "dtype": "Int64",
                 "file": "timedelta_transformer.pkl",
                 "drop": ["ODATEDW", "LASTDATE","MINRDATE","MAXRDATE","MAXADATE"]
-            },
-            "hashing": {
-                "transformer": ColumnTransformer([
-                                ("hash_osource", HashingEncoder(n_components=4), ['OSOURCE']),
-                                ("hash_tcode", Hasher(n_components=4), ['TCODE']),
-                                ("hash_zip", Hasher(n_components=4), ['ZIP']),
-                                ("hash_state", Hasher(n_components=4), ['STATE']),
-                                ("hash_cluster", Hasher(n_components=4), ['CLUSTER'])
-                              ]),
-                "dtype": "int64",
-                "file": "hashing_transformer.pkl",
-                "drop": ['OSOURCE', 'TCODE', 'ZIP', 'STATE', 'CLUSTER']
             }
         })
+
+        # Perform transformations
+        data, drop_features = self.process_transformers(data, transformers, fit)
+
+        logger.info("About to drop these features in preprocessing: {}".format(drop_features))
+        data = self.drop_if_exists(data, drop_features)
+        logger.info("Preprocessing completed...")
+        return data
+
+    def engineer(self, fit=True):
+        """
+        Applies several transformers to engineer data. Result is an imputed, all-numeric data set.
+
+        Params
+        ------
+        fit:    boolean indicating whether the transformers should be learned
+                (on training data) or learned and saved transformers should
+                be applied to test / validation data. Default False
+        """
+
+        data = self.dl.preprocessed_data.copy(deep=True)
+        logger.info("Starting engineering of preprocessed dataset")
+
+        # Set of feature names to be dropped after transformations
+        drop_features = set()
+
+        transformers = OrderedDict({
+            #Before dealing with categorical features, we need to impute.
+            "impute": {
+
+            },
+            "binary_encoding": {
+                "transformer": ColumnTransformer([
+                    ("be_osource", BinaryEncoder(), ['OSOURCE']),
+                    ("be_state", BinaryEncoder(),['STATE']),
+                    ("be_cluster", BinaryEncoder(),['CLUSTER']),
+                    ("be_tcode", BinaryEncoder(), ['TCODE']),
+                    ("be_zip", BinaryEncoder(), ['ZIP']),
+                    ()
+                ]),
+                "dtype": "int64",
+                "file": "binary_encoding_transformer.pkl",
+                "drop": ['OSOURCE', 'TCODE', 'ZIP', 'STATE', 'CLUSTER']
+            }
+        }
 
         # Perform transformations
         data, drop_features = self.process_transformers(data, transformers, fit)
@@ -1243,6 +1291,3 @@ class Cleaner:
         data = self.drop_if_exists(data, drop_features)
         logger.info("Preprocessing completed...")
         return data
-
-class Engineer:
-    pass
