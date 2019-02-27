@@ -1277,7 +1277,7 @@ class Cleaner:
                 "file": "binary_encoding_transformer.pkl",
                 "drop": ['OSOURCE', 'TCODE', 'ZIP', 'STATE', 'CLUSTER']
             }
-        }
+        })
 
         # Perform transformations
         data, drop_features = self.process_transformers(data, transformers, fit)
