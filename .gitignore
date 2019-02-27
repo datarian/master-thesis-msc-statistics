@@ -114,4 +114,4 @@ mathesis-kdd-cup.code-workspace
 
 # Saved models and data sets
 models/*.pkl
-data/*.pkl
+data/data_frames/*.pkl
