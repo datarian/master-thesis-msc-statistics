@@ -549,7 +549,7 @@ class Hasher(BaseEstimator, TransformerMixin):
         self.feature_names = None
 
     def fit(self, X, y=None):
-        self.he.fit(X, y)
+        self.he = self.he.fit(X, y)
         return self
 
     def transform(self, X, y=None):
@@ -564,8 +564,8 @@ class Hasher(BaseEstimator, TransformerMixin):
 
         return X_trans
 
-        def get_feature_names(self):
-            if isinstance(self.feature_names, list):
-                return self.feature_names
-            else:
-                raise(ValueError("Transformer {} has to be transformed first, cannot return feature names.".format(self.__class__.__name__)))
+    def get_feature_names(self):
+        if isinstance(self.feature_names, list):
+            return self.feature_names
+        else:
+            raise(ValueError("Transformer {} has to be transformed first, cannot return feature names.".format(self.__class__.__name__)))
