@@ -54,12 +54,6 @@ __all__ = [
 
 
 #######################################################################
-# Main config
-data_path = Config.get("data_dir")
-hdf_data_file_name = Config.get("hdf_store")
-hdf_store = pathlib.Path(data_path.resolve(), hdf_data_file_name)
-
-#######################################################################
 # Dicts and data structures to recode / reformat various variables
 # and collections of related features
 
