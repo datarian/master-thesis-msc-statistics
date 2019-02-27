@@ -545,7 +545,7 @@ class MonthsToDonation(BaseEstimator, TransformerMixin, DateHandler):
 class Hasher(BaseEstimator, TransformerMixin):
 
     def __init__(self, verbose=0, n_components=8, cols=None, drop_invariant=False, return_df=True, hash_method='md5'):
-        self.he = HashingEncoder(verbose, n_components, cols, drop_invariant, return_df, hash_method)
+        self.he = HashingEncoder(verbose=verbose, n_components = n_components, cols=cols, drop_invariant=drop_invariant, return_df=return_df, hash_method=hash_method)
         self.feature_names = None
 
     def fit(self, X, y=None):
