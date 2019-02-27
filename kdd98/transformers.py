@@ -17,7 +17,7 @@ from dateutil import relativedelta
 from dateutil.rrule import MONTHLY, YEARLY, rrule
 from sklearn.base import BaseEstimator, TransformerMixin
 
-from category_encoders import OrdinalEncoder
+from category_encoders import OrdinalEncoder, HashingEncoder
 from kdd98.config import Config
 
 # Set up the logger
@@ -540,3 +540,29 @@ class MonthsToDonation(BaseEstimator, TransformerMixin, DateHandler):
             return self.feature_names
         else:
             raise(ValueError("Transformer {} has to be transformed first, cannot return feature names.".format(self.__class__.__name__)))
+
+
+class Hasher(BaseEstimator, TransformerMixin):
+
+    def __init__(self, verbose=0, n_components=8, cols=None, drop_invariant=False, return_df=True, hash_method='md5'):
+        self.he = HashingEncoder(verbose, n_components, cols, drop_invariant, return_df, hash_method)
+        self.feature_names = None
+
+    def fit(self, X, y=None):
+        self.he.fit()
+        return self
+
+    def transform(self, X, y=None):
+        assert(isinstance(X, pd.DataFrame))
+
+        features = X.columns.values.tolist()
+
+        X_trans = self.he.transform()
+        generated_features = self.he.get_feature_names()
+        self.feature_names = [f+"_"+g for f in features for g in generated_features]
+
+        def get_feature_names(self):
+            if isinstance(self.feature_names, list):
+                return self.feature_names
+            else:
+                raise(ValueError("Transformer {} has to be transformed first, cannot return feature names.".format(self.__class__.__name__)))

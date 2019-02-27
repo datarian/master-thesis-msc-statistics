@@ -25,7 +25,7 @@ from kdd98.transformers import (BinaryFeatureRecode, DateFormatter, DeltaTime,
                                 MDMAUDFormatter, MonthsToDonation,
                                 MultiByteExtract, NOEXCHFormatter,
                                 OrdinalEncoder, RecodeUrbanSocioEconomic,
-                                ZipFormatter)
+                                ZipFormatter, Hasher)
 
 # Set up the logger
 logging.basicConfig(filename=__name__+'.log', level=logging.INFO)
@@ -1219,13 +1219,13 @@ class Cleaner:
             },
             "hashing": {
                 "transformer": ColumnTransformer([
-                                ("hash_osource", HashingEncoder(), ['OSOURCE']),
-                                ("hash_tcode", HashingEncoder(), ['TCODE']),
-                                ("hash_zip", HashingEncoder(), ['ZIP']),
-                                ("hash_state", HashingEncoder(), ['STATE']),
-                                ("hash_cluster", HashingEncoder(), ['CLUSTER'])
+                                ("hash_osource", HashingEncoder(n_components=4), ['OSOURCE']),
+                                ("hash_tcode", Hasher(n_components=4), ['TCODE']),
+                                ("hash_zip", Hasher(n_components=4), ['ZIP']),
+                                ("hash_state", Hasher(n_components=4), ['STATE']),
+                                ("hash_cluster", Hasher(n_components=4), ['CLUSTER'])
                               ]),
-                "dtype": None,
+                "dtype": "int64",
                 "file": "hashing_transformer.pkl",
                 "drop": ['OSOURCE', 'TCODE', 'ZIP', 'STATE', 'CLUSTER']
             }
