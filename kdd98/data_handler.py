@@ -808,7 +808,7 @@ class KDD98DataLoader:
         try:
             # First, try to load the data from hdf
             # and set the object
-            data = self._load_hdf(name_mapper[type]["key"])
+            data = self._unpickle_df(name_mapper[type]["key"])
             setattr(self, name_mapper[type]["data_attrib"], data)
         except:
             # If it fails and we ask for clean data,
@@ -826,7 +826,7 @@ class KDD98DataLoader:
                 except Exception as e:
                     logger.error("Failed to clean raw data.\nReason: {}".format(e))
                     raise e
-                self._save_hdf(self.clean_data, self.clean_data_name)
+                self._pickle_df(self.clean_data, self.clean_data_name)
             elif type == "preproc":
                 try:
                     self.provide("clean")
@@ -838,7 +838,7 @@ class KDD98DataLoader:
                 except Exception as e:
                     logger.error("Failed to preprocess clean data.\nReason: {}".format(e))
                     raise e
-                self._save_hdf(self.preprocessed_data, self.preproc_data_name)
+                self._pickle_df(self.preprocessed_data, self.preproc_data_name)
             else:
                 try:
                     self._read_csv_data()
@@ -874,9 +874,9 @@ class KDD98DataLoader:
         except Exception as exc:
             logger.error(exc)
             raise
-        self._save_hdf(self.raw_data, self.raw_data_name)
+        self._pickle_df(self.raw_data, self.raw_data_name)
 
-    def _load_hdf(self, key_name):
+    def _unpickle_df(self, key_name):
         """ Loads data from hdf store.
         Raises an error if the key or the file is not found.
 
@@ -886,23 +886,16 @@ class KDD98DataLoader:
 
         """
 
+        file = key_name+"_pd.pkl"
         try:
-            store = pd.HDFStore(hdf_store, mode="r")
-            logger.info("Trying to load {:1} from HDF.".format(key_name))
-            dataset = pd.read_hdf(store,
-                               key=key_name)
-        except (KeyError) as error:
-            # If something goes wrong, pass the exception on to the caller
-            logger.info("Key not found in HDF store. Reading from CSV.")
-            raise error
-        except(OSError, FileNotFoundError) as error:
-            logger.info("HDF file not found. Will read from CSV.")
-            raise error
-        finally:
-            store.close()
+            with open(pathlib.Path(Config.get("data_dir"), file), "rb") as df:
+                dataset = pkl.load(df)
+        except(IOError, FileNotFoundError) as error:
+            logger.info("No pickled df for '{}' found.".format(key_name))
+            raise(error)
         return dataset
 
-    def _save_hdf(self, data, key_name):
+    def _pickle_df(self, data, key_name):
         """ Save a pandas dataframe to hdf store. The hdf format 'table' is
         used, which is slower but supports pandas data types. Theoretically,
         it also allows to query the object and return subsets.
@@ -912,17 +905,13 @@ class KDD98DataLoader:
         data    A pandas dataframe or other object
         key_name    The key name to store the object at.
         """
+        file = key_name+"_pd.pkl"
         try:
-            store = pd.HDFStore(hdf_store, mode="a")
-            data.to_hdf(store,
-                        key=key_name,
-                        format="table",
-                        mode="a")
-        except Exception as exc:
-            logger.error(exc)
-            raise exc
-        finally:
-            store.close()
+            with open(pathlib.Path(Config.get("data_dir"), file), "wb") as df:
+                pkl.dump(data, df)
+        except Exception as e:
+            logger.error(e)
+            raise e
 
     def _fetch_online(self, url=None, dl_dir=None):
         """
@@ -960,7 +949,7 @@ class Cleaner:
         try:
             pathlib.Path(Config.get("model_store")).mkdir(parents=True,exist_ok=True)
         except Exception as e:
-            message = "Failed to create model store directory '{}'.\nCheck permissions!\nException message: {}".format(pathlib.Path(Config.get("model_store")),e.message)
+            message = "Failed to create model store directory '{}'.\nCheck permissions!\nException message: {}".format(pathlib.Path(Config.get("model_store")),e)
             logger.error(message)
             raise(RuntimeError(message))
 
@@ -1139,7 +1128,7 @@ class Cleaner:
                                 MultiByteExtract(["Urbanicity", "SocioEconomic"]),
                                 ["DOMAIN"])
                             ]),
-                "dtype": "category",
+                "dtype": None,
                 "file": "multibyte_transformer.pkl",
                 "drop": NOMINAL_FEATURES[2:]+["DOMAIN"]
             },
@@ -1153,20 +1142,13 @@ class Cleaner:
                                 OrdinalEncoder(mapping=ORDINAL_MAPPING_RFA,
                                                 handle_unknown="ignore"),
                                                 ["RFA_"+str(i)+"A" for i in range(2,25)]),
-                                ("recode_socioecon", RecodeUrbanSocioEconomic(), ["DOMAINUrbanicity", "DOMAINSocioEconomic"])
+                                ("recode_socioecon", RecodeUrbanSocioEconomic(), ["DOMAINUrbanicity", "DOMAINSocioEconomic"]),
+                                ("order_remaining",
+                                OrdinalEncoder(handle_unknown="ignore"),
+                                    ["WEALTH1","WEALTH2","INCOME", "MDMAUD_F"]+["RFA_"+str(i)+"F" for i in range(2,25)])
                             ]),
-                "dtype": "category",
+                "dtype": "Int64",
                 "file": "ordinal_transformer.pkl",
-                "drop": []
-            },
-            "extraordinals": {
-                "transformer": ColumnTransformer([
-                    ("order_remaining",
-                    OrdinalEncoder(handle_unknown="ignore"),
-                    ["WEALTH1","WEALTH2","INCOME"]+["RFA_"+str(i)+"F" for i in range(2,25)])
-                ]),
-                "dtype": "category",
-                "file": "extra_ordinals_transformer.pkl",
                 "drop": []
             }
         })
