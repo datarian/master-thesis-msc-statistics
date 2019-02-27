@@ -160,17 +160,21 @@ class MultiByteExtract(BaseEstimator, TransformerMixin):
         # Dict to hold the split bytes
         spread_field = {}
         # Iterate over all rows, fill dict
-        for row in pd.DataFrame(feature).itertuples(name=None):
-            # row[0] is the index, row[1] the content of the cell
-            if not row[1] is np.nan:
-                if len(row[1]) == self.sigbytes:
-                    spread_field[row[0]] = list(row[1])
+        try:
+            for row in pd.DataFrame(feature).itertuples(name=None):
+                # row[0] is the index, row[1] the content of the cell
+                if not row[1] is np.nan:
+                    if len(row[1]) == self.sigbytes:
+                        spread_field[row[0]] = list(row[1])
+                    else:
+                        # The field is invalid
+                        spread_field[row[0]] = self._fill_missing()
                 else:
-                    # The field is invalid
+                    # handle missing values
                     spread_field[row[0]] = self._fill_missing()
-            else:
-                # handle missing values
-                spread_field[row[0]] = self._fill_missing()
+        except Exception as e:
+            logger.error("Failed to spread feature '{}' for reason {}".format(feature, e))
+            raise e
 
         # Create the dataframe, orient=index means
         # we interprete the dict's contents as rows (defaults to columns)
@@ -186,10 +190,13 @@ class MultiByteExtract(BaseEstimator, TransformerMixin):
     def transform(self, X, y=None):
         assert isinstance(X, pd.DataFrame)
         X_trans = pd.DataFrame(index=X.index)
-        for f in X.columns:
-            new_df = self._spread(X[f], X.index.name)
-            X_trans = X_trans.merge(new_df, on=X.index.name)
-        self.feature_names = list(X_trans.columns)
+        try:
+            for f in X.columns:
+                new_df = self._spread(X[f], X.index.name)
+                X_trans = X_trans.merge(new_df, on=X.index.name)
+            self.feature_names = list(X_trans.columns)
+        except Exception as e:
+            raise e
         return X_trans
 
     def get_feature_names(self):
