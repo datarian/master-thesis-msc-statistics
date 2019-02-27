@@ -454,28 +454,30 @@ class DeltaTime(BaseEstimator, TransformerMixin, DateHandler):
         assert isinstance(X, pd.DataFrame)
 
         # We need to ensure we have datetime objects.
-        # The dateparser has to return int64 to work with sklearn, so
+        # The dateparser has to return Int64 to work with sklearn, so
         # we need to recast here.
         X_trans = pd.DataFrame().astype('str')
 
         for f in X.columns:
-            X_temp = pd.DataFrame(columns=['target', 'ref'])
             try:
-                X_temp['target'] = self.parse_date(X[f])
-            except RuntimeError as e:
+                X_temp = pd.DataFrame(columns=['target', 'ref'])
+                try:
+                    X_temp['target'] = self.parse_date(X[f])
+                except RuntimeError as e:
+                    raise e
+                if isinstance(self.reference_date, pd.Series):
+                    # we have a series of reference dates
+                    feature_name = f+"_" + \
+                        str(self.reference_date.name)+self.feature_suffix
+                else:
+                    feature_name = f+self.feature_suffix
+
+                X_temp['ref'] = self.reference_date
+                X_trans[feature_name] = X_temp.apply(self.get_duration, axis=1)
+            except Exception as e:
+                logger.error("Failed to transform '{}' on featurefor reason {}".format(self.__class__.__name__, e))
                 raise e
-            if isinstance(self.reference_date, pd.Series):
-                # we have a series of reference dates
-                feature_name = f+"_" + \
-                    str(self.reference_date.name)+self.feature_suffix
-            else:
-                feature_name = f+self.feature_suffix
-
-            X_temp['ref'] = self.reference_date
-            X_trans[feature_name] = X_temp.apply(self.get_duration, axis=1)
-
-        self.feature_names = X_trans.columns
-
+        self.feature_names = X_trans.columns.values.tolist()
         return X_trans
 
     def get_feature_names(self):
@@ -512,22 +514,26 @@ class MonthsToDonation(BaseEstimator, TransformerMixin, DateHandler):
 
     def transform(self, X, y=None):
         assert isinstance(X, pd.DataFrame)
+        self.feature_names = list()
 
         X_trans = pd.DataFrame(index=X.index)
         for i in range(3, 25):
-            feat_name = "MONTHS_TO_DONATION_"+str(i)
-            mailing = X.loc[:,["ADATE_"+str(i), "RDATE_"+str(i)]]
             try:
-                mailing.loc[:,"ADATE_"+str(i)] = self.parse_date(mailing.loc[:,"ADATE_"+str(i)])
-                mailing.loc[:,"RDATE_"+str(i)] = self.parse_date(mailing.loc[:,"RDATE_"+str(i)])
-            except RuntimeError as e:
+                feat_name = "MONTHS_TO_DONATION_"+str(i)
+                mailing = X.loc[:,["ADATE_"+str(i), "RDATE_"+str(i)]]
+                try:
+                    mailing.loc[:,"ADATE_"+str(i)] = self.parse_date(mailing.loc[:,"ADATE_"+str(i)])
+                    mailing.loc[:,"RDATE_"+str(i)] = self.parse_date(mailing.loc[:,"RDATE_"+str(i)])
+                except RuntimeError as e:
+                    raise e
+                diffs = mailing.agg(self.calc_diff, axis=1)
+                X_trans = X_trans.join(pd.DataFrame(
+                    diffs, columns=[feat_name], index=X_trans.index), how="inner")
+                self.feature_names.extend([feat_name])
+            except Exception as e:
+                logger.error("Failed to transform '{}' on featurefor reason {}".format(self.__class__.__name, e))
                 raise e
-            diffs = mailing.agg(self.calc_diff, axis=1)
-            X_trans = X_trans.merge(pd.DataFrame(
-                diffs, columns=[feat_name]), on=X_trans.index.name)
-            self.feature_names.extend([feat_name])
-            self.is_transformed = True
-        return X_trans.astype("float64")
+        return X_trans
 
     def get_feature_names(self):
         if isinstance(self.feature_names, list):

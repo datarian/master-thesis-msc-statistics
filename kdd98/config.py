@@ -21,6 +21,7 @@ class Config:
         "root_dir": pathlib.Path(PKG_HOME.resolve().parent),
         "data_dir": pathlib.Path(PKG_HOME.resolve().parent, "data"),
         "model_store": pathlib.Path(PKG_HOME.resolve().parent, "models"),
+        "df_store": pathlib.Path(PKG_HOME.resolve().parent, "data", "data_frames"),
         "cache_dir": pathlib.Path(PKG_HOME.resolve().parent, "cache"),
         "download_files": ['cup98lrn.zip', 'cup98val.zip', 'cup98doc.txt', 'cup98dic.txt', 'instruct.txt', 'valtargt.readme', 'valtargt.txt', 'readme'],
         "download_url": "https://archive.ics.uci.edu/ml/machine-learning-databases/kddcup98-mld/epsilon_mirror/",

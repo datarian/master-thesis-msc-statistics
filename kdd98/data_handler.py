@@ -113,6 +113,8 @@ ORDINAL_MAPPING_RFA = [{'col': c, 'mapping': {'A': 1, 'B': 2, 'C': 3, 'D': 4, 'E
                                  'RFA_18A', 'RFA_19A', 'RFA_20A', 'RFA_21A',
                                  'RFA_22A', 'RFA_23A', 'RFA_24A']]
 
+ORDINAL_MAPPING_SOCIOECON = [{'col': 'DOMAINSocioEconomic', 'mapping': {'1': 1, '2': 2, '3': 2, '4': 3}}]
+
 US_CENSUS_FEATURES = ["POP901", "POP902", "POP903", "POP90C1", "POP90C2",
                       "POP90C3", "POP90C4", "POP90C5", "ETH1", "ETH2",
                       "ETH3", "ETH4", "ETH5", "ETH6", "ETH7", "ETH8",
@@ -826,6 +828,7 @@ class KDD98DataLoader:
                     self.provide("clean")
                 except Exception as e:
                     logger.error("Failed to provide clean data. Cannot provide preprocessed data.\nReason: {}".format(e))
+                    raise e
                 try:
                     pre = Cleaner(self)
                     self.preprocessed_data = pre.preprocess()
@@ -882,7 +885,7 @@ class KDD98DataLoader:
 
         file = key_name+"_pd.pkl"
         try:
-            with open(pathlib.Path(Config.get("data_dir"), file), "rb") as df:
+            with open(pathlib.Path(Config.get("df_store"), file), "rb") as df:
                 dataset = pkl.load(df)
         except(IOError, FileNotFoundError) as error:
             logger.info("No pickled df for '{}' found.".format(key_name))
@@ -900,8 +903,9 @@ class KDD98DataLoader:
         key_name    The key name to store the object at.
         """
         file = key_name+"_pd.pkl"
+        pathlib.Path(Config.get("df_store")).mkdir(parents=True, exist_ok=True)
         try:
-            with open(pathlib.Path(Config.get("data_dir"), file), "wb") as df:
+            with open(pathlib.Path(Config.get("df_store"), file), "wb") as df:
                 pkl.dump(data, df)
         except Exception as e:
             logger.error(e)
@@ -1043,7 +1047,7 @@ class Cleaner:
                     DateFormatter(),
                     DATE_FEATURES)
                 ]),
-                "dtype": "Int64",
+                "dtype": "str",
                 "file": "date_format_transformer.pkl",
                 "drop": []
             },
@@ -1053,7 +1057,7 @@ class Cleaner:
                     ZipFormatter(),
                     ["ZIP"])
                 ]),
-                "dtype": "int64",
+                "dtype": "Int64",
                 "file": "zip_format_transformer.pkl",
                 "drop": []
             },
@@ -1122,7 +1126,7 @@ class Cleaner:
                                 MultiByteExtract(["Urbanicity", "SocioEconomic"]),
                                 ["DOMAIN"])
                             ]),
-                "dtype": None,
+                "dtype": "category",
                 "file": "multibyte_transformer.pkl",
                 "drop": NOMINAL_FEATURES[2:]+["DOMAIN"]
             },
@@ -1136,7 +1140,9 @@ class Cleaner:
                                 OrdinalEncoder(mapping=ORDINAL_MAPPING_RFA,
                                                 handle_unknown="ignore"),
                                                 ["RFA_"+str(i)+"A" for i in range(2,25)]),
-                                ("recode_socioecon", RecodeUrbanSocioEconomic(), ["DOMAINUrbanicity", "DOMAINSocioEconomic"]),
+                                #("recode_socioecon", RecodeUrbanSocioEconomic(), ["DOMAINUrbanicity", "DOMAINSocioEconomic"]),
+                                ("recode_socioecon", OrdinalEncoder(mapping= ORDINAL_MAPPING_SOCIOECON, handle_unknown="ignore"),
+                                ["DOMAINSocioEconomic"]),
                                 ("order_remaining",
                                 OrdinalEncoder(handle_unknown="ignore"),
                                     ["WEALTH1","WEALTH2","INCOME", "MDMAUD_F"]+["RFA_"+str(i)+"F" for i in range(2,25)])
@@ -1207,7 +1213,7 @@ class Cleaner:
                                 ("time_last_donation", DeltaTime(unit="months"), ["LASTDATE","MINRDATE","MAXRDATE","MAXADATE"]),
                                 ("membership_years", DeltaTime(unit="years"),["ODATEDW"])
                               ]),
-                "dtype": None,
+                "dtype": "Int64",
                 "file": "timedelta_transformer.pkl",
                 "drop": ["ODATEDW", "LASTDATE","MINRDATE","MAXRDATE","MAXADATE"]
             },
