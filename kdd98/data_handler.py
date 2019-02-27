@@ -92,7 +92,7 @@ CATEGORICAL_FEATURES = ["OSOURCE", "TCODE", "DOMAIN", "STATE", "PVASTATE", "CLUS
                         "DATASRCE", "SOLP3", "SOLIH", "WEALTH1", "WEALTH2",
                         "GEOCODE", "LIFESRC", "RFA_2R", "RFA_2A",
                         "RFA_2F", "MDMAUD_R", "MDMAUD_F", "MDMAUD_A",
-                        "GEOCODE2", "TARGET_D"]
+                        "GEOCODE2"]
 
 # Nominal features needing further cleaning treatment
 NOMINAL_FEATURES = ["OSOURCE", "TCODE", "RFA_2", "RFA_3", "RFA_4", "RFA_5", "RFA_6",
