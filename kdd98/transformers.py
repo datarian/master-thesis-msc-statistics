@@ -549,7 +549,7 @@ class Hasher(BaseEstimator, TransformerMixin):
         self.feature_names = None
 
     def fit(self, X, y=None):
-        self.he.fit()
+        self.he.fit(X, y)
         return self
 
     def transform(self, X, y=None):
