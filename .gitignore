@@ -106,9 +106,12 @@ venv.bak/
 # Raw data files
 data/*.txt
 data/*.h5
+
+# Workspace config
 .Rproj.user
 .vscode/
 mathesis-kdd-cup.code-workspace
 
-# Saved models
+# Saved models and data sets
 models/*.pkl
+data/*.pkl
