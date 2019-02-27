@@ -25,8 +25,7 @@ logging.basicConfig(filename=__name__+'.log', level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
 
-__all__ = ['ColumnSelector',
-           'DropSparseLowVar',
+__all__ = ['DropSparseLowVar',
            'BinaryFeatureRecode',
            'MultiByteExtract',
            'RecodeUrbanSocioEconomic',
@@ -36,24 +35,6 @@ __all__ = ['ColumnSelector',
            'MDMAUDFormatter',
            'DeltaTime',
            'MonthsToDonation']
-
-
-class ColumnSelector(BaseEstimator, TransformerMixin):
-    def __init__(self, columns):
-        self.columns = columns
-
-    def fit(self, X, y=None):
-        return self
-
-    def transform(self, X):
-        assert isinstance(X, pd.DataFrame)
-
-        try:
-            return X[self.columns]
-        except KeyError:
-            cols_error = list(set(self.columns) - set(X.columns))
-            raise KeyError(
-                "The DataFrame does not include the columns: %s" % cols_error)
 
 
 class DropSparseLowVar(BaseEstimator, TransformerMixin):
@@ -127,9 +108,10 @@ class DropSparseLowVar(BaseEstimator, TransformerMixin):
         return X_trans
 
     def get_feature_names(self):
-        if not isinstance(self.is_transformed, list):
-            raise ValueError("Must be transformed first.")
-        return self.feature_names
+        if isinstance(self.feature_names, list):
+            return self.feature_names
+        else:
+            raise(ValueError("Transformer {} has to be fitted first, cannot return feature names.".format(self.__class__.__name__)))
 
 
 class MultiByteExtract(BaseEstimator, TransformerMixin):
@@ -155,12 +137,12 @@ class MultiByteExtract(BaseEstimator, TransformerMixin):
         # determines how many bytes to extract
         self.sigbytes = len(self.field_names)
         self.impute = impute
-        self.feature_names = []
+        self.feature_names = None
         self.is_transformed = False
 
     def fit(self, X, y=None):
         assert isinstance(X, pd.DataFrame)
-        self.feature_names = list(X.columns.values)
+        self.feature_names =X.columns.values.tolist()
         return self
 
     def _fill_missing(self):
@@ -208,12 +190,13 @@ class MultiByteExtract(BaseEstimator, TransformerMixin):
             new_df = self._spread(X[f], X.index.name)
             X_trans = X_trans.merge(new_df, on=X.index.name)
         self.feature_names = list(X_trans.columns)
-        self.is_transformed = True
         return X_trans
 
     def get_feature_names(self):
-        if self.is_transformed:
+        if isinstance(self.feature_names, list):
             return self.feature_names
+        else:
+            raise(ValueError("Transformer {} has to be transformed first, cannot return feature names.".format(self.__class__.__name__)))
 
 
 class RecodeUrbanSocioEconomic(BaseEstimator, TransformerMixin):
@@ -221,7 +204,7 @@ class RecodeUrbanSocioEconomic(BaseEstimator, TransformerMixin):
         self.feature_names = None
 
     def fit(self, X, y=None):
-        self.feature_names = ["DOMAINUrbanicity", "DOMAINSocioEconomic"]
+        self.feature_names = X.columns.values.tolist()
         return self
 
     def transform(self, X, y=None):
@@ -236,6 +219,8 @@ class RecodeUrbanSocioEconomic(BaseEstimator, TransformerMixin):
     def get_feature_names(self):
         if isinstance(self.feature_names, list):
             return self.feature_names
+        else:
+            raise(ValueError("Transformer {} has to be fitted first, cannot return feature names.".format(self.__class__.__name__)))
 
 
 class BinaryFeatureRecode(BaseEstimator, TransformerMixin):
@@ -256,12 +241,12 @@ class BinaryFeatureRecode(BaseEstimator, TransformerMixin):
     def __init__(self, correct_noisy=True, value_map=None):
         self.correct_noisy = correct_noisy
         self.value_map = value_map
+        self.feature_names = None
         self.is_fit = False
 
     def fit(self, X, y=None):
         assert isinstance(X, pd.DataFrame)
-        self.feature_names = list(X.columns)
-        self.is_fit = True
+        self.feature_names = X.columns.values.tolist()
         return self
 
     def transform(self, X, y=None):
@@ -290,8 +275,10 @@ class BinaryFeatureRecode(BaseEstimator, TransformerMixin):
             return temp_df
 
     def get_feature_names(self):
-        if self.is_fit:
+        if isinstance(self.feature_names, list):
             return self.feature_names
+        else:
+            raise(ValueError("Transformer {} has to be fitted first, cannot return feature names.".format(self.__class__.__name__)))
 
 class DateFormatter(BaseEstimator, TransformerMixin):
     """
@@ -317,8 +304,10 @@ class DateFormatter(BaseEstimator, TransformerMixin):
         return X
 
     def get_feature_names(self):
-        if self.feature_names:
+        if isinstance(self.feature_names, list):
             return self.feature_names
+        else:
+            raise(ValueError("Transformer {} has to be fitted first, cannot return feature names.".format(self.__class__.__name__)))
 
 class ZipFormatter(BaseEstimator, TransformerMixin):
     """
@@ -329,7 +318,6 @@ class ZipFormatter(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None):
         self.feature_names = X.columns.values.tolist()
-        self.is_fitted = True
         return self
 
     def transform(self, X, y=None):
@@ -339,7 +327,10 @@ class ZipFormatter(BaseEstimator, TransformerMixin):
         return X
 
     def get_feature_names(self):
-        return self.feature_names
+        if isinstance(self.feature_names, list):
+            return self.feature_names
+        else:
+            raise(ValueError("Transformer {} has to be fitted first, cannot return feature names.".format(self.__class__.__name__)))
 
 class NOEXCHFormatter(BaseEstimator, TransformerMixin):
     """
@@ -359,10 +350,10 @@ class NOEXCHFormatter(BaseEstimator, TransformerMixin):
         return X
 
     def get_feature_names(self):
-        if not isinstance(self.feature_names, list):
-            raise ValueError("Estimator has to be fitted to return feature names.")
-        else:
+        if isinstance(self.feature_names, list):
             return self.feature_names
+        else:
+            raise(ValueError("Transformer {} has to be fitted first, cannot return feature names.".format(self.__class__.__name__)))
 
 class MDMAUDFormatter(BaseEstimator, TransformerMixin):
     """
@@ -382,10 +373,10 @@ class MDMAUDFormatter(BaseEstimator, TransformerMixin):
         return X
 
     def get_feature_names(self):
-        if not isinstance(self.feature_names, list):
-            raise ValueError("Estimator has to be fitted to return feature names.")
-        else:
+        if isinstance(self.feature_names, list):
             return self.feature_names
+        else:
+            raise(ValueError("Transformer {} has to be fitted first, cannot return feature names.".format(self.__class__.__name__)))
 
 class DateHandler:
 
@@ -486,13 +477,16 @@ class DeltaTime(BaseEstimator, TransformerMixin, DateHandler):
         return X_trans
 
     def get_feature_names(self):
-        return self.feature_names
+        if isinstance(self.feature_names, list):
+            return self.feature_names
+        else:
+            raise(ValueError("Transformer {} has to be transformed first, cannot return feature names.".format(self.__class__.__name__)))
 
 
 class MonthsToDonation(BaseEstimator, TransformerMixin, DateHandler):
 
     def __init__(self):
-        self.feature_names = list()
+        self.feature_names = None
         self.is_transformed = False
 
     def fit(self, X, y=None):
@@ -534,5 +528,7 @@ class MonthsToDonation(BaseEstimator, TransformerMixin, DateHandler):
         return X_trans.astype("float64")
 
     def get_feature_names(self):
-        if self.is_transformed:
+        if isinstance(self.feature_names, list):
             return self.feature_names
+        else:
+            raise(ValueError("Transformer {} has to be transformed first, cannot return feature names.".format(self.__class__.__name__)))
