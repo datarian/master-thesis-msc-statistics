@@ -19,13 +19,13 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 
 import kdd98.utils_transformer as ut
-from category_encoders import BinaryEncoder
+from category_encoders import BinaryEncoder, OneHotEncoder
 from kdd98.config import Config
 from kdd98.transformers import (BinaryFeatureRecode, DateFormatter, DeltaTime,
                                 MDMAUDFormatter, MonthsToDonation,
                                 MultiByteExtract, NOEXCHFormatter,
                                 OrdinalEncoder, RecodeUrbanSocioEconomic,
-                                ZipFormatter, Hasher)
+                                ZipFormatter, Hasher, CategoricalImputer)
 
 # Set up the logger
 logging.basicConfig(filename=__name__+'.log', level=logging.INFO)
@@ -717,11 +717,10 @@ class KDD98DataLoader:
         pull_stored: Whether to attempt loading raw data from HDF store.
         """
         self.raw_data_file_name = csv_file
-        self.raw_data_name = None
-        self.clean_data_name = None
         self._raw_data = pd.DataFrame()
         self._clean_data = pd.DataFrame()
         self._preprocessed_data = pd.DataFrame()
+        self._numerical_data = pd.DataFrame()
 
         self.download_url = download_url
         self.reference_date = Config.get("reference_date")
@@ -732,9 +731,11 @@ class KDD98DataLoader:
             if "lrn" in csv_file.lower():
                 self.clean_data_name = Config.get("learn_clean_name")
                 self.preproc_data_name = Config.get("learn_preproc_name")
+                self.numerical_data_name = Config.get("learn_numerical_name")
             elif "val" in csv_file.lower():
                 self.clean_data_name = Config.get("validation_clean_name")
                 self.preproc_data_name = Config.get("validation_preproc_name")
+                self.numerical_data_name = Config.get("validation_numerical_name")
         else:
             raise ValueError("Set csv_file to either training- or test-file.")
 
@@ -768,6 +769,16 @@ class KDD98DataLoader:
     def preprocessed_data(self, value):
         self._preprocessed_data = value
 
+    @property
+    def numerical_data(self):
+        if self._numerical_data.empty:
+            self.provide("numerical")
+        return self._numerical_data
+
+    @numerical_data.setter
+    def numerical_data(self, value):
+        self._numerical_data = value
+
     def provide(self, type):
         """
         Provides data by first checking the hdf store, then loading csv data.
@@ -782,13 +793,16 @@ class KDD98DataLoader:
         If preprocessed data is requested, the returned pandas object has
         - the contents of cleaned data
         - date features transformed to time deltas
-        - encoded categoricals
 
-        data in it.
+        If numeric data is requested, the returned pandas object has
+        - encoded categoricals
+        - imputed features
+
+        in it.
 
         Params
         ------
-        type    One of ["raw", "clean", "preproc"]. Raw is as read by pandas, clean is with cleaning operations applied.
+        type    One of ["raw", "clean", "preproc", "numerical"]. Raw is as read by pandas, clean is with cleaning operations applied.
         """
         name_mapper = {
             "raw": {"key": self.raw_data_name,
@@ -796,10 +810,12 @@ class KDD98DataLoader:
             "clean": {"key": self.clean_data_name,
                       "data_attrib": "_clean_data"},
             "preproc": {"key": self.preproc_data_name,
-                        "data_attrib": "_preprocessed_data"}
+                        "data_attrib": "_preprocessed_data"},
+            "numerical": {"key": self.numerical_data_name,
+                        "data_attrib": "_numerical_data"}
         }
 
-        assert(type in ["raw", "clean", "preproc"])
+        assert(type in ["raw", "clean", "preproc", "numerical"])
 
         try:
             # First, try to load the data from hdf
@@ -836,6 +852,19 @@ class KDD98DataLoader:
                     logger.error("Failed to preprocess clean data.\nReason: {}".format(e))
                     raise e
                 self._pickle_df(self.preprocessed_data, self.preproc_data_name)
+            elif type =="numerical":
+                try:
+                    self.provide("preproc")
+                except Exception as e:
+                    logger.error("Failed to provide preprocessed data. Cannot provide numeric data.\nReason: {}".format(e))
+                    raise e
+                try:
+                    eng = Cleaner(self)
+                    self.numerical_data = eng.engineer()
+                except Exception as e:
+                    logger.error("Failed to engineer preprocessed data.\nReason: {}".format(e))
+                    raise e
+                self._pickle_df(self.numerical_data, self.numerical_data_name)
             else:
                 try:
                     self._read_csv_data()
@@ -1259,24 +1288,48 @@ class Cleaner:
         # Set of feature names to be dropped after transformations
         drop_features = set()
 
+        CATEGORICAL_FEATURES = data.select_dtypes(include="category").columns.values.tolist()
+        BINARY_ENCODED_CATEGORICALS = ['OSOURCE', 'TCODE', 'ZIP', 'STATE', 'CLUSTER']
+        ONE_HOT_ENCODED_CATEGORICALS = [f for f in CATEGORICAL_FEATURES if f not in BINARY_ENCODED_CATEGORICALS]
+        NUMERICAL_FEATURES = [f for f in data.columns.values.tolist() if f not in CATEGORICAL_FEATURES]
+
         transformers = OrderedDict({
             #Before dealing with categorical features, we need to impute.
-            "impute": {
-
+            "impute_categories": {
+                "transformer": ColumnTransformer([
+                    ("impute_categories", CategoricalImputer(),CATEGORICAL_FEATURES)
+                ]),
+                "dtype": None,
+                "file": "impute_cats_transformer.pkl",
+                "drop": []
             },
-            "binary_encoding": {
+            "binary_encode_categoricals": {
                 "transformer": ColumnTransformer([
                     ("be_osource", BinaryEncoder(), ['OSOURCE']),
                     ("be_state", BinaryEncoder(),['STATE']),
                     ("be_cluster", BinaryEncoder(),['CLUSTER']),
                     ("be_tcode", BinaryEncoder(), ['TCODE']),
-                    ("be_zip", BinaryEncoder(), ['ZIP']),
-                    ()
+                    ("be_zip", BinaryEncoder(), ['ZIP'])
                 ]),
                 "dtype": "int64",
                 "file": "binary_encoding_transformer.pkl",
-                "drop": ['OSOURCE', 'TCODE', 'ZIP', 'STATE', 'CLUSTER']
-            }
+                "drop": BINARY_ENCODED_CATEGORICALS
+            },
+            "one_hot_encode_categoricals": {
+                "transformer": ColumnTransformer([
+                    ("oh", OneHotEncoder(use_cat_names=True, handle_unknown="error"),
+                    ONE_HOT_ENCODED_CATEGORICALS)
+                ]),
+                "dtype": "int64",
+                "file": "oh_encoding_transformer.pkl",
+                "drop": ONE_HOT_ENCODED_CATEGORICALS
+            }#,
+            # "impute_remaining": {
+            #     "transformer": ColumnTransformer([
+
+            #     ])
+            # },
+
         })
 
         # Perform transformations
@@ -1285,9 +1338,9 @@ class Cleaner:
         # Imputation
 
         # For the donation amounts per campaign, NaN actually means 0 dollars donated, so change this accordingly.
-        data[GIVING_HISTORY] = data.loc[:,GIVING_HISTORY].fillna(0, axis=1)
+        #data[GIVING_HISTORY] = data.loc[:,GIVING_HISTORY].fillna(0, axis=1)
 
         logger.info("About to drop these features in preprocessing: {}".format(drop_features))
         data = self.drop_if_exists(data, drop_features)
-        logger.info("Preprocessing completed...")
+        logger.info("Engineering completed...")
         return data

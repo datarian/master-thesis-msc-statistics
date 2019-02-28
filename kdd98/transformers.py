@@ -35,7 +35,8 @@ __all__ = ['DropSparseLowVar',
            'MDMAUDFormatter',
            'DeltaTime',
            'MonthsToDonation',
-           'Hasher']
+           'Hasher',
+           'CategoricalImputer']
 
 
 class DropSparseLowVar(BaseEstimator, TransformerMixin):
@@ -567,6 +568,29 @@ class Hasher(BaseEstimator, TransformerMixin):
         generated_features = self.he.get_feature_names()
         self.feature_names = [f+"_"+g for f in features for g in generated_features]
         X_trans.columns = self.feature_names
+
+        return X_trans
+
+    def get_feature_names(self):
+        if isinstance(self.feature_names, list):
+            return self.feature_names
+        else:
+            raise(ValueError("Transformer {} has to be transformed first, cannot return feature names.".format(self.__class__.__name__)))
+
+
+class CategoricalImputer(BaseEstimator, TransformerMixin):
+
+    def __init__(self):
+        self.feature_names = None
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X, y=None):
+        assert(isinstance(X, pd.DataFrame))
+
+        X_trans = X.fillna(X.mode().iloc[0])
+        self.feature_names = X_trans.columns.values.tolist()
 
         return X_trans
 
