@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 
 __all__ = [
-    'KDD98DataLoader',
+    'KDD98DataProvider',
     'Cleaner',
     'Preprocessor',
     'Engineer',
@@ -84,7 +84,7 @@ BINARY_FEATURES = ["MAILCODE", "NOEXCH", "RECSWEEP", "RECINHSE", "RECP3",
                    "BIBLE", "CATLG", "HOMEE", "PETS", "CDPLAY", "STEREO",
                    "PCOWNERS", "PHOTO", "CRAFTS", "FISHER", "GARDENIN",
                    "BOATS", "WALKER", "KIDSTUFF", "CARDS", "PLATES",
-                   "PEPSTRFL", "TARGET_B", "HPHONE_D", "VETERANS"]
+                   "PEPSTRFL", "HPHONE_D", "VETERANS"]
 
 # Already usable nominal features
 CATEGORICAL_FEATURES = ["OSOURCE", "TCODE", "DOMAIN", "STATE", "PVASTATE",
@@ -1132,7 +1132,7 @@ class KDD98DataTransformer:
 
         logger.info("Transformation step {} completed..."
                     .format(self.step))
-        return self.data
+        return self.data.copy(deep=True)
 
 
 class Cleaner(KDD98DataTransformer):
@@ -1213,7 +1213,7 @@ class Cleaner(KDD98DataTransformer):
                  BinaryFeatureRecode(
                      value_map={"true": "1", "false": "0"},
                      correct_noisy=False),
-                 ["HPHONE_D", "NOEXCH"])
+                 ["HPHONE_D", "NOEXCH", "TARGET_B"])
             ]),
             "dtype": "Int64",
             "file": "binary_transformer.pkl",
