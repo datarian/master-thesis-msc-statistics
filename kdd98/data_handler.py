@@ -6,17 +6,14 @@ Created on Fri Aug 24 10:18:44 2018
 """
 
 import logging
-import os
 import pathlib
 import pickle as pkl
 import urllib
 import zipfile
 from collections import OrderedDict
 
-import numpy as np
 import pandas as pd
 from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
 
 import kdd98.utils_transformer as ut
 from category_encoders import BinaryEncoder, OneHotEncoder
@@ -24,17 +21,20 @@ from kdd98.config import Config
 from kdd98.transformers import (BinaryFeatureRecode, DateFormatter, DeltaTime,
                                 MDMAUDFormatter, MonthsToDonation,
                                 MultiByteExtract, NOEXCHFormatter,
-                                OrdinalEncoder, RecodeUrbanSocioEconomic,
-                                ZipFormatter, Hasher, CategoricalImputer)
+                                OrdinalEncoder,
+                                ZipFormatter, CategoricalImputer,
+                                NumericalImputer)
 
 # Set up the logger
-logging.basicConfig(filename=__name__+'.log', level=logging.INFO)
+logging.basicConfig(filename=__name__ + '.log', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
 __all__ = [
     'KDD98DataLoader',
     'Cleaner',
+    'Preprocessor',
+    'Engineer',
     'INDEX_NAME',
     'TARGETS',
     'DATE_FEATURES',
@@ -87,7 +87,8 @@ BINARY_FEATURES = ["MAILCODE", "NOEXCH", "RECSWEEP", "RECINHSE", "RECP3",
                    "PEPSTRFL", "TARGET_B", "HPHONE_D", "VETERANS"]
 
 # Already usable nominal features
-CATEGORICAL_FEATURES = ["OSOURCE", "TCODE", "DOMAIN", "STATE", "PVASTATE", "CLUSTER", "INCOME",
+CATEGORICAL_FEATURES = ["OSOURCE", "TCODE", "DOMAIN", "STATE", "PVASTATE",
+                        "CLUSTER", "INCOME",
                         "CHILD03", "CHILD07", "CHILD12", "CHILD18", "GENDER",
                         "DATASRCE", "SOLP3", "SOLIH", "WEALTH1", "WEALTH2",
                         "GEOCODE", "LIFESRC", "RFA_2R", "RFA_2A",
@@ -95,17 +96,19 @@ CATEGORICAL_FEATURES = ["OSOURCE", "TCODE", "DOMAIN", "STATE", "PVASTATE", "CLUS
                         "GEOCODE2"]
 
 # Nominal features needing further cleaning treatment
-NOMINAL_FEATURES = ["OSOURCE", "TCODE", "RFA_2", "RFA_3", "RFA_4", "RFA_5", "RFA_6",
-                    "RFA_7", "RFA_8", "RFA_9", "RFA_10", "RFA_11", "RFA_12",
-                    "RFA_13", "RFA_14", "RFA_15", "RFA_16", "RFA_17", "RFA_18",
-                    "RFA_19", "RFA_20", "RFA_21", "RFA_22", "RFA_23",
+NOMINAL_FEATURES = ["OSOURCE", "TCODE", "RFA_2", "RFA_3", "RFA_4", "RFA_5",
+                    "RFA_6", "RFA_7", "RFA_8", "RFA_9", "RFA_10", "RFA_11",
+                    "RFA_12", "RFA_13", "RFA_14", "RFA_15", "RFA_16", "RFA_17",
+                    "RFA_18", "RFA_19", "RFA_20", "RFA_21", "RFA_22", "RFA_23",
                     "RFA_24"]
 
 ORDINAL_MAPPING_MDMAUD = [
     {'col': 'MDMAUD_R', 'mapping': {'D': 1, 'I': 2, 'L': 3, 'C': 4}},
     {'col': 'MDMAUD_A', 'mapping': {'L': 1, 'C': 2, 'M': 3, 'T': 4}}]
 
-ORDINAL_MAPPING_RFA = [{'col': c, 'mapping': {'A': 1, 'B': 2, 'C': 3, 'D': 4, 'E': 5, 'F': 6, 'G': 7}}
+ORDINAL_MAPPING_RFA = [{'col': c,
+                        'mapping': {'A': 1, 'B': 2, 'C': 3, 'D': 4,
+                                    'E': 5, 'F': 6, 'G': 7}}
                        for c in ['RFA_2A', 'RFA_3A', 'RFA_4A', 'RFA_5A',
                                  'RFA_6A', 'RFA_7A', 'RFA_8A', 'RFA_9A',
                                  'RFA_10A', 'RFA_11A', 'RFA_12A', 'RFA_13A',
@@ -113,7 +116,8 @@ ORDINAL_MAPPING_RFA = [{'col': c, 'mapping': {'A': 1, 'B': 2, 'C': 3, 'D': 4, 'E
                                  'RFA_18A', 'RFA_19A', 'RFA_20A', 'RFA_21A',
                                  'RFA_22A', 'RFA_23A', 'RFA_24A']]
 
-ORDINAL_MAPPING_SOCIOECON = [{'col': 'DOMAINSocioEconomic', 'mapping': {'1': 1, '2': 2, '3': 2, '4': 3}}]
+ORDINAL_MAPPING_SOCIOECON = [{'col': 'DOMAINSocioEconomic',
+                              'mapping': {'1': 1, '2': 2, '3': 2, '4': 3}}]
 
 US_CENSUS_FEATURES = ["POP901", "POP902", "POP903", "POP90C1", "POP90C2",
                       "POP90C3", "POP90C4", "POP90C5", "ETH1", "ETH2",
@@ -170,7 +174,7 @@ INTEREST_FEATURES = ["COLLECT1", "VETERANS", "BIBLE", "CATLG", "HOMEE", "PETS",
 
 PROMO_HISTORY_DATES = ["ADATE_2", "ADATE_3", "ADATE_4", "ADATE_5", "ADATE_6",
                        "ADATE_7", "ADATE_8", "ADATE_9", "ADATE_10",
-                       "ADATE_11", "ADATE_12", "ADATE_13",  "ADATE_14",
+                       "ADATE_11", "ADATE_12", "ADATE_13", "ADATE_14",
                        "ADATE_15", "ADATE_16", "ADATE_17", "ADATE_18",
                        "ADATE_19", "ADATE_20", "ADATE_21", "ADATE_22",
                        "ADATE_23", "ADATE_24"]
@@ -684,7 +688,8 @@ NA_CODES = {
     "GEOCODE2": ["", ".", " "]
 }
 
-class KDD98DataLoader:
+
+class KDD98DataProvider:
     """ Handles dataset loading and stores datasets in hdf store
     for speedy future access.
     Expects input data as distributed on UCI's machine learning repository
@@ -725,17 +730,20 @@ class KDD98DataLoader:
         self.download_url = download_url
         self.reference_date = Config.get("reference_date")
 
-        if csv_file is not None and csv_file in Config.get("learn_file_name", "learn_test_file_name", "validation_file_name"):
-            self.raw_data_name = pathlib.Path(csv_file).stem # new
-            logger.info("Set raw data file name to: {:1}".format(self.raw_data_name))
+        if csv_file in Config.get("learn_file_name",
+                                  "learn_test_file_name",
+                                  "validation_file_name"):
+            self.raw_data_name = pathlib.Path(csv_file).stem
+            logger.info("Set raw data file name to: {}"
+                        .format(self.raw_data_name))
             if "lrn" in csv_file.lower():
                 self.clean_data_name = Config.get("learn_clean_name")
                 self.preproc_data_name = Config.get("learn_preproc_name")
-                self.numerical_data_name = Config.get("learn_numerical_name")
+                self.num_data_name = Config.get("learn_numerical_name")
             elif "val" in csv_file.lower():
                 self.clean_data_name = Config.get("validation_clean_name")
                 self.preproc_data_name = Config.get("validation_preproc_name")
-                self.numerical_data_name = Config.get("validation_numerical_name")
+                self.num_data_name = Config.get("validation_numerical_name")
         else:
             raise ValueError("Set csv_file to either training- or test-file.")
 
@@ -802,7 +810,9 @@ class KDD98DataLoader:
 
         Params
         ------
-        type    One of ["raw", "clean", "preproc", "numerical"]. Raw is as read by pandas, clean is with cleaning operations applied.
+        type    One of ["raw", "clean", "preproc", "numerical"].
+                Raw is as read by pandas, clean is with
+                cleaning operations applied.
         """
         name_mapper = {
             "raw": {"key": self.raw_data_name,
@@ -811,8 +821,8 @@ class KDD98DataLoader:
                       "data_attrib": "_clean_data"},
             "preproc": {"key": self.preproc_data_name,
                         "data_attrib": "_preprocessed_data"},
-            "numerical": {"key": self.numerical_data_name,
-                        "data_attrib": "_numerical_data"}
+            "numerical": {"key": self.num_data_name,
+                          "data_attrib": "_numerical_data"}
         }
 
         assert(type in ["raw", "clean", "preproc", "numerical"])
@@ -822,7 +832,7 @@ class KDD98DataLoader:
             # and set the object
             data = self._unpickle_df(name_mapper[type]["key"])
             setattr(self, name_mapper[type]["data_attrib"], data)
-        except:
+        except Exception:
             # If it fails and we ask for clean data,
             # try to find the raw data in hdf and, if present,
             # load it. If we ask for preprocessed data, try to find
@@ -831,51 +841,62 @@ class KDD98DataLoader:
                 try:
                     self.provide("raw")
                 except Exception as e:
-                    logger.error("Failed to provide raw data. Cannot provide clean data.\nReason: {:1}".format(e))
+                    logger.error("Failed to provide raw data. "
+                                 "Cannot provide clean data. Reason: {}"
+                                 .format(e))
                 try:
                     cln = Cleaner(self)
-                    self.clean_data = cln.clean()
+                    self.clean_data = cln.apply_transformation()
                 except Exception as e:
-                    logger.error("Failed to clean raw data.\nReason: {}".format(e))
+                    logger.error("Failed to clean raw data.\nReason: {}"
+                                 .format(e))
                     raise e
                 self._pickle_df(self.clean_data, self.clean_data_name)
             elif type == "preproc":
                 try:
                     self.provide("clean")
                 except Exception as e:
-                    logger.error("Failed to provide clean data. Cannot provide preprocessed data.\nReason: {}".format(e))
+                    logger.error("Failed to provide clean data."
+                                 " Cannot provide preprocessed data.\n"
+                                 "Reason: {}".format(e))
                     raise e
                 try:
-                    pre = Cleaner(self)
-                    self.preprocessed_data = pre.preprocess()
+                    pre = Preprocessor(self)
+                    self.preprocessed_data = pre.apply_transformation()
                 except Exception as e:
-                    logger.error("Failed to preprocess clean data.\nReason: {}".format(e))
+                    logger.error("Failed to preprocess clean data.\n"
+                                 "Reason: {}".format(e))
                     raise e
                 self._pickle_df(self.preprocessed_data, self.preproc_data_name)
-            elif type =="numerical":
+            elif type == "numerical":
                 try:
                     self.provide("preproc")
                 except Exception as e:
-                    logger.error("Failed to provide preprocessed data. Cannot provide numeric data.\nReason: {}".format(e))
+                    logger.error("Failed to provide preprocessed data.\n"
+                                 "Cannot provide numeric data. Reason: {}"
+                                 .format(e))
                     raise e
                 try:
-                    eng = Cleaner(self)
-                    self.numerical_data = eng.engineer()
+                    eng = Engineer(self)
+                    self.numerical_data = eng.apply_transformation()
                 except Exception as e:
-                    logger.error("Failed to engineer preprocessed data.\nReason: {}".format(e))
+                    logger.error("Failed to engineer preprocessed data.\n"
+                                 "Reason: {}".format(e))
                     raise e
-                self._pickle_df(self.numerical_data, self.numerical_data_name)
+                self._pickle_df(self.numerical_data, self.num_data_name)
             else:
                 try:
                     self._read_csv_data()
                 except Exception as error:
                     logger.error(
-                        "Failed to load data from csv file {:1}!".format(self.raw_data_file_name))
+                        "Failed to load data from csv file {}!"
+                        .format(self.raw_data_file_name))
                     raise error
 
     def _read_csv_data(self):
         """
-        Read in csv data. After successful read, raw data is saved to HDF for future access.
+        Read in csv data. After successful read,
+        raw data is saved to HDF for future access.
         """
 
         try:
@@ -886,9 +907,10 @@ class KDD98DataLoader:
                     self._fetch_online(self.download_url)
                 except urllib.error.HTTPError:
                     logger.error(
-                        "Failed to download dataset from: {}.".format(self.download_url))
+                        "Failed to download dataset from: {}."
+                        .format(self.download_url))
 
-            logger.info("Reading csv file: "+self.raw_data_file_name)
+            logger.info("Reading csv file: " + self.raw_data_file_name)
             self.raw_data = pd.read_csv(
                 pathlib.Path(Config.get("data_dir"), self.raw_data_file_name),
                 index_col=INDEX_NAME,
@@ -912,7 +934,7 @@ class KDD98DataLoader:
 
         """
 
-        file = key_name+"_pd.pkl"
+        file = key_name + "_pd.pkl"
         try:
             with open(pathlib.Path(Config.get("df_store"), file), "rb") as df:
                 dataset = pkl.load(df)
@@ -931,7 +953,7 @@ class KDD98DataLoader:
         data    A pandas dataframe or other object
         key_name    The key name to store the object at.
         """
-        file = key_name+"_pd.pkl"
+        file = key_name + "_pd.pkl"
         pathlib.Path(Config.get("df_store")).mkdir(parents=True, exist_ok=True)
         try:
             with open(pathlib.Path(Config.get("df_store"), file), "wb") as df:
@@ -942,10 +964,12 @@ class KDD98DataLoader:
 
     def _fetch_online(self, url=None, dl_dir=None):
         """
-        Fetches the data from the specified url or from the UCI machine learning database.
+        Fetches the data from the specified url
+        or from the UCI machine learning database.
 
         Params:
-        url:    Optional url to fetch from. Default is UCI machine learning database.
+        url:    Optional url to fetch from.
+                Default is UCI machine learning database.
         """
 
         if not url:
@@ -961,46 +985,66 @@ class KDD98DataLoader:
         if missing:
             for f in missing:
                 file = path / f
-                urllib.request.urlretrieve(url+'/'+f, file)
+                urllib.request.urlretrieve(url + '/' + f, file)
                 if(pathlib.Path(f).suffix == '.zip'):
                     with zipfile.ZipFile(file, mode='r') as archive:
                         archive.extractall(path=path)
 
 
-class Cleaner:
+class KDD98DataTransformer:
+
+    transformer_config = OrderedDict()
 
     def __init__(self, data_loader):
         self.dl = data_loader
-        assert(self.dl.raw_data_file_name in Config.get("learn_file_name", "learn_test_file_name", "validation_file_name"))
-        self.dimension_cols = None
+        self.data = None
+        self.drop_features = set()
+        self.step = "UNDEFINED"
+
         try:
-            pathlib.Path(Config.get("model_store")).mkdir(parents=True,exist_ok=True)
+            pathlib.Path(Config.get("model_store")).mkdir(
+                parents=True, exist_ok=True)
         except Exception as e:
-            message = "Failed to create model store directory '{}'.\nCheck permissions!\nException message: {}".format(pathlib.Path(Config.get("model_store")),e)
+            message = "Failed to create model store directory '{}'.\n"\
+                      "Check permissions!\nException message: {}".format(
+                          pathlib.Path(Config.get("model_store")), e)
             logger.error(message)
             raise(RuntimeError(message))
 
     def drop_if_exists(self, data, features):
+        """
+        Drops features if they exist in the dataframe.
+        Silently ignores errors if feature is not present.
+        """
 
         for f in features:
             try:
                 data.drop(f, axis=1, inplace=True)
             except KeyError:
-                logger.info("Tried dropping feature {}, but it was not present in the data. Possibly alreay removed earlier.".format(f))
+                logger.info("Tried dropping feature {}"
+                            ", but it was not present in the data."
+                            "Possibly alreay removed earlier.".format(f))
         return data
 
+    def pre_steps(self):
+        return self.data
 
+    def post_steps(self):
+        return self.data
 
-    def process_transformers(self, data, transformer_config, fit=True):
+    def process_transformers(self, fit):
         """
-        Works on a set of predefined transformers, applying each one consecutively
-        to the data. It also keeps a list of obsolete features that can be removed
-        afterwards.
+        Works on a set of predefined transformers,
+        applying each one consecutively to the data.
+
+        It also keeps a list of obsolete features that
+        can be removed afterwards.
 
         A transformer's definition is as follows (example is a date formatter):
 
         transformer:    A ColumnTransformer object
-        dtype:  new datatype for the features transformed. If None, will be autoguessed by pandas
+        dtype:  new datatype for the features transformed.
+                If None, will be autoguessed by pandas
         file:   The pickle file where the fitted transformer is located
         drop:   Any features no longer needed after transformation go here
 
@@ -1018,286 +1062,298 @@ class Cleaner:
         Params
         ------
         data:   The dataset to process
-        transformer_config: A dict containing an ordered sequence of transformers to apply.
-                            See corresponding methods Cleaner.clean() and Cleaner.preprocess()
-        fit:    Whether to train the transformers on the data (learning data set) or only
+        transformer_config: A dict containing an ordered sequence
+                            of transformers to apply. See corresponding
+                            methods Cleaner.clean() and Cleaner.preprocess()
+        fit:    Whether to train the transformers
+                on the data (learning data set) or only
                 apply fitted transformers (test/validation data). Default True
-
         """
-        data = data.copy(deep=True)
+        data = self.data.copy(deep=True)
         drop_features = set()
 
-        for t, c in transformer_config.items():
+        for t, c in self.transformer_config.items():
             logging.info("Working on transformer '{}'".format(t))
-            transformed = None
+            transformed, transformer = None, None
             if fit:
                 transformer = c["transformer"]
                 try:
                     transformed = transformer.fit_transform(data)
                 except Exception as e:
-                    logger.error("Failed to apply transformer {} for reason: {}".format(t,e))
-                    print(e)
-                data = ut.update_df_with_transformed(data, transformed, transformer, c["dtype"])
-                drop_features.update(c["drop"])
-                with open(pathlib.Path(Config.get("model_store"),c["file"]), "wb") as ms:
+                    message = "Failed to fit_transform with '{}'"\
+                              ". Message: {}".format(t, e)
+                    logger.error(message)
+                    raise RuntimeError(message)
+                data = ut.update_df_with_transformed(
+                    data, transformed, transformer, c["dtype"])
+
+                with open(pathlib.Path(
+                        Config.get("model_store"), c["file"]), "wb") as ms:
                     pkl.dump(transformer, ms)
             else:
                 try:
-                    with open(pathlib.Path(Config.get("model_store", c["file"]), "rb")) as ms:
+                    with open(pathlib.Path(
+                            Config.get("model_store", c["file"]), "rb")) as ms:
                         transformer = pkl.load(ms)
-                except Exception as e:
+                except Exception:
                     message = "Failed to load fitted transformer {}.\n"\
-                              "Call function with fit=True first to learn the transformers.\n"\
+                              "Call function with fit=True first"\
+                              "to learn the transformers.\n"\
                               "Aborting preprocessing...".format(t)
                     logger.error(message)
                     raise(RuntimeError(message))
-                transformed = transformer.transform(data)
-                data = ut.update_df_with_transformed(data, transformed, transformer)
-                drop_features.update(c["drop"])
-
+                try:
+                    transformed = transformer.transform(data)
+                except Exception as e:
+                    message = "Failed to transform with {}.\n"\
+                              "Aborting preprocessing...".format(t)
+                    logger.error(message)
+                    raise e
+                data = ut.update_df_with_transformed(
+                    data, transformed, transformer)
+            drop_features.update(c["drop"])
         return (data, drop_features)
 
-    def clean(self, fit=True):
-        """
-        Performs cleaning operations on a raw dataset as read in by pandas.read_csv.
+    def apply_transformation(self, fit=True):
+        logger.info("Transformation step {} started...".format(self.step))
 
-        Params
-        ------
-        fit:    Whether to learn the transformations on training data. If              false, saved transformers are loaded
-                and applied to test / validation data. Default True
-        """
-        data = self.dl.raw_data.copy(deep=True)
-        logger.info("Starting cleaning of raw dataset")
+        self.pre_steps()
 
-        drop_features = set()
-
-        transformers = OrderedDict({
-            "dates": {
-                "transformer": ColumnTransformer([
-                    ("date_format",
-                    DateFormatter(),
-                    DATE_FEATURES)
-                ]),
-                "dtype": "str",
-                "file": "date_format_transformer.pkl",
-                "drop": []
-            },
-            "zipcode": {
-                "transformer": ColumnTransformer([
-                    ("zip_format",
-                    ZipFormatter(),
-                    ["ZIP"])
-                ]),
-                "dtype": "Int64",
-                "file": "zip_format_transformer.pkl",
-                "drop": []
-            },
-            "noexch": {
-                "transformer": ColumnTransformer([
-                    ("noexch_format",
-                    NOEXCHFormatter(),
-                    ["NOEXCH"])
-                ]),
-                "dtype": "Int64",
-                "file": "noexch_format_transformer.pkl",
-                "drop": []
-            },
-            "mdmaud": {
-                "transformer": ColumnTransformer([
-                    ("format_mdmaud",
-                    MDMAUDFormatter(),
-                    ["MDMAUD_R", "MDMAUD_F", "MDMAUD_A"])
-                ]),
-                "dtype": None,
-                "file": "mdmaud_format_transformer.pkl",
-                "drop": []
-            },
-            "binary": {
-                "transformer": ColumnTransformer([
-                    ("binary_x_bl",
-                    BinaryFeatureRecode(
-                        value_map={"true": "X", "false": " "}, correct_noisy=False),
-                    ["PEPSTRFL", "MAJOR", "RECINHSE", "RECP3", "RECPGVG", "RECSWEEP"]
-                    ),
-                    ("binary_y_n",
-                    BinaryFeatureRecode(
-                        value_map={"true": "Y", "false": "N"}, correct_noisy=False),
-                    ["COLLECT1", "VETERANS", "BIBLE", "CATLG", "HOMEE", "PETS", "CDPLAY", "STEREO", "PCOWNERS", "PHOTO", "CRAFTS", "FISHER", "GARDENIN", "BOATS", "WALKER", "KIDSTUFF", "CARDS", "PLATES"]
-                    ),
-                    ("binary_e_i",
-                    BinaryFeatureRecode(
-                        value_map={"true": "E", "false": "I"}, correct_noisy=False),
-                    ["AGEFLAG"]
-                    ),
-                    ("binary_h_u",
-                    BinaryFeatureRecode(
-                        value_map={"true": "H", "false": "U"}, correct_noisy=False),
-                    ["HOMEOWNR"]),
-                    ("binary_b_bl",
-                    BinaryFeatureRecode(
-                        value_map={"true": "B", "false": " "}, correct_noisy=False),
-                    ["MAILCODE"]
-                    ),
-                    ("binary_1_0",
-                    BinaryFeatureRecode(
-                        value_map={"true": "1", "false": "0"}, correct_noisy=False),
-                    ["HPHONE_D", "NOEXCH"]
-                    )
-                ]),
-                "dtype": "Int64",
-                "file": "binary_transformer.pkl",
-                "drop": []
-            },
-            "multibyte": {
-                "transformer": ColumnTransformer([
-                                ("spread_rfa",
-                                MultiByteExtract(["R", "F", "A"]),
-                                NOMINAL_FEATURES[2:]),
-                                ("spread_domain",
-                                MultiByteExtract(["Urbanicity", "SocioEconomic"]),
-                                ["DOMAIN"])
-                            ]),
-                "dtype": "category",
-                "file": "multibyte_transformer.pkl",
-                "drop": NOMINAL_FEATURES[2:]+["DOMAIN"]
-            },
-            "ordinal": {
-                "transformer": ColumnTransformer([
-                                ("order_mdmaud",
-                                OrdinalEncoder(mapping=ORDINAL_MAPPING_MDMAUD,
-                                                handle_unknown="ignore"),
-                                ["MDMAUD_R", "MDMAUD_A"]),
-                                ("order_rfa",
-                                OrdinalEncoder(mapping=ORDINAL_MAPPING_RFA,
-                                                handle_unknown="ignore"),
-                                                ["RFA_"+str(i)+"A" for i in range(2,25)]),
-                                #("recode_socioecon", RecodeUrbanSocioEconomic(), ["DOMAINUrbanicity", "DOMAINSocioEconomic"]),
-                                ("recode_socioecon", OrdinalEncoder(mapping= ORDINAL_MAPPING_SOCIOECON, handle_unknown="ignore"),
-                                ["DOMAINSocioEconomic"]),
-                                ("order_remaining",
-                                OrdinalEncoder(handle_unknown="ignore"),
-                                    ["WEALTH1","WEALTH2","INCOME", "MDMAUD_F"]+["RFA_"+str(i)+"F" for i in range(2,25)])
-                            ]),
-                "dtype": "Int64",
-                "file": "ordinal_transformer.pkl",
-                "drop": []
-            }
-        })
-
-        data, drop_features = self.process_transformers(data, transformers, fit)
-
-        # Transforming the data and rebuilding the pandas dataframe
-
-        # Some features are redundant, these are removed here
-        drop_features.update(DROP_INITIAL)
-        drop_features.update(DROP_REDUNDANT)
+        self.data, drop_features = self.process_transformers(fit)
+        self.drop_features.update(drop_features)
 
         # Now, drop all features marked for removal
-        logger.info("About to drop these features in cleaning: {}".format(drop_features))
-        data = self.drop_if_exists(data, drop_features)
+        logger.info("About to drop the following"
+                    " features in transformation {}: {}"
+                    .format(self.step, self.drop_features))
+        self.data = self.drop_if_exists(self.data, drop_features)
 
-        remaining_object_features = data.select_dtypes(include="object").columns.values.tolist()
-        remaining_without_dates = [r for r in remaining_object_features if r not in DATE_FEATURES]
+        self.post_steps()
 
+        logger.info("Transformation step {} completed..."
+                    .format(self.step))
+        return self.data
+
+
+class Cleaner(KDD98DataTransformer):
+
+    transformer_config = OrderedDict({
+        "dates": {
+            "transformer": ColumnTransformer([
+                ("date_format",
+                 DateFormatter(),
+                 DATE_FEATURES)
+            ]),
+            "dtype": "str",
+            "file": "date_format_transformer.pkl",
+            "drop": []
+        },
+        "zipcode": {
+            "transformer": ColumnTransformer([
+                ("zip_format",
+                 ZipFormatter(),
+                 ["ZIP"])
+            ]),
+            "dtype": "Int64",
+            "file": "zip_format_transformer.pkl",
+            "drop": []
+        },
+        "noexch": {
+            "transformer": ColumnTransformer([
+                ("noexch_format",
+                 NOEXCHFormatter(),
+                 ["NOEXCH"])
+            ]),
+            "dtype": "Int64",
+            "file": "noexch_format_transformer.pkl",
+            "drop": []
+        },
+        "mdmaud": {
+            "transformer": ColumnTransformer([
+                ("format_mdmaud",
+                 MDMAUDFormatter(),
+                 ["MDMAUD_R", "MDMAUD_F", "MDMAUD_A"])
+            ]),
+            "dtype": None,
+            "file": "mdmaud_format_transformer.pkl",
+            "drop": []
+        },
+        "binary": {
+            "transformer": ColumnTransformer([
+                ("binary_x_bl",
+                 BinaryFeatureRecode(
+                     value_map={"true": "X", "false": " "},
+                     correct_noisy=False),
+                 ["PEPSTRFL", "MAJOR", "RECINHSE",
+                  "RECP3", "RECPGVG", "RECSWEEP"]),
+                ("binary_y_n",
+                 BinaryFeatureRecode(
+                     value_map={"true": "Y", "false": "N"},
+                     correct_noisy=False),
+                 ["COLLECT1", "VETERANS", "BIBLE", "CATLG",
+                  "HOMEE", "PETS", "CDPLAY", "STEREO", "PCOWNERS",
+                  "PHOTO", "CRAFTS", "FISHER", "GARDENIN", "BOATS",
+                  "WALKER", "KIDSTUFF", "CARDS", "PLATES"]),
+                ("binary_e_i",
+                 BinaryFeatureRecode(
+                     value_map={"true": "E", "false": "I"},
+                     correct_noisy=False),
+                 ["AGEFLAG"]),
+                ("binary_h_u",
+                 BinaryFeatureRecode(
+                     value_map={"true": "H", "false": "U"},
+                     correct_noisy=False),
+                 ["HOMEOWNR"]),
+                ("binary_b_bl",
+                 BinaryFeatureRecode(
+                     value_map={"true": "B", "false": " "},
+                     correct_noisy=False),
+                 ["MAILCODE"]),
+                ("binary_1_0",
+                 BinaryFeatureRecode(
+                     value_map={"true": "1", "false": "0"},
+                     correct_noisy=False),
+                 ["HPHONE_D", "NOEXCH"])
+            ]),
+            "dtype": "Int64",
+            "file": "binary_transformer.pkl",
+            "drop": []
+        },
+        "multibyte": {
+            "transformer": ColumnTransformer([
+                ("spread_rfa",
+                 MultiByteExtract(["R", "F", "A"]),
+                 NOMINAL_FEATURES[2:]),
+                ("spread_domain",
+                 MultiByteExtract(["Urbanicity", "SocioEconomic"]),
+                 ["DOMAIN"])
+            ]),
+            "dtype": "category",
+            "file": "multibyte_transformer.pkl",
+            "drop": NOMINAL_FEATURES[2:] + ["DOMAIN"]
+        },
+        "ordinal": {
+            "transformer": ColumnTransformer([
+                ("order_mdmaud",
+                 OrdinalEncoder(mapping=ORDINAL_MAPPING_MDMAUD,
+                                handle_unknown="ignore"),
+                 ["MDMAUD_R", "MDMAUD_A"]),
+                ("order_rfa",
+                 OrdinalEncoder(mapping=ORDINAL_MAPPING_RFA,
+                                handle_unknown="ignore"),
+                 ["RFA_" + str(i) + "A" for i in range(2, 25)]),
+                ("recode_socioecon",
+                 OrdinalEncoder(mapping=ORDINAL_MAPPING_SOCIOECON,
+                                handle_unknown="ignore"),
+                 ["DOMAINSocioEconomic"]),
+                ("order_remaining",
+                 OrdinalEncoder(handle_unknown="ignore"),
+                 ["WEALTH1", "WEALTH2", "INCOME", "MDMAUD_F"] +
+                 ["RFA_" + str(i) + "F" for i in range(2, 25)])
+            ]),
+            "dtype": "Int64",
+            "file": "ordinal_transformer.pkl",
+            "drop": []
+        }
+    })
+
+    def __init__(self, data_loader):
+        super().__init__(data_loader)
+        self.data = self.dl.raw_data
+        self.dimension_cols = None
+        self.step = "Cleaning"
+        self.drop_features = set(DROP_INITIAL + DROP_REDUNDANT)
+
+    def post_steps(self):
+        remaining_object_features = self.data.select_dtypes(include="object").columns.values.tolist()
+        remaining_without_dates = [r for r in remaining_object_features
+                                   if r not in DATE_FEATURES]
         if remaining_without_dates:
-            logger.warning("After cleaning, the following features were left untreated and automatically coerced to 'category' (nominal): {}".format(remaining_without_dates))
-            data[remaining_without_dates] = data[remaining_without_dates].astype("category")
-        logger.info("Cleaning completed...")
-        return data
-
-    def preprocess(self, fit=True):
-        """
-        Applies several transformers to preprocess data.
-
-        Params
-        ------
-        fit:    boolean indicating whether the transformers should be learned
-                (on training data) or learned and saved transformers should
-                be applied to test / validation data. Default False
-        """
-
-        data = self.dl.clean_data.copy(deep=True)
-        logger.info("Starting preprocessing of clean dataset")
-
-        # Set of feature names to be dropped after transformations
-        drop_features = set()
+            logger.warning("After cleaning, the following features"
+                           " were left untreated and automatically"
+                           " coerced to 'category' (nominal): {}"
+                           .format(remaining_without_dates))
+            self.data[remaining_without_dates] = self.data[remaining_without_dates].astype("category")
 
 
-        # First off, low variance and sparse features are removed. These were found interactively.
+class Preprocessor(KDD98DataTransformer):
 
-        # Cutoff for sparse features is 20%, meaning each feature that has more than 20% missing values is dropped.
-        # Low variance is interpreted as zero variance = constant features
-        LOW_VAR_SPARSE = {'RAMNT_24', 'PETS', 'STEREO', 'CARDS', 'CDPLAY', 'MDMAUD_R', 'SOLIH', 'RAMNT_20', 'CHILD18', 'RAMNT_11', 'GARDENIN', 'RAMNT_15', 'RAMNT_17', 'PCOWNERS', 'RAMNT_13', 'FISHER', 'RAMNT_21', 'HOMEE', 'BIBLE', 'PHOTO', 'RAMNT_19', 'RAMNT_7', 'BOATS', 'CHILD03', 'PVASTATE', 'SOLP3', 'CATLG', 'CRAFTS', 'GEOCODE', 'RAMNT_9', 'RAMNT_4', 'PLATES', 'VETERANS', 'KIDSTUFF', 'RFA_2R', 'RAMNT_3', 'RAMNT_6', 'CHILD12', 'NOEXCH', 'COLLECT1', 'RAMNT_23', 'CHILD07', 'RAMNT_5', 'NUMCHLD', 'RAMNT_10', 'MDMAUD_A', 'WALKER'}
+    LOW_VAR_SPARSE = {'RAMNT_24', 'PETS', 'STEREO', 'CARDS', 'CDPLAY',
+                      'MDMAUD_R', 'SOLIH', 'RAMNT_20', 'CHILD18', 'RAMNT_11',
+                      'GARDENIN', 'RAMNT_15', 'RAMNT_17', 'PCOWNERS',
+                      'RAMNT_13', 'FISHER', 'RAMNT_21', 'HOMEE', 'BIBLE',
+                      'PHOTO', 'RAMNT_19', 'RAMNT_7', 'BOATS', 'CHILD03',
+                      'PVASTATE', 'SOLP3', 'CATLG', 'CRAFTS', 'GEOCODE',
+                      'RAMNT_9', 'RAMNT_4', 'PLATES', 'VETERANS', 'KIDSTUFF',
+                      'RFA_2R', 'RAMNT_3', 'RAMNT_6', 'CHILD12', 'NOEXCH',
+                      'COLLECT1', 'RAMNT_23', 'CHILD07', 'RAMNT_5', 'NUMCHLD',
+                      'RAMNT_10', 'MDMAUD_A', 'WALKER'}
 
-        def filter_features(features):
-            return list(set(features)-LOW_VAR_SPARSE)
+    def filter_features(self, features):
+        return list(set(features) - self.LOW_VAR_SPARSE)
 
-        logger.info("About to drop these sparse / constant features: {}".format(LOW_VAR_SPARSE))
-        data = self.drop_if_exists(data, LOW_VAR_SPARSE)
+    transformer_config = OrderedDict()
 
-        # Definition of transformers to be applied. If they are applied
-        # to training data, they should be fitted and transformed.
-        # For test / validation data, call the function with fit=False
-        # to only transform and result with the same transformations
-        # as the training set.
-        transformers = OrderedDict({
+    def __init__(self, data_loader):
+        super().__init__(data_loader)
+        self.data = self.dl.clean_data
+        self.step = "Preprocessing"
+        self.transformer_config = OrderedDict({
             "donation_hist": {
                 "transformer": ColumnTransformer([
-                                ("months_to_donation",
-                                MonthsToDonation(),
-                                filter_features(PROMO_HISTORY_DATES+GIVING_HISTORY_DATES)
-                                )
-                            ]),
+                    ("months_to_donation",
+                     MonthsToDonation(),
+                     self.filter_features(PROMO_HISTORY_DATES +
+                                          GIVING_HISTORY_DATES))
+                ]),
                 "dtype": None,
                 "file": "donation_responses_transformer.pkl",
-                "drop": PROMO_HISTORY_DATES+GIVING_HISTORY_DATES
+                "drop": PROMO_HISTORY_DATES + GIVING_HISTORY_DATES
             },
             "timedelta": {
                 "transformer": ColumnTransformer([
-                                ("time_last_donation", DeltaTime(unit="months"), filter_features(["LASTDATE","MINRDATE","MAXRDATE","MAXADATE"])),
-                                ("membership_years", DeltaTime(unit="years"), filter_features(["ODATEDW"]))
-                              ]),
+                    ("time_last_donation",
+                     DeltaTime(unit="months"),
+                     self.filter_features(["LASTDATE", "MINRDATE",
+                                           "MAXRDATE", "MAXADATE"])),
+                    ("membership_years",
+                     DeltaTime(unit="years"),
+                     self.filter_features(["ODATEDW"]))
+                ]),
                 "dtype": "Int64",
                 "file": "timedelta_transformer.pkl",
-                "drop": ["ODATEDW", "LASTDATE","MINRDATE","MAXRDATE","MAXADATE"]
+                "drop": ["ODATEDW", "LASTDATE", "MINRDATE",
+                         "MAXRDATE", "MAXADATE"]
             }
         })
 
-        # Perform transformations
-        data, drop_features = self.process_transformers(data, transformers, fit)
+    def pre_steps(self):
+        logger.info("About to drop these sparse / constant features: {}"
+                    .format(self.LOW_VAR_SPARSE))
+        self.data = self.drop_if_exists(self.data, self.LOW_VAR_SPARSE)
 
-        logger.info("About to drop these features in preprocessing: {}".format(drop_features))
-        data = self.drop_if_exists(data, drop_features)
-        logger.info("Preprocessing completed...")
-        return data
 
-    def engineer(self, fit=True):
-        """
-        Applies several transformers to engineer data. Result is an imputed, all-numeric data set.
+class Engineer(KDD98DataTransformer):
 
-        Params
-        ------
-        fit:    boolean indicating whether the transformers should be learned
-                (on training data) or learned and saved transformers should
-                be applied to test / validation data. Default False
-        """
+    # Since we dynamically determine categorical features, the class
+    # variable is overridden by the init function here.
+    transformer_config = OrderedDict()
 
-        data = self.dl.preprocessed_data.copy(deep=True)
-        logger.info("Starting engineering of preprocessed dataset")
-
-        # Set of feature names to be dropped after transformations
-        drop_features = set()
-
-        CATEGORICAL_FEATURES = data.select_dtypes(include="category").columns.values.tolist()
-        BINARY_ENCODED_CATEGORICALS = ['OSOURCE', 'TCODE', 'ZIP', 'STATE', 'CLUSTER']
-        ONE_HOT_ENCODED_CATEGORICALS = [f for f in CATEGORICAL_FEATURES if f not in BINARY_ENCODED_CATEGORICALS]
-        NUMERICAL_FEATURES = [f for f in data.columns.values.tolist() if f not in CATEGORICAL_FEATURES]
-
-        transformers = OrderedDict({
-            #Before dealing with categorical features, we need to impute.
+    def __init__(self, data_loader):
+        super().__init__(data_loader)
+        self.data = self.dl.preprocessed_data
+        self.step = "Feature Engineering"
+        self.CATEGORICAL_FEATURES = self.data.select_dtypes(include="category").columns.values.tolist()
+        self.NUMERICAL_FEATURES = [f for f in self.data.columns.values.tolist() if f not in self.CATEGORICAL_FEATURES]
+        self.BE_CATEGORICALS = ['OSOURCE', 'TCODE', 'ZIP', 'STATE', 'CLUSTER']
+        self.OHE_CATEGORICALS = [f for f in self.CATEGORICAL_FEATURES if f not in self.BE_CATEGORICALS]
+        self.transformer_config = OrderedDict({
+            # Before dealing with categorical features, we need to impute.
             "impute_categories": {
                 "transformer": ColumnTransformer([
-                    ("impute_categories", CategoricalImputer(),CATEGORICAL_FEATURES)
+                    ("impute_categories",
+                     CategoricalImputer(),
+                     self.CATEGORICAL_FEATURES)
                 ]),
                 "dtype": None,
                 "file": "impute_cats_transformer.pkl",
@@ -1306,41 +1362,36 @@ class Cleaner:
             "binary_encode_categoricals": {
                 "transformer": ColumnTransformer([
                     ("be_osource", BinaryEncoder(), ['OSOURCE']),
-                    ("be_state", BinaryEncoder(),['STATE']),
-                    ("be_cluster", BinaryEncoder(),['CLUSTER']),
+                    ("be_state", BinaryEncoder(), ['STATE']),
+                    ("be_cluster", BinaryEncoder(), ['CLUSTER']),
                     ("be_tcode", BinaryEncoder(), ['TCODE']),
                     ("be_zip", BinaryEncoder(), ['ZIP'])
                 ]),
                 "dtype": "int64",
                 "file": "binary_encoding_transformer.pkl",
-                "drop": BINARY_ENCODED_CATEGORICALS
+                "drop": self.BE_CATEGORICALS
             },
             "one_hot_encode_categoricals": {
                 "transformer": ColumnTransformer([
-                    ("oh", OneHotEncoder(use_cat_names=True, handle_unknown="error"),
-                    ONE_HOT_ENCODED_CATEGORICALS)
+                    ("oh",
+                     OneHotEncoder(use_cat_names=True,
+                                   handle_unknown="error"),
+                     self.OHE_CATEGORICALS)
                 ]),
                 "dtype": "int64",
                 "file": "oh_encoding_transformer.pkl",
-                "drop": ONE_HOT_ENCODED_CATEGORICALS
-            }#,
-            # "impute_remaining": {
-            #     "transformer": ColumnTransformer([
-
-            #     ])
-            # },
-
+                "drop": self.OHE_CATEGORICALS
+            },
+            "impute_remaining": {
+                "transformer": ColumnTransformer([
+                    ("impute_numerical",
+                     NumericalImputer(n_iter=5, initial_strategy="median",
+                                      random_state=Config.get("random_seed"),
+                                      verbose=1),
+                     self.NUMERICAL_FEATURES)
+                ]),
+                "dtype": None,
+                "file": "iterative_impute_numericals.pkl",
+                "drop": []
+            }
         })
-
-        # Perform transformations
-        data, drop_features = self.process_transformers(data, transformers, fit)
-
-        # Imputation
-
-        # For the donation amounts per campaign, NaN actually means 0 dollars donated, so change this accordingly.
-        #data[GIVING_HISTORY] = data.loc[:,GIVING_HISTORY].fillna(0, axis=1)
-
-        logger.info("About to drop these features in preprocessing: {}".format(drop_features))
-        data = self.drop_if_exists(data, drop_features)
-        logger.info("Engineering completed...")
-        return data
