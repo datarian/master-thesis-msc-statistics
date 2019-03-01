@@ -22,7 +22,7 @@ from fancyimpute import IterativeImputer
 from kdd98.config import Config
 
 # Set up the logger
-logging.basicConfig(filename=__name__+'.log', level=logging.ERROR)
+logging.basicConfig(filename=__name__ + '.log', level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
 
@@ -49,7 +49,8 @@ class NamedFeatureTransformer(BaseEstimator, TransformerMixin):
         if isinstance(self.feature_names, list):
             return self.feature_names
         else:
-            raise(ValueError("Transformer {} has to be transformed first, cannot return feature names.".format(self.__class__.__name__)))
+            raise(ValueError("Transformer {} has to be transformed first, cannot return feature names.".format(
+                self.__class__.__name__)))
 
 
 class MultiByteExtract(NamedFeatureTransformer):
@@ -82,7 +83,7 @@ class MultiByteExtract(NamedFeatureTransformer):
         return self
 
     def _fill_missing(self):
-            return [np.nan]*self.sigbytes
+        return [np.nan] * self.sigbytes
 
     def _spread(self, feature, index_name):
         """ Fills the byte dataset for each record
@@ -106,7 +107,8 @@ class MultiByteExtract(NamedFeatureTransformer):
                     # handle missing values
                     spread_field[row[0]] = self._fill_missing()
         except Exception as e:
-            logger.error("Failed to spread feature '{}' for reason {}".format(feature, e))
+            logger.error(
+                "Failed to spread feature '{}' for reason {}".format(feature, e))
             raise e
 
         # Create the dataframe, orient=index means
@@ -207,6 +209,7 @@ class DateFormatter(NamedFeatureTransformer):
     """
     Fixes input errors for date features
     """
+
     def __init__(self):
         super().__init__()
 
@@ -215,10 +218,10 @@ class DateFormatter(NamedFeatureTransformer):
         return self
 
     def _fix_format(self, d):
-            if not pd.isna(d):
-                if len(d) == 3:
-                    d = "0"+d
-            return d
+        if not pd.isna(d):
+            if len(d) == 3:
+                d = "0" + d
+        return d
 
     def transform(self, X, y=None):
         assert isinstance(X, pd.DataFrame)
@@ -242,7 +245,8 @@ class ZipFormatter(NamedFeatureTransformer):
     def transform(self, X, y=None):
         assert(isinstance(X, pd.DataFrame))
         for f in self.feature_names:
-            X[f] = X[f].str.replace("-", "").replace([" ", "."], np.nan).astype("int64")
+            X[f] = X[f].str.replace(
+                "-", "").replace([" ", "."], np.nan).astype("int64")
         return X
 
 
@@ -250,6 +254,7 @@ class NOEXCHFormatter(NamedFeatureTransformer):
     """
     Fixes input errors for zip codes
     """
+
     def __init__(self):
         super().__init__()
 
@@ -268,6 +273,7 @@ class MDMAUDFormatter(NamedFeatureTransformer):
     """
     Fixes input errors for MDMAUD features
     """
+
     def __init__(self):
         super().__init__()
 
@@ -296,7 +302,7 @@ class DateHandler:
             if not pd.isna(d):
                 try:
                     if d.year > ref_date.year:
-                        d = d.replace(year=(d.year-100))
+                        d = d.replace(year=(d.year - 100))
                 except Exception as err:
                     logger.warning(
                         "Failed to fix century for date {}, reason: {}".format(d, err))
@@ -306,15 +312,17 @@ class DateHandler:
             return d
 
         try:
-            date_feature = pd.to_datetime(date_feature, format="%y%m", errors="coerce").map(fix_century)
+            date_feature = pd.to_datetime(
+                date_feature, format="%y%m", errors="coerce").map(fix_century)
         except Exception as e:
-            message = "Failed to parse date array {}.\nReason: {}".format(date_feature, e)
+            message = "Failed to parse date array {}.\nReason: {}".format(
+                date_feature, e)
             logger.error(message)
             raise RuntimeError(message)
         return date_feature
 
 
-class DeltaTime(BaseEstimator, TransformerMixin, DateHandler):
+class DeltaTime(NamedFeatureTransformer, DateHandler):
     """Computes the duration between a date and a reference date in months.
 
     Parameters:
@@ -329,7 +337,7 @@ class DeltaTime(BaseEstimator, TransformerMixin, DateHandler):
         super().__init__()
         self.reference_date = reference_date
         if suffix:
-            self.feature_suffix = "_DELTA_"+unit.upper()
+            self.feature_suffix = "_DELTA_" + unit.upper()
         else:
             self.feature_suffix = ""
         self.unit = unit
@@ -369,21 +377,22 @@ class DeltaTime(BaseEstimator, TransformerMixin, DateHandler):
                     raise e
                 if isinstance(self.reference_date, pd.Series):
                     # we have a series of reference dates
-                    feature_name = f+"_" + \
-                        str(self.reference_date.name)+self.feature_suffix
+                    feature_name = f + "_" + \
+                        str(self.reference_date.name) + self.feature_suffix
                 else:
-                    feature_name = f+self.feature_suffix
+                    feature_name = f + self.feature_suffix
 
                 X_temp['ref'] = self.reference_date
                 X_trans[feature_name] = X_temp.apply(self.get_duration, axis=1)
             except Exception as e:
-                logger.error("Failed to transform '{}' on featurefor reason {}".format(self.__class__.__name__, e))
+                logger.error("Failed to transform '{}' on featurefor reason {}".format(
+                    self.__class__.__name__, e))
                 raise e
         self.feature_names = X_trans.columns.values.tolist()
         return X_trans
 
 
-class MonthsToDonation(BaseEstimator, TransformerMixin, DateHandler):
+class MonthsToDonation(NamedFeatureTransformer, DateHandler):
 
     def __init__(self):
         super().__init__()
@@ -400,8 +409,9 @@ class MonthsToDonation(BaseEstimator, TransformerMixin, DateHandler):
                 duration = relativedelta.relativedelta(ref, target).years * 12
                 duration += relativedelta.relativedelta(ref, target).months
             except TypeError as err:
-                logger.error("Failed to calculate time delta. " +
-                             "Dates: {} and {}\nMessage: {}".format(row[0], row[1], err))
+                logger.error("Failed to calculate time delta. "
+                             "Dates: {} and {}\nMessage: {}"
+                             .format(row[0], row[1], err))
                 duration = np.nan
         else:
             duration = np.nan
@@ -414,11 +424,13 @@ class MonthsToDonation(BaseEstimator, TransformerMixin, DateHandler):
         X_trans = pd.DataFrame(index=X.index)
         for i in range(3, 25):
             try:
-                feat_name = "MONTHS_TO_DONATION_"+str(i)
-                mailing = X.loc[:,["ADATE_"+str(i), "RDATE_"+str(i)]]
+                feat_name = "MONTHS_TO_DONATION_" + str(i)
+                mailing = X.loc[:, ["ADATE_" + str(i), "RDATE_" + str(i)]]
                 try:
-                    mailing.loc[:,"ADATE_"+str(i)] = self.parse_date(mailing.loc[:,"ADATE_"+str(i)])
-                    mailing.loc[:,"RDATE_"+str(i)] = self.parse_date(mailing.loc[:,"RDATE_"+str(i)])
+                    mailing.loc[:, "ADATE_" +
+                                str(i)] = self.parse_date(mailing.loc[:, "ADATE_" + str(i)])
+                    mailing.loc[:, "RDATE_" +
+                                str(i)] = self.parse_date(mailing.loc[:, "RDATE_" + str(i)])
                 except RuntimeError as e:
                     raise e
                 diffs = mailing.agg(self.calc_diff, axis=1)
@@ -426,7 +438,8 @@ class MonthsToDonation(BaseEstimator, TransformerMixin, DateHandler):
                     diffs, columns=[feat_name], index=X_trans.index), how="inner")
                 self.feature_names.extend([feat_name])
             except Exception as e:
-                logger.error("Failed to transform '{}' on featurefor reason {}".format(self.__class__.__name__, e))
+                logger.error("Failed to transform '{}' on featurefor reason {}".format(
+                    self.__class__.__name__, e))
                 raise e
         return X_trans
 
@@ -435,12 +448,17 @@ class Hasher(NamedFeatureTransformer):
 
     def __init__(self, verbose=0, n_components=8, cols=None, drop_invariant=False, hash_method='md5'):
         super().__init__()
-        self.verbose=verbose
-        self.n_components=n_components
+        self.verbose = verbose
+        self.n_components = n_components
         self.cols = cols
-        self.drop_invariant=drop_invariant
-        self.hash_method=hash_method
-        self.he = HashingEncoder(verbose=self.verbose, n_components=self.n_components, cols=self.cols, drop_invariant=self.drop_invariant, return_df=True, hash_method=self.hash_method)
+        self.drop_invariant = drop_invariant
+        self.hash_method = hash_method
+        self.he = HashingEncoder(verbose=self.verbose,
+                                 n_components=self.n_components,
+                                 cols=self.cols,
+                                 drop_invariant=self.drop_invariant,
+                                 return_df=True,
+                                 hash_method=self.hash_method)
 
     def fit(self, X, y=None):
         self.he.fit(X, y)
@@ -449,9 +467,10 @@ class Hasher(NamedFeatureTransformer):
     def transform(self, X, y=None):
         assert(isinstance(X, pd.DataFrame))
         features = X.columns.values.tolist()
-        X_trans = self.he.transform(X,y)
+        X_trans = self.he.transform(X, y)
         generated_features = self.he.get_feature_names()
-        self.feature_names = [f+"_"+g for f in features for g in generated_features]
+        self.feature_names = [
+            f + "_" + g for f in features for g in generated_features]
         X_trans.columns = self.feature_names
         return X_trans
 
@@ -471,19 +490,44 @@ class CategoricalImputer(NamedFeatureTransformer):
         return X_trans
 
 
-class NumericalImputer(NamedFeatureTransformer):
+class NumericalImputer(BaseEstimator):
 
-    def __init__(self,n_iter=5,initial_strategy="median",random_state=Config.get("random_seed"),verbose=0):
+    def __init__(self, n_iter=5, initial_strategy="median",
+                 random_state=Config.get("random_seed"), verbose=0):
         super().__init__()
-        self.imp = IterativeImputer(n_iter=n_iter,initial_strategy=initial_strategy, random_state=random_state,verbose=verbose)
+        self.n_iter = n_iter
+        self.initial_strategy = initial_strategy
+        self.random_state = random_state
+        self.verbose = verbose
+        self.feature_names = None
+
+        self.imp = IterativeImputer(n_iter=self.n_iter,
+                                    initial_strategy=self.initial_strategy,
+                                    random_state=self.random_state,
+                                    verbose=self.verbose)
 
     def fit(self, X, y=None):
-        self.imp.fit(X,y)
+        assert(isinstance(X, pd.DataFrame))
+        self.imp.fit_transform(X.values, y)
         return self
 
     def transform(self, X, y=None):
         assert(isinstance(X, pd.DataFrame))
         self.feature_names = X.columns.values.tolist()
-        X_trans = self.imp.transform(X,y)
+        X_trans = self.imp.fit_transform(X.values)
         X_trans = pd.DataFrame(data=X_trans, columns=X.columns, index=X.index)
         return X_trans
+
+    def fit_transform(self, X, y=None):
+        assert(isinstance(X, pd.DataFrame))
+        self.feature_names = X.columns.values.tolist()
+        X_trans = self.imp.fit_transform(X.values, y)
+        X_trans = pd.DataFrame(data=X_trans, columns=X.columns, index=X.index)
+        return X_trans
+
+    def get_feature_names(self):
+        if isinstance(self.feature_names, list):
+            return self.feature_names
+        else:
+            raise(ValueError("Transformer {} has to be transformed first, cannot return feature names.".format(
+                self.__class__.__name__)))
