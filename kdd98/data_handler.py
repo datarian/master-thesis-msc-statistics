@@ -23,7 +23,7 @@ from kdd98.transformers import (BinaryFeatureRecode, DateFormatter, DeltaTime,
                                 MultiByteExtract, NOEXCHFormatter,
                                 OrdinalEncoder,
                                 ZipFormatter, CategoricalImputer,
-                                NumericalImputer)
+                                NumericImputer)
 
 # Set up the logger
 logging.basicConfig(filename=__name__ + '.log', level=logging.INFO)
@@ -725,7 +725,7 @@ class KDD98DataProvider:
         self._raw_data = pd.DataFrame()
         self._clean_data = pd.DataFrame()
         self._preprocessed_data = pd.DataFrame()
-        self._numerical_data = pd.DataFrame()
+        self._numeric_data = pd.DataFrame()
 
         self.download_url = download_url
         self.reference_date = Config.get("reference_date")
@@ -739,11 +739,11 @@ class KDD98DataProvider:
             if "lrn" in csv_file.lower():
                 self.clean_data_name = Config.get("learn_clean_name")
                 self.preproc_data_name = Config.get("learn_preproc_name")
-                self.num_data_name = Config.get("learn_numerical_name")
+                self.num_data_name = Config.get("learn_numeric_name")
             elif "val" in csv_file.lower():
                 self.clean_data_name = Config.get("validation_clean_name")
                 self.preproc_data_name = Config.get("validation_preproc_name")
-                self.num_data_name = Config.get("validation_numerical_name")
+                self.num_data_name = Config.get("validation_numeric_name")
         else:
             raise ValueError("Set csv_file to either training- or test-file.")
 
@@ -778,14 +778,14 @@ class KDD98DataProvider:
         self._preprocessed_data = value
 
     @property
-    def numerical_data(self):
-        if self._numerical_data.empty:
-            self.provide("numerical")
-        return self._numerical_data
+    def numeric_data(self):
+        if self._numeric_data.empty:
+            self.provide("numeric")
+        return self._numeric_data
 
-    @numerical_data.setter
-    def numerical_data(self, value):
-        self._numerical_data = value
+    @numeric_data.setter
+    def numeric_data(self, value):
+        self._numeric_data = value
 
     def provide(self, type):
         """
@@ -793,7 +793,7 @@ class KDD98DataProvider:
 
         If clean data is requested, the returned pandas object has:
         - binary
-        - numerical (float, int)
+        - numeric (float, int)
         - ordinal / nominal categorical
         - all missing values np.nan
         - dates in np.datetime64
@@ -810,7 +810,7 @@ class KDD98DataProvider:
 
         Params
         ------
-        type    One of ["raw", "clean", "preproc", "numerical"].
+        type    One of ["raw", "clean", "preproc", "numeric"].
                 Raw is as read by pandas, clean is with
                 cleaning operations applied.
         """
@@ -821,11 +821,11 @@ class KDD98DataProvider:
                       "data_attrib": "_clean_data"},
             "preproc": {"key": self.preproc_data_name,
                         "data_attrib": "_preprocessed_data"},
-            "numerical": {"key": self.num_data_name,
-                          "data_attrib": "_numerical_data"}
+            "numeric": {"key": self.num_data_name,
+                          "data_attrib": "_numeric_data"}
         }
 
-        assert(type in ["raw", "clean", "preproc", "numerical"])
+        assert(type in ["raw", "clean", "preproc", "numeric"])
 
         try:
             # First, try to load the data from hdf
@@ -868,7 +868,7 @@ class KDD98DataProvider:
                                  "Reason: {}".format(e))
                     raise e
                 self._pickle_df(self.preprocessed_data, self.preproc_data_name)
-            elif type == "numerical":
+            elif type == "numeric":
                 try:
                     self.provide("preproc")
                 except Exception as e:
@@ -878,12 +878,12 @@ class KDD98DataProvider:
                     raise e
                 try:
                     eng = Engineer(self)
-                    self.numerical_data = eng.apply_transformation()
+                    self.numeric_data = eng.apply_transformation()
                 except Exception as e:
                     logger.error("Failed to engineer preprocessed data.\n"
                                  "Reason: {}".format(e))
                     raise e
-                self._pickle_df(self.numerical_data, self.num_data_name)
+                self._pickle_df(self.numeric_data, self.num_data_name)
             else:
                 try:
                     self._read_csv_data()
@@ -1021,9 +1021,12 @@ class KDD98DataTransformer:
             try:
                 data.drop(f, axis=1, inplace=True)
             except KeyError:
-                logger.info("Tried dropping feature {}"
-                            ", but it was not present in the data."
+                logger.info("Tried dropping feature {}, "
+                            "but it was not present in the data."
                             "Possibly alreay removed earlier.".format(f))
+            except Exception as e:
+                logger.info("Removing feature {} failed for reason {}"
+                            .format(f, e))
         return data
 
     def pre_steps(self):
@@ -1384,14 +1387,14 @@ class Engineer(KDD98DataTransformer):
             },
             "impute_remaining": {
                 "transformer": ColumnTransformer([
-                    ("impute_numerical",
-                     NumericalImputer(n_iter=5, initial_strategy="median",
+                    ("impute_numeric",
+                     NumericImputer(n_iter=5, initial_strategy="median",
                                       random_state=Config.get("random_seed"),
                                       verbose=1),
                      self.NUMERICAL_FEATURES)
                 ]),
                 "dtype": None,
-                "file": "iterative_impute_numericals.pkl",
+                "file": "iterative_impute_numerics.pkl",
                 "drop": []
             }
         })

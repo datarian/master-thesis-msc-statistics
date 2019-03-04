@@ -16,9 +16,10 @@ import pandas as pd
 from dateutil import relativedelta
 from dateutil.rrule import MONTHLY, YEARLY, rrule
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.preprocessing import StandardScaler
 
 from category_encoders import OrdinalEncoder, HashingEncoder
-from fancyimpute import IterativeImputer
+from fancyimpute import IterativeImputer, KNN
 from kdd98.config import Config
 
 # Set up the logger
@@ -37,7 +38,7 @@ __all__ = ['BinaryFeatureRecode',
            'MonthsToDonation',
            'Hasher',
            'CategoricalImputer',
-           'NumericalImputer']
+           'NumericImputer']
 
 
 class NamedFeatureTransformer(BaseEstimator, TransformerMixin):
@@ -490,7 +491,7 @@ class CategoricalImputer(NamedFeatureTransformer):
         return X_trans
 
 
-class NumericalImputer(BaseEstimator):
+class NumericImputer(BaseEstimator):
 
     def __init__(self, n_iter=5, initial_strategy="median",
                  random_state=Config.get("random_seed"), verbose=0):
@@ -501,10 +502,11 @@ class NumericalImputer(BaseEstimator):
         self.verbose = verbose
         self.feature_names = None
 
-        self.imp = IterativeImputer(n_iter=self.n_iter,
-                                    initial_strategy=self.initial_strategy,
-                                    random_state=self.random_state,
-                                    verbose=self.verbose)
+        # self.imp = IterativeImputer(n_iter=self.n_iter,
+        #                            initial_strategy=self.initial_strategy,
+        #                            random_state=self.random_state,
+        #                            verbose=self.verbose)
+        self.imp = KNN(k=3, normalizer=StandardScaler())
 
     def fit(self, X, y=None):
         assert(isinstance(X, pd.DataFrame))
