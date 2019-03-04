@@ -502,7 +502,7 @@ class NumericImputer(BaseEstimator):
         self.verbose = verbose
         self.feature_names = None
 
-        # self.imp = IterativeImputer(n_iter=self.n_iter,
+        #self.imp = IterativeImputer(n_iter=self.n_iter,
         #                            initial_strategy=self.initial_strategy,
         #                            random_state=self.random_state,
         #                            verbose=self.verbose)
@@ -510,20 +510,29 @@ class NumericImputer(BaseEstimator):
 
     def fit(self, X, y=None):
         assert(isinstance(X, pd.DataFrame))
-        self.imp.fit_transform(X.values, y)
+        try:
+            self.imp.fit_transform(X.values, y)
+        except Exception as e:
+            raise e
         return self
 
     def transform(self, X, y=None):
         assert(isinstance(X, pd.DataFrame))
         self.feature_names = X.columns.values.tolist()
-        X_trans = self.imp.fit_transform(X.values)
+        try:
+            X_trans = self.imp.fit_transform(X.values)
+        except Exception as e:
+            raise e
         X_trans = pd.DataFrame(data=X_trans, columns=X.columns, index=X.index)
         return X_trans
 
     def fit_transform(self, X, y=None):
         assert(isinstance(X, pd.DataFrame))
         self.feature_names = X.columns.values.tolist()
-        X_trans = self.imp.fit_transform(X.values, y)
+        try:
+            X_trans = self.imp.fit_transform(X.values, y)
+        except Exception as e:
+            raise e
         X_trans = pd.DataFrame(data=X_trans, columns=X.columns, index=X.index)
         return X_trans
 
