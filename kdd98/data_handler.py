@@ -822,7 +822,7 @@ class KDD98DataProvider:
             "preproc": {"key": self.preproc_data_name,
                         "data_attrib": "_preprocessed_data"},
             "numeric": {"key": self.num_data_name,
-                          "data_attrib": "_numeric_data"}
+                        "data_attrib": "_numeric_data"}
         }
 
         assert(type in ["raw", "clean", "preproc", "numeric"])
@@ -1389,8 +1389,8 @@ class Engineer(KDD98DataTransformer):
                 "transformer": ColumnTransformer([
                     ("impute_numeric",
                      NumericImputer(n_iter=5, initial_strategy="median",
-                                      random_state=Config.get("random_seed"),
-                                      verbose=1),
+                                    random_state=Config.get("random_seed"),
+                                    verbose=1),
                      self.NUMERICAL_FEATURES)
                 ]),
                 "dtype": None,
