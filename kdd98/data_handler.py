@@ -1392,7 +1392,7 @@ class Engineer(KDD98DataTransformer):
                                     random_state=Config.get("random_seed"),
                                     verbose=1),
                      self.NUMERICAL_FEATURES)
-                ], n_jobs=-1),
+                ]),
                 "dtype": None,
                 "file": "iterative_impute_numerics.pkl",
                 "drop": []

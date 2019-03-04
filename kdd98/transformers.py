@@ -506,7 +506,6 @@ class NumericImputer(BaseEstimator):
                                     initial_strategy=self.initial_strategy,
                                     random_state=self.random_state,
                                     verbose=self.verbose)
-        self.imp = KNN(k=3, normalizer=StandardScaler(),)
 
     def fit(self, X, y=None):
         assert(isinstance(X, pd.DataFrame))
