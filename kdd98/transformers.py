@@ -493,7 +493,7 @@ class CategoricalImputer(NamedFeatureTransformer):
 
 class NumericImputer(BaseEstimator):
 
-    def __init__(self, n_iter=5, initial_strategy="median",
+    def __init__(self, n_iter=10, initial_strategy="median",
                  random_state=Config.get("random_seed"), verbose=0):
         super().__init__()
         self.n_iter = n_iter
@@ -502,11 +502,11 @@ class NumericImputer(BaseEstimator):
         self.verbose = verbose
         self.feature_names = None
 
-        #self.imp = IterativeImputer(n_iter=self.n_iter,
-        #                            initial_strategy=self.initial_strategy,
-        #                            random_state=self.random_state,
-        #                            verbose=self.verbose)
-        self.imp = KNN(k=3, normalizer=StandardScaler())
+        self.imp = IterativeImputer(n_iter=self.n_iter,
+                                    initial_strategy=self.initial_strategy,
+                                    random_state=self.random_state,
+                                    verbose=self.verbose)
+        self.imp = KNN(k=3, normalizer=StandardScaler(),)
 
     def fit(self, X, y=None):
         assert(isinstance(X, pd.DataFrame))
