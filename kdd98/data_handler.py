@@ -1239,18 +1239,18 @@ class Cleaner(KDD98DataTransformer):
             "transformer": ColumnTransformer([
                 ("order_mdmaud",
                  OrdinalEncoder(mapping=ORDINAL_MAPPING_MDMAUD,
-                                handle_unknown="ignore"),
+                                handle_missing="ignore"),
                  ["MDMAUD_R", "MDMAUD_A"]),
                 ("order_rfa",
                  OrdinalEncoder(mapping=ORDINAL_MAPPING_RFA,
-                                handle_unknown="ignore"),
+                                handle_missing="ignore"),
                  ["RFA_" + str(i) + "A" for i in range(2, 25)]),
                 ("recode_socioecon",
                  OrdinalEncoder(mapping=ORDINAL_MAPPING_SOCIOECON,
-                                handle_unknown="ignore"),
+                                handle_missing="ignore"),
                  ["DOMAINSocioEconomic"]),
                 ("order_remaining",
-                 OrdinalEncoder(handle_unknown="ignore"),
+                 OrdinalEncoder(handle_missing="ignore"),
                  ["WEALTH1", "WEALTH2", "INCOME", "MDMAUD_F"] +
                  ["RFA_" + str(i) + "F" for i in range(2, 25)])
             ]),
