@@ -1388,7 +1388,7 @@ class Engineer(KDD98DataTransformer):
             "impute_remaining": {
                 "transformer": ColumnTransformer([
                     ("impute_numeric",
-                     NumericImputer(n_iter=5, initial_strategy="median",
+                     NumericImputer(n_iter=10, initial_strategy="median",
                                     random_state=Config.get("random_seed"),
                                     verbose=1),
                      self.NUMERICAL_FEATURES)
