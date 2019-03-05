@@ -219,7 +219,7 @@ class DateFormatter(NamedFeatureTransformer):
         return self
 
     def _fix_format(self, d):
-        if not pd.isna(d):
+        if not pd.isna(d) and not str.lower(d) == "nan":
             if len(d) == 3:
                 d = "0" + d
         return d
@@ -386,8 +386,8 @@ class DeltaTime(NamedFeatureTransformer, DateHandler):
                 X_temp['ref'] = self.reference_date
                 X_trans[feature_name] = X_temp.apply(self.get_duration, axis=1)
             except Exception as e:
-                logger.error("Failed to transform '{}' on featurefor reason {}".format(
-                    self.__class__.__name__, e))
+                logger.error("Failed to transform '{}' on feature {} for reason {}".format(
+                    self.__class__.__name__, f, e))
                 raise e
         self.feature_names = X_trans.columns.values.tolist()
         return X_trans
@@ -395,8 +395,9 @@ class DeltaTime(NamedFeatureTransformer, DateHandler):
 
 class MonthsToDonation(NamedFeatureTransformer, DateHandler):
 
-    def __init__(self):
+    def __init__(self, impute_invalid=True):
         super().__init__()
+        self.impute_invalid = impute_invalid
 
     def fit(self, X, y=None):
         return self
@@ -411,13 +412,18 @@ class MonthsToDonation(NamedFeatureTransformer, DateHandler):
                 duration += relativedelta.relativedelta(target, ref).months
                 if duration < 0:
                     print("Found negative duration for dates rdate = {} and adate = {}".format(target, ref))
+                    if self.impute_invalid:
+                        duration = -1
             except TypeError as err:
                 logger.error("Failed to calculate time delta. "
                              "Dates: {} and {}\nMessage: {}"
                              .format(row[0], row[1], err))
                 duration = np.nan
         else:
-            duration = np.nan
+            if self.impute_invalid:
+                duration = -1
+            else:
+                duration = np.nan
         return duration
 
     def transform(self, X, y=None):
