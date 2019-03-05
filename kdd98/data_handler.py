@@ -1020,6 +1020,8 @@ class KDD98DataTransformer:
         for f in features:
             try:
                 data.drop(f, axis=1, inplace=True)
+                logger.info("Dropped feature {} from dataset"
+                            .format(f))
             except KeyError:
                 logger.info("Tried dropping feature {}, "
                             "but it was not present in the data."
@@ -1122,14 +1124,14 @@ class KDD98DataTransformer:
 
         self.pre_steps()
 
-        self.data, drop_features = self.process_transformers(fit)
-        self.drop_features.update(drop_features)
+        self.data, drop = self.process_transformers(fit)
+        self.drop_features.update(drop)
 
         # Now, drop all features marked for removal
         logger.info("About to drop the following"
                     " features in transformation {}: {}"
                     .format(self.step, self.drop_features))
-        self.data = self.drop_if_exists(self.data, drop_features)
+        self.data = self.drop_if_exists(self.data, self.drop_features)
 
         self.post_steps()
 

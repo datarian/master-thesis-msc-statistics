@@ -4,18 +4,18 @@ import numpy as np
 import pandas as pd
 from sklearn.pipeline import Pipeline
 
-logging.basicConfig(filename=__name__+'.log', level=logging.ERROR)
+logging.basicConfig(filename=__name__ + '.log', level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
 
 def get_feature_names_from_pipeline(pipeline):
-    return [f[f.find('__')+2:] for f in pipeline.get_feature_names()]
+    return [f[f.find('__') + 2:] for f in pipeline.get_feature_names()]
 
 
 def get_feature_names_from_transformer_collection(collection):
     try:
         # We have a pure column transformer. Concatenate the feature names
-        names= [t[t.find('__')+2:] for t in collection.get_feature_names()]
+        names = [t[t.find('__') + 2:] for t in collection.get_feature_names()]
     except AttributeError:
         # We have at least one pipeline in the collection. So do it manually
         names = []
@@ -51,6 +51,6 @@ def update_df_with_transformed(df_old, new_features, transformer, new_dtype=None
         to_merge = [f for f in feat_names if f not in df_old.columns.values.tolist()]
         to_replace = [f for f in feat_names if f in df_old.columns.values.tolist()]
         for f in to_replace:
-            df_old[f] = transformed_df.loc[:,f]
-        df_new = df_old.join(transformed_df.loc[:,to_merge], how="inner")
+            df_old[f] = transformed_df.loc[:, f]
+        df_new = df_old.join(transformed_df.loc[:, to_merge], how="inner")
     return df_new
