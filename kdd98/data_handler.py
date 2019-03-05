@@ -1311,7 +1311,7 @@ class Preprocessor(KDD98DataTransformer):
                      self.filter_features(PROMO_HISTORY_DATES +
                                           GIVING_HISTORY_DATES))
                 ]),
-                "dtype": None,
+                "dtype": "Int64",
                 "file": "donation_responses_transformer.pkl",
                 "drop": PROMO_HISTORY_DATES + GIVING_HISTORY_DATES
             },
