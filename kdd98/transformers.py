@@ -409,6 +409,8 @@ class MonthsToDonation(NamedFeatureTransformer, DateHandler):
             try:
                 duration = relativedelta.relativedelta(target, ref).years * 12
                 duration += relativedelta.relativedelta(target, ref).months
+                if duration < 0:
+                    print("Found negative duration for dates rdate = {} and adate = {}".format(target, ref))
             except TypeError as err:
                 logger.error("Failed to calculate time delta. "
                              "Dates: {} and {}\nMessage: {}"
