@@ -493,7 +493,7 @@ class CategoricalImputer(NamedFeatureTransformer):
 
 class NumericImputer(BaseEstimator):
 
-    def __init__(self, n_iter=10, initial_strategy="median",
+    def __init__(self, n_iter=5, initial_strategy="median",
                  random_state=Config.get("random_seed"), verbose=0):
         super().__init__()
         self.n_iter = n_iter
