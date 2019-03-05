@@ -407,8 +407,8 @@ class MonthsToDonation(NamedFeatureTransformer, DateHandler):
 
         if not pd.isna(ref) and not pd.isna(target):
             try:
-                duration = relativedelta.relativedelta(ref, target).years * 12
-                duration += relativedelta.relativedelta(ref, target).months
+                duration = relativedelta.relativedelta(target, ref).years * 12
+                duration += relativedelta.relativedelta(target, ref).months
             except TypeError as err:
                 logger.error("Failed to calculate time delta. "
                              "Dates: {} and {}\nMessage: {}"
