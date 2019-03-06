@@ -1307,7 +1307,7 @@ class Preprocessor(KDD98DataTransformer):
             "donation_hist": {
                 "transformer": ColumnTransformer([
                     ("months_to_donation",
-                     MonthsToDonation(reference_date=pd.DateTime(1998, 6, 1)),
+                     MonthsToDonation(reference_date=pd.datetime(1998, 6, 1)),
                      self.filter_features(PROMO_HISTORY_DATES +
                                           GIVING_HISTORY_DATES))
                 ]),
