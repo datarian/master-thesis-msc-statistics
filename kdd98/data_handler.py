@@ -708,6 +708,7 @@ class KDD98DataProvider:
         dtype_specs[nominal] = 'str'
     for date in DATE_FEATURES:
         dtype_specs[date] = 'str'
+    dtype_specs['TARGET_B'] = 'str'
 
     def __init__(self, csv_file=None, pull_stored=True, download_url=None):
         """
