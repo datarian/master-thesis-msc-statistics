@@ -292,7 +292,7 @@ class MDMAUDFormatter(NamedFeatureTransformer):
 class DateHandler:
 
     # The parser used on the date features
-    def parse_date(self, date_feature):
+    def parse_date(self, date_feature, ref_date=Config.get("reference_date")):
         """
         Parses date features in YYMM format, fixes input errors
         and aligns datetime64 dates with a reference date
@@ -394,10 +394,20 @@ class DeltaTime(NamedFeatureTransformer, DateHandler):
 
 
 class MonthsToDonation(NamedFeatureTransformer, DateHandler):
+    """ Calculates the elapsed months from sending the promotion
+        to receiving a donation.
+        The mailings usually were sent out over several months
+        and in some cases, the donation is recorded as occurring
+        before the mailing. In these cases, the sending date was
+        probably not recorded correctly for the example in question.
+        As a consequence, the latest sending month will be used to
+        calculate the time delta.
+    """
 
-    def __init__(self, impute_invalid=True):
+    def __init__(self, reference_date=pd.datetime(1998, 6, 1), impute_invalid=True):
         super().__init__()
         self.impute_invalid = impute_invalid
+        self.reference_date = reference_date
 
     def fit(self, X, y=None):
         return self
@@ -436,10 +446,17 @@ class MonthsToDonation(NamedFeatureTransformer, DateHandler):
                 feat_name = "MONTHS_TO_DONATION_" + str(i)
                 mailing = X.loc[:, ["ADATE_" + str(i), "RDATE_" + str(i)]]
                 try:
-                    mailing.loc[:, "ADATE_" +
-                                str(i)] = self.parse_date(mailing.loc[:, "ADATE_" + str(i)])
+                    encoded = self.parse_date(mailing.loc[:, "ADATE_" + str(i)], ref_date=self.reference_date)
+                    # If the first value is NaN, we have to set a very early
+                    # date to reliably find the max() value of the series
+                    if not isinstance(encoded.iloc[0], pd.Timestamp):
+                        encoded.iloc[1] = pd.DateTime(1800, 1, 1)
+                    mailing.loc[:, "ADATE_" + str(i)] = encoded.max()
+                except Exception as e:
+                    raise e
+                try:
                     mailing.loc[:, "RDATE_" +
-                                str(i)] = self.parse_date(mailing.loc[:, "RDATE_" + str(i)])
+                                str(i)] = self.parse_date(mailing.loc[:, "RDATE_" + str(i)], ref_date=self.reference_date)
                 except RuntimeError as e:
                     raise e
                 diffs = mailing.agg(self.calc_diff, axis=1)
