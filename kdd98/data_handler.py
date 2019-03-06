@@ -23,7 +23,7 @@ from kdd98.transformers import (BinaryFeatureRecode, DateFormatter, DeltaTime,
                                 MultiByteExtract, NOEXCHFormatter,
                                 OrdinalEncoder,
                                 ZipFormatter, CategoricalImputer,
-                                NumericImputer)
+                                NumericImputer, TargetImputer, RAMNTFixer)
 
 # Set up the logger
 logging.basicConfig(filename=__name__ + '.log', level=logging.INFO)
@@ -1182,6 +1182,26 @@ class Cleaner(KDD98DataTransformer):
             ]),
             "dtype": None,
             "file": "mdmaud_format_transformer.pkl",
+            "drop": []
+        },
+        "target_b": {
+            "transformer": ColumnTransformer([
+                ("fix_targ_b",
+                 TargetImputer(),
+                 ['TARGET_B', 'TARGET_D'])
+            ]),
+            "dtype": "Int64",
+            "file": "impute_target_b.pkl",
+            "drop": []
+        },
+        "ramount": {
+            "transformer": ColumnTransformer([
+                ("fix_ramount",
+                 RAMNTFixer(),
+                 GIVING_HISTORY + GIVING_HISTORY_DATES)
+            ]),
+            "dtype": None,
+            "file": "fix_ramount_features.pkl",
             "drop": []
         },
         "binary": {

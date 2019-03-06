@@ -38,7 +38,9 @@ __all__ = ['BinaryFeatureRecode',
            'MonthsToDonation',
            'Hasher',
            'CategoricalImputer',
-           'NumericImputer']
+           'NumericImputer',
+           "TargetImputer",
+           "RAMNTFixer"]
 
 
 class NamedFeatureTransformer(BaseEstimator, TransformerMixin):
@@ -249,6 +251,40 @@ class ZipFormatter(NamedFeatureTransformer):
             X[f] = X[f].str.replace(
                 "-", "").replace([" ", "."], np.nan).astype("int64")
         return X
+
+
+class RAMNTFixer(NamedFeatureTransformer):
+    """ Fixes RAMNT_ features by checking if there is a value for the
+        corresponding RDATE_.
+        If there is, the amount is really missing.
+        If no date is recorded for receiving a donation, this is strong
+        evidence that the example actually has not donated and we can set
+        the amount to zero.
+    """
+    def __init__(self):
+        super().__init__()
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X, y=None):
+        assert(isinstance(X, pd.DataFrame))
+        self.feature_names = X.filter(regex="RAMNT_*").columns.values.tolist()
+        X_trans = pd.DataFrame(index=X.index)
+
+        def really_missing(example):
+            ramnt = None
+            if pd.isna(example[0]):
+                ramnt = 0 if example[1] == "nan" else np.nan
+            else:
+                ramnt = example[0]
+            return ramnt
+
+        for i in range(3, 25):
+            X_temp = X[["RAMNT_" + str(i), "RDATE_" + str(i)]]
+            X_trans["RAMNT_" + str(i)] = X_temp.agg(really_missing, axis=1)
+
+        return X_trans
 
 
 class NOEXCHFormatter(NamedFeatureTransformer):
@@ -546,3 +582,30 @@ class NumericImputer(BaseEstimator):
         else:
             raise(ValueError("Transformer {} has to be transformed first, cannot return feature names.".format(
                 self.__class__.__name__)))
+
+
+class TargetImputer(NamedFeatureTransformer):
+
+    def __init__(self):
+        super().__init__()
+
+    def fit(self, X, y=None):
+        self.feature_names = ['TARGET_B']
+        return self
+
+    def transform(self, X, y=None):
+        assert(isinstance(X, pd.DataFrame))
+
+        def set_true_if_donated(example):
+            donated = None
+            if pd.isna(example['TARGET_B']):
+                donated = 1 if example['TARGET_D'] > 0.0 else 0
+            else:
+                donated = example['TARGET_B']
+            return donated
+
+        X_trans = pd.DataFrame(index=X.index, columns=['TARGET_B'])
+
+        X_trans['TARGET_B'] = X.agg(set_true_if_donated, axis=1)
+
+        return X_trans
