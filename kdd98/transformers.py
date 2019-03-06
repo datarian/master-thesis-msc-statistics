@@ -198,7 +198,7 @@ class BinaryFeatureRecode(NamedFeatureTransformer):
                 # Map values in data to True/False.
                 # NA values are propagated.
                 temp_df[feature] = temp_df[feature].astype('object').map(
-                    vmap, na_action='ignore').astype('float64')
+                    vmap, na_action='ignore').astype('Int64')
         except Exception as exc:
             logger.exception(exc)
             raise
@@ -408,6 +408,7 @@ class MonthsToDonation(DateHandler, NamedFeatureTransformer):
             try:
                 duration = relativedelta.relativedelta(target, ref).years * 12
                 duration += relativedelta.relativedelta(target, ref).months
+
             except Exception as e:
                 logger.error("Failed to calculate time delta. "
                              "Dates: {} and {}\nMessage: {}"
