@@ -400,7 +400,7 @@ class MonthsToDonation(NamedFeatureTransformer, DateHandler):
         and in some cases, the donation is recorded as occurring
         before the mailing. In these cases, the sending date was
         probably not recorded correctly for the example in question.
-        As a consequence, the latest sending month will be used to
+        As a consequence, the first sending month will be used to
         calculate the time delta.
     """
 
@@ -447,11 +447,7 @@ class MonthsToDonation(NamedFeatureTransformer, DateHandler):
                 mailing = X.loc[:, ["ADATE_" + str(i), "RDATE_" + str(i)]]
                 try:
                     encoded = self.parse_date(mailing.loc[:, "ADATE_" + str(i)], ref_date=self.reference_date)
-                    # If the first value is NaN, we have to set a very early
-                    # date to reliably find the max() value of the series
-                    if not isinstance(encoded.iloc[0], pd.Timestamp):
-                        encoded.iloc[1] = pd.DateTime(1800, 1, 1)
-                    mailing.loc[:, "ADATE_" + str(i)] = encoded.max()
+                    mailing.loc[:, "ADATE_" + str(i)] = encoded.min()
                 except Exception as e:
                     raise e
                 try:
