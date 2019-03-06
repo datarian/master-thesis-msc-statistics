@@ -291,18 +291,22 @@ class MDMAUDFormatter(NamedFeatureTransformer):
 
 class DateHandler:
 
+    def __init__(self, reference_date=Config.get("reference_date")):
+        assert(isinstance(reference_date, pd.Timestamp))
+        self.ref_date = reference_date
+        self.ref_year = reference_date.year
+
     # The parser used on the date features
-    def parse_date(self, date_feature, ref_date=Config.get("reference_date")):
+    def parse_date(self, date_feature):
         """
         Parses date features in YYMM format, fixes input errors
         and aligns datetime64 dates with a reference date
         """
 
-        def fix_century(d):
-            ref_date = Config.get("reference_date")
+        def fix_century(d, ref):
             if not pd.isna(d):
                 try:
-                    if d.year > ref_date.year:
+                    if d.year > self.ref_year:
                         d = d.replace(year=(d.year - 100))
                 except Exception as err:
                     logger.warning(
@@ -335,8 +339,7 @@ class DeltaTime(NamedFeatureTransformer, DateHandler):
     """
 
     def __init__(self, reference_date=pd.datetime(1997, 6, 1), unit='months', suffix=True):
-        super().__init__()
-        self.reference_date = reference_date
+        super().__init__(reference_date)
         if suffix:
             self.feature_suffix = "_DELTA_" + unit.upper()
         else:
@@ -404,9 +407,8 @@ class MonthsToDonation(NamedFeatureTransformer, DateHandler):
         calculate the time delta.
     """
 
-    def __init__(self, reference_date=pd.datetime(1998, 6, 1), impute_invalid=True):
-        super().__init__()
-        self.impute_invalid = impute_invalid
+    def __init__(self, reference_date=pd.datetime(1998, 6, 1)):
+        super().__init__(reference_date)
         self.reference_date = reference_date
 
     def fit(self, X, y=None):
@@ -421,19 +423,15 @@ class MonthsToDonation(NamedFeatureTransformer, DateHandler):
                 duration = relativedelta.relativedelta(target, ref).years * 12
                 duration += relativedelta.relativedelta(target, ref).months
                 if duration < 0:
-                    print("Found negative duration for dates rdate = {} and adate = {}".format(target, ref))
-                    if self.impute_invalid:
-                        duration = -1
+                    print("Found negative duration for dates rdate = {} and adate = {}"
+                          .format(target, ref))
             except TypeError as err:
                 logger.error("Failed to calculate time delta. "
                              "Dates: {} and {}\nMessage: {}"
                              .format(row[0], row[1], err))
                 duration = np.nan
         else:
-            if self.impute_invalid:
-                duration = -1
-            else:
-                duration = np.nan
+            duration = np.nan
         return duration
 
     def transform(self, X, y=None):
@@ -446,13 +444,13 @@ class MonthsToDonation(NamedFeatureTransformer, DateHandler):
                 feat_name = "MONTHS_TO_DONATION_" + str(i)
                 mailing = X.loc[:, ["ADATE_" + str(i), "RDATE_" + str(i)]]
                 try:
-                    encoded = self.parse_date(mailing.loc[:, "ADATE_" + str(i)], ref_date=self.reference_date)
+                    encoded = self.parse_date(mailing.loc[:, "ADATE_" + str(i)])
                     mailing.loc[:, "ADATE_" + str(i)] = encoded.min()
                 except Exception as e:
                     raise e
                 try:
                     mailing.loc[:, "RDATE_" +
-                                str(i)] = self.parse_date(mailing.loc[:, "RDATE_" + str(i)], ref_date=self.reference_date)
+                                str(i)] = self.parse_date(mailing.loc[:, "RDATE_" + str(i)])
                 except RuntimeError as e:
                     raise e
                 diffs = mailing.agg(self.calc_diff, axis=1)
