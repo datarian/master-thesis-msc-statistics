@@ -291,10 +291,22 @@ class MDMAUDFormatter(NamedFeatureTransformer):
 
 class DateHandler:
 
-    def __init__(self, reference_date=Config.get("reference_date")):
-        assert(isinstance(reference_date, pd.Timestamp))
+    def __init__(self, reference_date):
         self.ref_date = reference_date
-        self.ref_year = reference_date.year
+        self.ref_year = self.ref_date.year
+
+    def fix_century(self, d):
+        if not pd.isna(d):
+            try:
+                if d.year > self.ref_year:
+                    d = d.replace(year=(d.year - 100))
+            except Exception as err:
+                logger.warning(
+                    "Failed to fix century for date {}, reason: {}".format(d, err))
+                d = pd.NaT
+        else:
+            d = pd.NaT
+        return d
 
     # The parser used on the date features
     def parse_date(self, date_feature):
@@ -302,23 +314,9 @@ class DateHandler:
         Parses date features in YYMM format, fixes input errors
         and aligns datetime64 dates with a reference date
         """
-
-        def fix_century(d, ref):
-            if not pd.isna(d):
-                try:
-                    if d.year > self.ref_year:
-                        d = d.replace(year=(d.year - 100))
-                except Exception as err:
-                    logger.warning(
-                        "Failed to fix century for date {}, reason: {}".format(d, err))
-                    d = pd.NaT
-            else:
-                d = pd.NaT
-            return d
-
         try:
             date_feature = pd.to_datetime(
-                date_feature, format="%y%m", errors="coerce").map(fix_century)
+                date_feature, format="%y%m", errors="coerce").map(self.fix_century)
         except Exception as e:
             message = "Failed to parse date array {}.\nReason: {}".format(
                 date_feature, e)
@@ -327,37 +325,33 @@ class DateHandler:
         return date_feature
 
 
-class DeltaTime(NamedFeatureTransformer, DateHandler):
+class DeltaTime(DateHandler, NamedFeatureTransformer):
     """Computes the duration between a date and a reference date in months.
 
     Parameters:
     -----------
 
-    reference_date: either a single datetimelike or a series of datetimelike
-        For series, the same length as the passed dataframe is expected.
+    reference_date: A datetimelike
     unit: ['months', 'years']
     """
 
-    def __init__(self, reference_date=pd.datetime(1997, 6, 1), unit='months', suffix=True):
-        super().__init__(reference_date)
-        if suffix:
-            self.feature_suffix = "_DELTA_" + unit.upper()
-        else:
-            self.feature_suffix = ""
+    def __init__(self, reference_date, unit='months', suffix=True):
+        self.reference_date = reference_date
+        super().__init__(self.reference_date)
+        self.feature_suffix = "_DELTA_" + unit.upper()
         self.unit = unit
-        self.suffix = suffix
 
-    def get_duration(self, date_pair):
-        if not pd.isna(date_pair.target) and not pd.isna(date_pair.ref):
+    def get_duration(self, target):
+        if not pd.isna(target):
             delta = relativedelta.relativedelta(
-                date_pair.ref, date_pair.target)
+                self.reference_date, target)
             if self.unit.lower() == 'months':
                 duration = (delta.years * 12) + delta.months
             elif self.unit.lower() == 'years':
                 duration = delta.years + 1
         else:
             logger.info("Failed to calculate time delta. Dates: {} and {}.".format(
-                date_pair.target, date_pair.ref))
+                target, self.reference_date))
             duration = np.nan
         return duration
 
@@ -370,24 +364,16 @@ class DeltaTime(NamedFeatureTransformer, DateHandler):
         # We need to ensure we have datetime objects.
         # The dateparser has to return Int64 to work with sklearn, so
         # we need to recast here.
-        X_trans = pd.DataFrame().astype('str')
+        X_trans = pd.DataFrame()
 
         for f in X.columns:
+            feature_name = f + self.feature_suffix
             try:
-                X_temp = pd.DataFrame(columns=['target', 'ref'])
                 try:
-                    X_temp['target'] = self.parse_date(X[f])
-                except RuntimeError as e:
+                    target = self.parse_date(X[f])
+                except Exception as e:
                     raise e
-                if isinstance(self.reference_date, pd.Series):
-                    # we have a series of reference dates
-                    feature_name = f + "_" + \
-                        str(self.reference_date.name) + self.feature_suffix
-                else:
-                    feature_name = f + self.feature_suffix
-
-                X_temp['ref'] = self.reference_date
-                X_trans[feature_name] = X_temp.apply(self.get_duration, axis=1)
+                X_trans[feature_name] = target.map(self.get_duration)
             except Exception as e:
                 logger.error("Failed to transform '{}' on feature {} for reason {}".format(
                     self.__class__.__name__, f, e))
@@ -396,7 +382,7 @@ class DeltaTime(NamedFeatureTransformer, DateHandler):
         return X_trans
 
 
-class MonthsToDonation(NamedFeatureTransformer, DateHandler):
+class MonthsToDonation(DateHandler, NamedFeatureTransformer):
     """ Calculates the elapsed months from sending the promotion
         to receiving a donation.
         The mailings usually were sent out over several months
@@ -408,8 +394,8 @@ class MonthsToDonation(NamedFeatureTransformer, DateHandler):
     """
 
     def __init__(self, reference_date=pd.datetime(1998, 6, 1)):
-        super().__init__(reference_date)
         self.reference_date = reference_date
+        super().__init__(self.reference_date)
 
     def fit(self, X, y=None):
         return self
@@ -425,10 +411,10 @@ class MonthsToDonation(NamedFeatureTransformer, DateHandler):
                 if duration < 0:
                     print("Found negative duration for dates rdate = {} and adate = {}"
                           .format(target, ref))
-            except TypeError as err:
+            except Exception as e:
                 logger.error("Failed to calculate time delta. "
                              "Dates: {} and {}\nMessage: {}"
-                             .format(row[0], row[1], err))
+                             .format(row[0], row[1], e))
                 duration = np.nan
         else:
             duration = np.nan
@@ -458,8 +444,10 @@ class MonthsToDonation(NamedFeatureTransformer, DateHandler):
                     diffs, columns=[feat_name], index=X_trans.index), how="inner")
                 self.feature_names.extend([feat_name])
             except Exception as e:
-                logger.error("Failed to transform '{}' on featurefor reason {}".format(
-                    self.__class__.__name__, e))
+                logger.error("Failed to transform '{}' "
+                             "on feature {} for reason {}"
+                             .format(feat_name,
+                                     self.__class__.__name__, e))
                 raise e
         return X_trans
 

@@ -1318,11 +1318,13 @@ class Preprocessor(KDD98DataTransformer):
             "timedelta": {
                 "transformer": ColumnTransformer([
                     ("time_last_donation",
-                     DeltaTime(unit="months"),
+                     DeltaTime(reference_date=pd.datetime(1997, 6, 1),
+                               unit="months"),
                      self.filter_features(["LASTDATE", "MINRDATE",
                                            "MAXRDATE", "MAXADATE"])),
                     ("membership_years",
-                     DeltaTime(unit="years"),
+                     DeltaTime(reference_date=pd.datetime(1997, 6, 1),
+                               unit="years"),
                      self.filter_features(["ODATEDW"]))
                 ]),
                 "dtype": "Int64",
