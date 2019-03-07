@@ -604,7 +604,7 @@ class TargetImputer(NamedFeatureTransformer):
                 donated = example['TARGET_B']
             return donated
 
-        X_trans = pd.DataFrame(index=X.index, columns=['TARGET_B'])
+        X_trans = pd.DataFrame(index=X.index, columns=['TARGET_B'], dtype="int64")
 
         X_trans['TARGET_B'] = X.agg(set_true_if_donated, axis=1)
 

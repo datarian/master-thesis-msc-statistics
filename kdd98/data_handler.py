@@ -1190,7 +1190,7 @@ class Cleaner(KDD98DataTransformer):
                  TargetImputer(),
                  ['TARGET_B', 'TARGET_D'])
             ]),
-            "dtype": "Int64",
+            "dtype": "int64",
             "file": "impute_target_b.pkl",
             "drop": []
         },
@@ -1239,7 +1239,7 @@ class Cleaner(KDD98DataTransformer):
                  BinaryFeatureRecode(
                      value_map={"true": "1", "false": "0"},
                      correct_noisy=False),
-                 ["HPHONE_D", "NOEXCH", "TARGET_B"])
+                 ["HPHONE_D", "NOEXCH"])
             ]),
             "dtype": "Int64",
             "file": "binary_transformer.pkl",
