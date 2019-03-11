@@ -609,3 +609,61 @@ class TargetImputer(NamedFeatureTransformer):
         X_trans['TARGET_B'] = X.agg(set_true_if_donated, axis=1)
 
         return X_trans
+
+
+class ZeroVariance(NamedFeatureTransformer):
+    '''
+    Transformer to identify zero variance and optionally low variance features
+    for removal
+    This works similarly to the R caret::nearZeroVariance function
+    '''
+    def __init__(self, near_zero=False, freq_cut=95 / 5, unique_cut=10):
+        '''
+        near zero: boolean. False: remove only zero var. True: remove near zero as well
+        freq_cut: cutoff frequency ratio of most frequent to second most frequent
+        unique_cut: unique cut: cutoff for percentage unique values
+        '''
+        self.near_zero = near_zero
+        self.freq_cut = freq_cut
+        self.unique_cut = unique_cut
+
+    def fit(self, X, y=None):
+        self.zero_var = np.zeros(X.shape[1], dtype=bool)
+        self.near_zero_var = np.zeros(X.shape[1], dtype=bool)
+        n_obs = X.shape[0]
+
+        for i, col in enumerate(X.T):
+            # obtain values, counts of values and sort counts from
+            # most to least frequent
+            val_counts = np.unique(col, return_counts= True)
+            counts = val_counts[1]
+            counts_len = counts.shape[0]
+            counts_sort = np.sort(counts)[::-1]
+
+            # if only one value, is ZV
+            if counts_len == 1:
+                self.zero_var[i] = True
+                self.near_zero_var[i] = True
+                continue
+
+            # ratio of most frequent / second most frequent
+            freq_ratio = counts_sort[0] / counts_sort[1]
+            # percent unique values
+            unique_pct = (counts_len / n_obs) * 100
+
+            if (unique_pct < self.unique_cut) and (freq_ratio > self.freq_cut):
+                self.near_zero_var[i] = True
+
+        return self
+
+    def transform(self, X, y=None):
+        if self.near_zero:
+            return X.T[~self.near_zero_var].T
+        else:
+            return X.T[~self.zero_var].T
+
+    def get_feature_names(self, input_features=None):
+        if self.near_zero:
+            return input_features[~self.near_zero_var]
+        else:
+            return input_features[~self.zero_var]
