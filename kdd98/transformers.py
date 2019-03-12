@@ -628,42 +628,27 @@ class ZeroVariance(NamedFeatureTransformer):
         self.unique_cut = unique_cut
 
     def fit(self, X, y=None):
-        self.zero_var = np.zeros(X.shape[1], dtype=bool)
-        self.near_zero_var = np.zeros(X.shape[1], dtype=bool)
+        self.zero_var = []
+        self.near_zero_var = []
         n_obs = X.shape[0]
 
-        for i, col in enumerate(X.T):
-            # obtain values, counts of values and sort counts from
-            # most to least frequent
-            val_counts = np.unique(col, return_counts= True)
-            counts = val_counts[1]
-            counts_len = counts.shape[0]
-            counts_sort = np.sort(counts)[::-1]
-
-            # if only one value, is ZV
-            if counts_len == 1:
-                self.zero_var[i] = True
-                self.near_zero_var[i] = True
+        for feat, series in X.iteritems():
+            val_count = series.value_counts(normalize=True)
+            if len(val_count) == 1:
+                self.zero_var.append(feat)
+                self.near_zero_var.append(feat)
                 continue
-
-            # ratio of most frequent / second most frequent
-            freq_ratio = counts_sort[0] / counts_sort[1]
-            # percent unique values
-            unique_pct = (counts_len / n_obs) * 100
-
-            if (unique_pct < self.unique_cut) and (freq_ratio > self.freq_cut):
-                self.near_zero_var[i] = True
+            freq_ratio = val_count.values[0] / val_count.values[1]
+            unq_percent = len(val_count) / n_obs
+            if (unq_percent < self.unique_cut) and (freq_ratio > self.freq_cut):
+                self.near_zero_var.append(feat)
+        self.feature_names = X.columns.values.tolist()
 
         return self
 
     def transform(self, X, y=None):
         if self.near_zero:
-            return X.T[~self.near_zero_var].T
+            X_trans = X.drop(self.near_zero_var, axis=1)
         else:
-            return X.T[~self.zero_var].T
-
-    def get_feature_names(self, input_features=None):
-        if self.near_zero:
-            return input_features[~self.near_zero_var]
-        else:
-            return input_features[~self.zero_var]
+            X_trans = X.drop(self.zero_var, axis=1)
+        self.feature_names = X_trans.columns.values.tolost()
