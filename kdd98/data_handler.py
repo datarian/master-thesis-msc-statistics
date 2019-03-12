@@ -1305,11 +1305,6 @@ class Cleaner(KDD98DataTransformer):
 
 class Preprocessor(KDD98DataTransformer):
 
-    LOW_VAR_SPARSE = set()
-
-    def filter_features(self, features):
-        return list(set(features) - self.LOW_VAR_SPARSE)
-
     transformer_config = OrderedDict()
 
     def __init__(self, data_loader):
@@ -1321,8 +1316,7 @@ class Preprocessor(KDD98DataTransformer):
                 "transformer": ColumnTransformer([
                     ("months_to_donation",
                      MonthsToDonation(reference_date=pd.datetime(1998, 6, 1)),
-                     self.filter_features(PROMO_HISTORY_DATES +
-                                          GIVING_HISTORY_DATES))
+                     PROMO_HISTORY_DATES + GIVING_HISTORY_DATES)
                 ]),
                 "dtype": "Int64",
                 "file": "donation_responses_transformer.pkl",
@@ -1333,12 +1327,11 @@ class Preprocessor(KDD98DataTransformer):
                     ("time_last_donation",
                      DeltaTime(reference_date=pd.datetime(1997, 6, 1),
                                unit="months"),
-                     self.filter_features(["LASTDATE", "MINRDATE",
-                                           "MAXRDATE", "MAXADATE"])),
+                     ["LASTDATE", "MINRDATE", "MAXRDATE", "MAXADATE"]),
                     ("membership_years",
                      DeltaTime(reference_date=pd.datetime(1997, 6, 1),
                                unit="years"),
-                     self.filter_features(["ODATEDW"]))
+                     ["ODATEDW"])
                 ]),
                 "dtype": "Int64",
                 "file": "timedelta_transformer.pkl",
@@ -1376,23 +1369,23 @@ class Engineer(KDD98DataTransformer):
         self.OHE_CATEGORICALS = [f for f in self.CATEGORICAL_FEATURES if f not in self.BE_CATEGORICALS]
         self.transformer_config = OrderedDict({
             # Before dealing with categorical features, we need to impute.
-            "impute_categories": {
-                "transformer": ColumnTransformer([
-                    ("impute_categories",
-                     CategoricalImputer(),
-                     self.CATEGORICAL_FEATURES)
-                ]),
-                "dtype": None,
-                "file": "impute_cats_transformer.pkl",
-                "drop": []
-            },
+            #"impute_categories": {
+            #    "transformer": ColumnTransformer([
+            #        ("impute_categories",
+            #         CategoricalImputer(),
+            #         self.CATEGORICAL_FEATURES)
+            #    ]),
+            #    "dtype": None,
+            #    "file": "impute_cats_transformer.pkl",
+            #    "drop": []
+            #},
             "binary_encode_categoricals": {
                 "transformer": ColumnTransformer([
-                    ("be_osource", BinaryEncoder(), ['OSOURCE']),
-                    ("be_state", BinaryEncoder(), ['STATE']),
-                    ("be_cluster", BinaryEncoder(), ['CLUSTER']),
-                    ("be_tcode", BinaryEncoder(), ['TCODE']),
-                    ("be_zip", BinaryEncoder(), ['ZIP'])
+                    ("be_osource", BinaryEncoder(handle_missing="return_nan"), ['OSOURCE']),
+                    ("be_state", BinaryEncoder(handle_missing="return_nan"), ['STATE']),
+                    ("be_cluster", BinaryEncoder(handle_missing="return_nan"), ['CLUSTER']),
+                    ("be_tcode", BinaryEncoder(handle_missing="return_nan"), ['TCODE']),
+                    ("be_zip", BinaryEncoder(handle_missing="return_nan"), ['ZIP'])
                 ]),
                 "dtype": "int64",
                 "file": "binary_encoding_transformer.pkl",
@@ -1402,23 +1395,32 @@ class Engineer(KDD98DataTransformer):
                 "transformer": ColumnTransformer([
                     ("oh",
                      OneHotEncoder(use_cat_names=True,
-                                   handle_unknown="error"),
+                                   handle_missing="return_nan"),
                      self.OHE_CATEGORICALS)
                 ]),
                 "dtype": "int64",
                 "file": "oh_encoding_transformer.pkl",
                 "drop": self.OHE_CATEGORICALS
             },
-            "impute_remaining": {
-                "transformer": ColumnTransformer([
-                    ("impute_numeric",
-                     NumericImputer(n_iter=5, initial_strategy="median",
-                                    random_state=Config.get("random_seed"),
-                                    verbose=1),
-                     self.NUMERICAL_FEATURES)
-                ]),
+            #"impute_remaining": {
+            #    "transformer": ColumnTransformer([
+            #        ("impute_numeric",
+            #         NumericImputer(n_iter=5, initial_strategy="median",
+            #                        random_state=Config.get("random_seed"),
+            #                        verbose=1),
+            #         self.NUMERICAL_FEATURES)
+            #    ]),
+            #    "dtype": None,
+            #    "file": "iterative_impute_numerics.pkl",
+            #    "drop": []
+            #},
+            "impute_": {
+                "transformer": NumericImputer(n_iter=5,
+                                              initial_strategy="median",
+                                              random_state=Config.get("random_seed"),
+                                              verbose=1),
                 "dtype": None,
-                "file": "iterative_impute_numerics.pkl",
+                "file": "iterative_impute.pkl",
                 "drop": []
             }
         })
