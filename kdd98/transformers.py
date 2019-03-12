@@ -634,7 +634,9 @@ class ZeroVariance(NamedFeatureTransformer):
 
         for feat, series in X.iteritems():
             val_count = series.value_counts(normalize=True)
-            if len(val_count) == 1:
+            if len(val_count) <= 1:
+                if len(val_count) == 0:
+                    logger.info("Feature {} is all-NaN.".format(feat))
                 self.zero_var.append(feat)
                 self.near_zero_var.append(feat)
                 continue
