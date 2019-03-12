@@ -464,6 +464,12 @@ class MonthsToDonation(DateHandler, NamedFeatureTransformer):
             try:
                 feat_name = "MONTHS_TO_DONATION_" + str(i)
                 mailing = X.loc[:, ["ADATE_" + str(i), "RDATE_" + str(i)]]
+            except ValueError as e:
+                # One of the features is not there, can't compute the delta
+                logger.info("Missing feature for MONTHS_TO_DONATION_{:1}. Message received: {:2}".format(i, e))
+                continue
+
+            try:
                 try:
                     encoded = self.parse_date(mailing.loc[:, "ADATE_" + str(i)])
                     mailing.loc[:, "ADATE_" + str(i)] = encoded.min()
