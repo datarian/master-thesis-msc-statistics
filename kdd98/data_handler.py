@@ -1380,7 +1380,7 @@ class Engineer(KDD98DataTransformer):
                     ("be_tcode", BinaryEncoder(handle_missing="return_nan"), self.filter_features(['TCODE'])),
                     ("be_zip", BinaryEncoder(handle_missing="return_nan"), self.filter_features(['ZIP']))
                 ]),
-                "dtype": "int64",
+                "dtype": "Int64",
                 "file": "binary_encoding_transformer.pkl",
                 "drop": self.BE_CATEGORICALS
             },
@@ -1391,7 +1391,7 @@ class Engineer(KDD98DataTransformer):
                                    handle_missing="return_nan"),
                      self.OHE_CATEGORICALS)
                 ]),
-                "dtype": "int64",
+                "dtype": "Int64",
                 "file": "oh_encoding_transformer.pkl",
                 "drop": self.OHE_CATEGORICALS
             },
