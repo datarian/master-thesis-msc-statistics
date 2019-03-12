@@ -463,7 +463,9 @@ class MonthsToDonation(DateHandler, NamedFeatureTransformer):
         for i in range(3, 25):
             try:
                 feat_name = "MONTHS_TO_DONATION_" + str(i)
-                mailing = X.loc[:, ["ADATE_" + str(i), "RDATE_" + str(i)]]
+                #mailing = X.loc[:, ["ADATE_" + str(i), "RDATE_" + str(i)]]
+                send_date = X.loc[:, ["ADATE_" + str(i)]]
+                recv_date = X.loc[:, ["RDATE_" + str(i)]]
             except ValueError as e:
                 # One of the features is not there, can't compute the delta
                 logger.info("Missing feature for MONTHS_TO_DONATION_{:1}. Message received: {:2}".format(i, e))
@@ -471,16 +473,18 @@ class MonthsToDonation(DateHandler, NamedFeatureTransformer):
 
             try:
                 try:
-                    encoded = self.parse_date(mailing.loc[:, "ADATE_" + str(i)])
-                    mailing.loc[:, "ADATE_" + str(i)] = encoded.min()
+                    send_date = self.parse_date(send_date)
+                    send_date = send_date.min()
+                    # mailing.loc[:, "ADATE_" + str(i)] = encoded.min()
                 except Exception as e:
                     raise e
                 try:
-                    mailing.loc[:, "RDATE_" +
-                                str(i)] = self.parse_date(mailing.loc[:, "RDATE_" + str(i)])
+                    recv_date = self.parse_date(recv_date)
+                    # mailing.loc[:, "RDATE_" +
+                    #            str(i)] = self.parse_date(mailing.loc[:, "RDATE_" + str(i)])
                 except RuntimeError as e:
                     raise e
-                diffs = mailing.agg(self.calc_diff, axis=1)
+                diffs = zip(send_date, recv_date).agg(self.calc_diff, axis=1)
                 X_trans = X_trans.join(pd.DataFrame(
                     diffs, columns=[feat_name], index=X_trans.index), how="inner")
                 self.feature_names.extend([feat_name])

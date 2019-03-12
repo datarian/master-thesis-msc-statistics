@@ -1132,7 +1132,7 @@ class KDD98DataTransformer:
         # Now, drop all features marked for removal
         logger.info("About to drop the following"
                     " features in transformation {}: {}"
-                    .format(self.step, self.drop_features))
+                    .format(self.step, sorted(self.drop_features)))
         self.data = self.drop_if_exists(self.data, self.drop_features)
 
         self.post_steps()
@@ -1356,7 +1356,7 @@ class Preprocessor(KDD98DataTransformer):
         self.LOW_VAR_SPARSE = zv._dropped
 
         logger.info("About to drop these sparse / constant features: {}"
-                    .format(self.LOW_VAR_SPARSE))
+                    .format(sorted(self.LOW_VAR_SPARSE)))
         self.data = self.drop_if_exists(self.data, self.LOW_VAR_SPARSE)
 
 
