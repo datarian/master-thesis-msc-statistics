@@ -1333,31 +1333,24 @@ class Engineer(KDD98DataTransformer):
     # variable is overridden by the init function here.
     transformer_config = OrderedDict()
 
+    def filter_features(self, features):
+        return [f for f in features if f in self.ALL_FEATURES]
+
     def __init__(self, data_loader):
         super().__init__(data_loader)
         self.data = self.dl.preprocessed_data
         self.step = "Feature Engineering"
+        self.ALL_FEATURES = self.data.columns.values.tolist()
         self.CATEGORICAL_FEATURES = self.data.select_dtypes(include="category").columns.values.tolist()
         self.NUMERICAL_FEATURES = [f for f in self.data.columns.values.tolist() if f not in self.CATEGORICAL_FEATURES]
         self.BE_CATEGORICALS = ['OSOURCE', 'TCODE', 'ZIP', 'STATE', 'CLUSTER']
         self.OHE_CATEGORICALS = [f for f in self.CATEGORICAL_FEATURES if f not in self.BE_CATEGORICALS]
         self.transformer_config = OrderedDict({
-            # Before dealing with categorical features, we need to impute.
-            #"impute_categories": {
-            #    "transformer": ColumnTransformer([
-            #        ("impute_categories",
-            #         CategoricalImputer(),
-            #         self.CATEGORICAL_FEATURES)
-            #    ]),
-            #    "dtype": None,
-            #    "file": "impute_cats_transformer.pkl",
-            #    "drop": []
-            #},
             "donation_hist": {
                 "transformer": ColumnTransformer([
                     ("months_to_donation",
                      MonthsToDonation(reference_date=pd.datetime(1998, 6, 1)),
-                     PROMO_HISTORY_DATES + GIVING_HISTORY_DATES)
+                     self.filter_features(PROMO_HISTORY_DATES + GIVING_HISTORY_DATES))
                 ]),
                 "dtype": "Int64",
                 "file": "donation_responses_transformer.pkl",
@@ -1368,11 +1361,13 @@ class Engineer(KDD98DataTransformer):
                     ("time_last_donation",
                      DeltaTime(reference_date=pd.datetime(1997, 6, 1),
                                unit="months"),
-                     ["LASTDATE", "MINRDATE", "MAXRDATE", "MAXADATE"]),
+                     self.filter_features(["LASTDATE", "MINRDATE", "MAXRDATE", "MAXADATE"]
+                    ),
                     ("membership_years",
                      DeltaTime(reference_date=pd.datetime(1997, 6, 1),
                                unit="years"),
-                     ["ODATEDW"])
+                     self.filter_features(["ODATEDW"])
+                    )
                 ]),
                 "dtype": "Int64",
                 "file": "timedelta_transformer.pkl",
@@ -1381,11 +1376,11 @@ class Engineer(KDD98DataTransformer):
             },
             "binary_encode_categoricals": {
                 "transformer": ColumnTransformer([
-                    ("be_osource", BinaryEncoder(handle_missing="return_nan"), ['OSOURCE']),
-                    ("be_state", BinaryEncoder(handle_missing="return_nan"), ['STATE']),
-                    ("be_cluster", BinaryEncoder(handle_missing="return_nan"), ['CLUSTER']),
-                    ("be_tcode", BinaryEncoder(handle_missing="return_nan"), ['TCODE']),
-                    ("be_zip", BinaryEncoder(handle_missing="return_nan"), ['ZIP'])
+                    ("be_osource", BinaryEncoder(handle_missing="return_nan"), self.filter_features(['OSOURCE'])),
+                    ("be_state", BinaryEncoder(handle_missing="return_nan"), self.filter_features(['STATE'])),
+                    ("be_cluster", BinaryEncoder(handle_missing="return_nan"), self.filter_features(['CLUSTER'])),
+                    ("be_tcode", BinaryEncoder(handle_missing="return_nan"), self.filter_features(['TCODE'])),
+                    ("be_zip", BinaryEncoder(handle_missing="return_nan"), self.filter_features(['ZIP']))
                 ]),
                 "dtype": "int64",
                 "file": "binary_encoding_transformer.pkl",
