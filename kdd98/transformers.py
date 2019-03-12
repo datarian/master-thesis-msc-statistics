@@ -40,7 +40,8 @@ __all__ = ['BinaryFeatureRecode',
            'CategoricalImputer',
            'NumericImputer',
            "TargetImputer",
-           "RAMNTFixer"]
+           "RAMNTFixer",
+           "ZeroVarianceSparseDropper"]
 
 
 class NamedFeatureTransformer(BaseEstimator, TransformerMixin):
@@ -611,26 +612,43 @@ class TargetImputer(NamedFeatureTransformer):
         return X_trans
 
 
-class ZeroVariance(NamedFeatureTransformer):
-    '''
+class ZeroVarianceSparseDropper(NamedFeatureTransformer):
+    """
     Transformer to identify zero variance and optionally low variance features
-    for removal
-    This works similarly to the R caret::nearZeroVariance function
-    '''
-    def __init__(self, near_zero=False, freq_cut=95 / 5, unique_cut=10):
-        '''
-        near zero: boolean. False: remove only zero var. True: remove near zero as well
-        freq_cut: cutoff frequency ratio of most frequent to second most frequent
-        unique_cut: unique cut: cutoff for percentage unique values
-        '''
+    for removal. Data-type agnostic. It operates on the unique values and their counts.
+    This works similarly to the R caret::nearZeroVariance function.
+    Derived from: https://github.com/philipmgoddard/pipelines/blob/master/custom_transformers.py
+
+    Params:
+    -------
+    - near zero     False: remove only zero var.
+                    True: remove near zero as well
+    - freq_cut      cutoff frequency ratio of most frequent
+                    to second most frequent
+    - unique_cut    cutoff for percentage unique values
+    """
+    def __init__(self, near_zero=True,
+                 freq_cut=95 / 5,
+                 unique_cut=0.1,
+                 sparse_cut=0.1):
         self.near_zero = near_zero
         self.freq_cut = freq_cut
         self.unique_cut = unique_cut
+        self.sparse_cut = sparse_cut
+        self.feature_names = None
+        self._dropped = []
+
+    @property
+    def _support(self):
+        return self.get_feature_names()
 
     def fit(self, X, y=None):
         self.zero_var = []
         self.near_zero_var = []
         n_obs = X.shape[0]
+
+        sparse_cols = [c for c in X.columns
+                       if X[c].count() / n_obs <= self.sparse_cut]
 
         for feat, series in X.iteritems():
             val_count = series.value_counts(normalize=True)
@@ -644,7 +662,9 @@ class ZeroVariance(NamedFeatureTransformer):
             unq_percent = len(val_count) / n_obs
             if (unq_percent < self.unique_cut) and (freq_ratio > self.freq_cut):
                 self.near_zero_var.append(feat)
-        self.feature_names = X.columns.values.tolist()
+        self.near_zero_var = set(self.near_zero_var + sparse_cols)
+        self.zero_var = set(self.zero_var + sparse_cols)
+        self._dropped = self.near_zero_var if self.near_zero else self.zero_var
 
         return self
 
