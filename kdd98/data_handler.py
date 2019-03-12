@@ -1328,7 +1328,7 @@ class Preprocessor(KDD98DataTransformer):
         self.step = "Preprocessing"
         self.transformer_config = OrderedDict({
             "zero_var_sparse": {
-                "transformer": ZeroVarianceSparseDropper(),
+                "transformer": ZeroVarianceSparseDropper(override=['TARGET_B', 'TARGET_D']),
                 "dtype": None,
                 "file": "zero_var_sparse_transformer.pkl",
                 "drop": []
@@ -1364,7 +1364,7 @@ class Preprocessor(KDD98DataTransformer):
         })
 
     def pre_steps(self, fit=True):
-        zv = ZeroVarianceSparseDropper()
+        zv = ZeroVarianceSparseDropper(override=['TARGET_B', 'TARGET_D'])
         if fit:
             data = zv.fit_transform(self.data)
         else:

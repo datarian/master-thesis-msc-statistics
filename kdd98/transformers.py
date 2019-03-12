@@ -630,17 +630,15 @@ class ZeroVarianceSparseDropper(NamedFeatureTransformer):
     def __init__(self, near_zero=True,
                  freq_cut=95 / 5,
                  unique_cut=0.1,
-                 sparse_cut=0.1):
+                 sparse_cut=0.1,
+                 override=[]):
         self.near_zero = near_zero
         self.freq_cut = freq_cut
         self.unique_cut = unique_cut
         self.sparse_cut = sparse_cut
+        self.override = override
         self.feature_names = None
         self._dropped = []
-
-    @property
-    def _support(self):
-        return self.get_feature_names()
 
     def fit(self, X, y=None):
         self.zero_var = []
@@ -653,8 +651,6 @@ class ZeroVarianceSparseDropper(NamedFeatureTransformer):
         for feat, series in X.iteritems():
             val_count = series.value_counts(normalize=True)
             if len(val_count) <= 1:
-                if len(val_count) == 0:
-                    logger.info("Feature {} is all-NaN.".format(feat))
                 self.zero_var.append(feat)
                 self.near_zero_var.append(feat)
                 continue
@@ -662,8 +658,8 @@ class ZeroVarianceSparseDropper(NamedFeatureTransformer):
             unq_percent = len(val_count) / n_obs
             if (unq_percent < self.unique_cut) and (freq_ratio > self.freq_cut):
                 self.near_zero_var.append(feat)
-        self.near_zero_var = set(self.near_zero_var + sparse_cols)
-        self.zero_var = set(self.zero_var + sparse_cols)
+        self.near_zero_var = set(self.near_zero_var + sparse_cols - self.override)
+        self.zero_var = set(self.zero_var + sparse_cols - self.override)
         self._dropped = self.near_zero_var if self.near_zero else self.zero_var
 
         return self
