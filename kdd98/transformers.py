@@ -465,7 +465,7 @@ class MonthsToDonation(DateHandler, NamedFeatureTransformer):
                 feat_name = "MONTHS_TO_DONATION_" + str(i)
                 send_date = X.loc[:, ["ADATE_" + str(i)]]
                 recv_date = X.loc[:, ["RDATE_" + str(i)]]
-            except ValueError as e:
+            except KeyError as e:
                 # One of the features is not there, can't compute the delta
                 logger.info("Missing feature for MONTHS_TO_DONATION_{:1}. Message received: {:2}".format(i, e))
                 continue
