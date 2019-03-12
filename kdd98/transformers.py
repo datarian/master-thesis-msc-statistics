@@ -653,4 +653,4 @@ class ZeroVariance(NamedFeatureTransformer):
             X_trans = X.drop(self.near_zero_var, axis=1)
         else:
             X_trans = X.drop(self.zero_var, axis=1)
-        self.feature_names = X_trans.columns.values.tolost()
+        self.feature_names = X_trans.columns.values.tolist()
