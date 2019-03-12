@@ -1312,32 +1312,7 @@ class Preprocessor(KDD98DataTransformer):
         self.data = self.dl.clean_data
         self.step = "Preprocessing"
         self.transformer_config = OrderedDict({
-            "donation_hist": {
-                "transformer": ColumnTransformer([
-                    ("months_to_donation",
-                     MonthsToDonation(reference_date=pd.datetime(1998, 6, 1)),
-                     PROMO_HISTORY_DATES + GIVING_HISTORY_DATES)
-                ]),
-                "dtype": "Int64",
-                "file": "donation_responses_transformer.pkl",
-                "drop": PROMO_HISTORY_DATES + GIVING_HISTORY_DATES
-            },
-            "timedelta": {
-                "transformer": ColumnTransformer([
-                    ("time_last_donation",
-                     DeltaTime(reference_date=pd.datetime(1997, 6, 1),
-                               unit="months"),
-                     ["LASTDATE", "MINRDATE", "MAXRDATE", "MAXADATE"]),
-                    ("membership_years",
-                     DeltaTime(reference_date=pd.datetime(1997, 6, 1),
-                               unit="years"),
-                     ["ODATEDW"])
-                ]),
-                "dtype": "Int64",
-                "file": "timedelta_transformer.pkl",
-                "drop": ["ODATEDW", "LASTDATE", "MINRDATE",
-                         "MAXRDATE", "MAXADATE"]
-            }
+
         })
 
     def post_steps(self, fit=True):
@@ -1346,11 +1321,10 @@ class Preprocessor(KDD98DataTransformer):
             _ = zv.fit_transform(self.data)
         else:
             _ = zv.transform(self.data)
-        self.LOW_VAR_SPARSE = zv._dropped
 
         logger.info("About to drop these sparse / constant features: {}"
-                    .format(sorted(self.LOW_VAR_SPARSE)))
-        self.data = self.drop_if_exists(self.data, self.LOW_VAR_SPARSE)
+                    .format(sorted(zv._dropped)))
+        self.data = self.drop_if_exists(self.data, zv._dropped)
 
 
 class Engineer(KDD98DataTransformer):
@@ -1379,6 +1353,32 @@ class Engineer(KDD98DataTransformer):
             #    "file": "impute_cats_transformer.pkl",
             #    "drop": []
             #},
+            "donation_hist": {
+                "transformer": ColumnTransformer([
+                    ("months_to_donation",
+                     MonthsToDonation(reference_date=pd.datetime(1998, 6, 1)),
+                     PROMO_HISTORY_DATES + GIVING_HISTORY_DATES)
+                ]),
+                "dtype": "Int64",
+                "file": "donation_responses_transformer.pkl",
+                "drop": PROMO_HISTORY_DATES + GIVING_HISTORY_DATES
+            },
+            "timedelta": {
+                "transformer": ColumnTransformer([
+                    ("time_last_donation",
+                     DeltaTime(reference_date=pd.datetime(1997, 6, 1),
+                               unit="months"),
+                     ["LASTDATE", "MINRDATE", "MAXRDATE", "MAXADATE"]),
+                    ("membership_years",
+                     DeltaTime(reference_date=pd.datetime(1997, 6, 1),
+                               unit="years"),
+                     ["ODATEDW"])
+                ]),
+                "dtype": "Int64",
+                "file": "timedelta_transformer.pkl",
+                "drop": ["ODATEDW", "LASTDATE", "MINRDATE",
+                         "MAXRDATE", "MAXADATE"]
+            },
             "binary_encode_categoricals": {
                 "transformer": ColumnTransformer([
                     ("be_osource", BinaryEncoder(handle_missing="return_nan"), ['OSOURCE']),
