@@ -636,7 +636,7 @@ class ZeroVarianceSparseDropper(NamedFeatureTransformer):
         self.freq_cut = freq_cut
         self.unique_cut = unique_cut
         self.sparse_cut = sparse_cut
-        self.override = override
+        self.override = set(override)
         self.feature_names = None
         self._dropped = []
 
@@ -658,8 +658,8 @@ class ZeroVarianceSparseDropper(NamedFeatureTransformer):
             unq_percent = len(val_count) / n_obs
             if (unq_percent < self.unique_cut) and (freq_ratio > self.freq_cut):
                 self.near_zero_var.append(feat)
-        self.near_zero_var = set(self.near_zero_var + sparse_cols - self.override)
-        self.zero_var = set(self.zero_var + sparse_cols - self.override)
+        self.near_zero_var = set(self.near_zero_var + sparse_cols) - self.override
+        self.zero_var = set(self.zero_var + sparse_cols) - self.override
         self._dropped = self.near_zero_var if self.near_zero else self.zero_var
 
         return self
