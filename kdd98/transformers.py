@@ -463,10 +463,9 @@ class MonthsToDonation(DateHandler, NamedFeatureTransformer):
         for i in range(3, 25):
             try:
                 feat_name = "MONTHS_TO_DONATION_" + str(i)
-                # mailing = X.loc[:, ["ADATE_" + str(i), "RDATE_" + str(i)]]
                 send_date = X.loc[:, ["ADATE_" + str(i)]]
                 recv_date = X.loc[:, ["RDATE_" + str(i)]]
-            except Exception as e:
+            except ValueError as e:
                 # One of the features is not there, can't compute the delta
                 logger.info("Missing feature for MONTHS_TO_DONATION_{:1}. Message received: {:2}".format(i, e))
                 continue
@@ -475,13 +474,10 @@ class MonthsToDonation(DateHandler, NamedFeatureTransformer):
                 try:
                     send_date = self.parse_date(send_date.squeeze())
                     send_date.loc[:] = send_date.min()
-                    # mailing.loc[:, "ADATE_" + str(i)] = encoded.min()
                 except Exception as e:
                     raise e
                 try:
                     recv_date = self.parse_date(recv_date.squeeze())
-                    # mailing.loc[:, "RDATE_" +
-                    #            str(i)] = self.parse_date(mailing.loc[:, "RDATE_" + str(i)])
                 except RuntimeError as e:
                     raise e
                 diffs = pd.concat([send_date, recv_date], axis=1).agg(self.calc_diff, axis=1)
