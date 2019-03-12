@@ -1361,13 +1361,11 @@ class Engineer(KDD98DataTransformer):
                     ("time_last_donation",
                      DeltaTime(reference_date=pd.datetime(1997, 6, 1),
                                unit="months"),
-                     self.filter_features(["LASTDATE", "MINRDATE", "MAXRDATE", "MAXADATE"]
-                    ),
+                     self.filter_features(["LASTDATE", "MINRDATE", "MAXRDATE", "MAXADATE"])),
                     ("membership_years",
                      DeltaTime(reference_date=pd.datetime(1997, 6, 1),
                                unit="years"),
-                     self.filter_features(["ODATEDW"])
-                    )
+                     self.filter_features(["ODATEDW"]))
                 ]),
                 "dtype": "Int64",
                 "file": "timedelta_transformer.pkl",
