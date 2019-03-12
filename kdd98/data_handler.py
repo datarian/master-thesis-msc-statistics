@@ -1347,7 +1347,7 @@ class Preprocessor(KDD98DataTransformer):
             }
         })
 
-    def pre_steps(self, fit=True):
+    def post_steps(self, fit=True):
         zv = ZeroVarianceSparseDropper(override=['TARGET_B', 'TARGET_D'])
         if fit:
             _ = zv.fit_transform(self.data)
