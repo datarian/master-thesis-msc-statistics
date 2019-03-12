@@ -45,7 +45,7 @@ def update_df_with_transformed(df_old, new_features, transformer, new_dtype=None
             transformed_df = transformed_df.astype(new_dtype)
     if all(f in df_old.columns.values.tolist() for f in feat_names):
         for f in feat_names:
-            df_old[f] = transformed_df.loc[:,f]
+            df_old[f] = transformed_df.loc[:, f]
         df_new = df_old
     else:
         to_merge = [f for f in feat_names if f not in df_old.columns.values.tolist()]

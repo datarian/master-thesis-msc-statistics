@@ -1306,16 +1306,6 @@ class Cleaner(KDD98DataTransformer):
 class Preprocessor(KDD98DataTransformer):
 
     LOW_VAR_SPARSE = set()
-    #LOW_VAR_SPARSE = {'RAMNT_24', 'PETS', 'STEREO', 'CARDS', 'CDPLAY',
-    #                  'MDMAUD_R', 'SOLIH', 'RAMNT_20', 'CHILD18', 'RAMNT_11',
-    #                  'GARDENIN', 'RAMNT_15', 'RAMNT_17', 'PCOWNERS',
-    #                  'RAMNT_13', 'FISHER', 'RAMNT_21', 'HOMEE', 'BIBLE',
-    #                  'PHOTO', 'RAMNT_19', 'RAMNT_7', 'BOATS', 'CHILD03',
-    #                  'PVASTATE', 'SOLP3', 'CATLG', 'CRAFTS', 'GEOCODE',
-    #                  'RAMNT_9', 'RAMNT_4', 'PLATES', 'VETERANS', 'KIDSTUFF',
-    #                  'RFA_2R', 'RAMNT_3', 'RAMNT_6', 'CHILD12', 'NOEXCH',
-    #                  'COLLECT1', 'RAMNT_23', 'CHILD07', 'RAMNT_5', 'NUMCHLD',
-    #                  'RAMNT_10', 'MDMAUD_A', 'WALKER'}
 
     def filter_features(self, features):
         return list(set(features) - self.LOW_VAR_SPARSE)
@@ -1327,12 +1317,6 @@ class Preprocessor(KDD98DataTransformer):
         self.data = self.dl.clean_data
         self.step = "Preprocessing"
         self.transformer_config = OrderedDict({
-            "zero_var_sparse": {
-                "transformer": ZeroVarianceSparseDropper(override=['TARGET_B', 'TARGET_D']),
-                "dtype": None,
-                "file": "zero_var_sparse_transformer.pkl",
-                "drop": []
-            },
             "donation_hist": {
                 "transformer": ColumnTransformer([
                     ("months_to_donation",
@@ -1366,14 +1350,14 @@ class Preprocessor(KDD98DataTransformer):
     def pre_steps(self, fit=True):
         zv = ZeroVarianceSparseDropper(override=['TARGET_B', 'TARGET_D'])
         if fit:
-            data = zv.fit_transform(self.data)
+            _ = zv.fit_transform(self.data)
         else:
-            data = zv.transform(self.data)
+            _ = zv.transform(self.data)
         self.LOW_VAR_SPARSE = zv._dropped
 
         logger.info("About to drop these sparse / constant features: {}"
                     .format(self.LOW_VAR_SPARSE))
-        #self.data = self.drop_if_exists(self.data, self.LOW_VAR_SPARSE)
+        self.data = self.drop_if_exists(self.data, self.LOW_VAR_SPARSE)
 
 
 class Engineer(KDD98DataTransformer):
