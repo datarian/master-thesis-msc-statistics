@@ -23,7 +23,7 @@ from kdd98.transformers import (BinaryFeatureRecode, DateFormatter, DeltaTime,
                                 MultiByteExtract, NOEXCHFormatter,
                                 OrdinalEncoder,
                                 ZipFormatter, CategoricalImputer,
-                                NumericImputer, TargetImputer, RAMNTFixer,
+                                NumericImputer, TargetImputer, RFAFixer, RAMNTFixer,
                                 ZeroVarianceSparseDropper)
 
 # Set up the logger
@@ -1195,6 +1195,16 @@ class Cleaner(KDD98DataTransformer):
             "file": "impute_target_b.pkl",
             "drop": []
         },
+        "rfa": {
+            "transformer": ColumnTransformer([
+                ("fix_rfa",
+                 RFAFixer(),
+                 NOMINAL_FEATURES[2:])
+            ]),
+            "dtype": None,
+            "file": "fix_rfa.pkl",
+            "drop": []
+        },
         "ramount": {
             "transformer": ColumnTransformer([
                 ("fix_ramount",
@@ -1267,11 +1277,13 @@ class Cleaner(KDD98DataTransformer):
                  ["MDMAUD_R", "MDMAUD_A"]),
                 ("order_rfa",
                  OrdinalEncoder(mapping=ORDINAL_MAPPING_RFA,
-                                handle_missing="return_nan"),
+                                handle_missing="return_nan",
+                                handle_unknown="return_nan"),
                  ["RFA_" + str(i) + "A" for i in range(2, 25)]),
                 ("recode_socioecon",
                  OrdinalEncoder(mapping=ORDINAL_MAPPING_SOCIOECON,
-                                handle_missing="return_nan"),
+                                handle_missing="return_nan",
+                                handle_unknown="return_nan"),
                  ["DOMAINSocioEconomic"]),
                 ("order_remaining",
                  OrdinalEncoder(handle_missing="return_nan"),
