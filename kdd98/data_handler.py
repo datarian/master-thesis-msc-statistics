@@ -1407,13 +1407,13 @@ class Engineer(KDD98DataTransformer):
             #    "file": "iterative_impute_numerics.pkl",
             #    "drop": []
             #},
-            "impute_": {
-                "transformer": NumericImputer(n_iter=5,
-                                              initial_strategy="median",
-                                              random_state=Config.get("random_seed"),
-                                              verbose=1),
-                "dtype": None,
-                "file": "iterative_impute.pkl",
-                "drop": []
-            }
+            #"impute_": {
+            #    "transformer": NumericImputer(n_iter=5,
+            #                                  initial_strategy="median",
+            #                                  random_state=Config.get("random_seed"),
+            #                                  verbose=1),
+            #    "dtype": None,
+            #    "file": "iterative_impute.pkl",
+            #    "drop": []
+            #}
         })
