@@ -68,11 +68,6 @@ class MultiByteExtract(NamedFeatureTransformer):
     -------
     new_features: A list with the new names for each byte
                     that is to be spread
-
-    impute: False means missing / malformatted entries will be coded NaN
-            If a value is passed, fields will be filled with that instead.
-
-    drop_orig: Whether to drop the original multibyte feature or not.
     """
 
     def __init__(self, new_features):
@@ -285,6 +280,28 @@ class RAMNTFixer(NamedFeatureTransformer):
             X_temp = X[["RAMNT_" + str(i), "RDATE_" + str(i)]]
             X_trans["RAMNT_" + str(i)] = X_temp.agg(really_missing, axis=1)
 
+        return X_trans
+
+class RFAFixer(NamedFeatureTransformer):
+    """ Sets invalid RFA features to NaN.
+        This occurs if strings are not of length 3.
+    """
+    def __init__(self):
+        super().__init__()
+
+    def validate_value(self, v):
+        if not pd.isna(v):
+            if not len(v) == 3:
+                v = np.nan
+        return v
+
+    def fit(self, X, y=None):
+        self.feature_names = X.columns.values.tolist()
+        return self
+
+    def transform(self, X, y=None):
+        assert(isinstance(X, pd.DataFrame))
+        X_trans = X.applymap(self.validate_value)
         return X_trans
 
 
