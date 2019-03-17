@@ -23,7 +23,8 @@ from kdd98.transformers import (BinaryFeatureRecode, DateFormatter, DeltaTime,
                                 MultiByteExtract, NOEXCHFormatter,
                                 OrdinalEncoder,
                                 ZipFormatter, CategoricalImputer,
-                                NumericImputer, TargetImputer, RFAFixer, RAMNTFixer,
+                                NumericImputer, TargetImputer, RFAFixer,
+                                RAMNTFixer, ZipToCoords,
                                 ZeroVarianceSparseDropper)
 
 # Set up the logger
@@ -33,7 +34,6 @@ logger = logging.getLogger(__name__)
 
 __all__ = [
     'KDD98DataProvider',
-    'Cleaner',
     'Preprocessor',
     'Engineer',
     'INDEX_NAME',
@@ -725,7 +725,6 @@ class KDD98DataProvider:
         """
         self.raw_data_file_name = csv_file
         self._raw_data = pd.DataFrame()
-        self._clean_data = pd.DataFrame()
         self._preprocessed_data = pd.DataFrame()
         self._numeric_data = pd.DataFrame()
 
@@ -739,12 +738,10 @@ class KDD98DataProvider:
             logger.info("Set raw data file name to: {}"
                         .format(self.raw_data_name))
             if "lrn" in csv_file.lower():
-                self.clean_data_name = Config.get("learn_clean_name")
-                self.preproc_data_name = Config.get("learn_preproc_name")
+                self.preprocessed_data_name = Config.get("learn_preprocessed_name")
                 self.num_data_name = Config.get("learn_numeric_name")
             elif "val" in csv_file.lower():
-                self.clean_data_name = Config.get("validation_clean_name")
-                self.preproc_data_name = Config.get("validation_preproc_name")
+                self.preprocessed_data_name = Config.get("validation_preprocessed_name")
                 self.num_data_name = Config.get("validation_numeric_name")
         else:
             raise ValueError("Set csv_file to either training- or test-file.")
@@ -760,19 +757,9 @@ class KDD98DataProvider:
         self._raw_data = value
 
     @property
-    def clean_data(self):
-        if self._clean_data.empty:
-            self.provide("clean")
-        return self._clean_data
-
-    @clean_data.setter
-    def clean_data(self, value):
-        self._clean_data = value
-
-    @property
     def preprocessed_data(self):
         if self._preprocessed_data.empty:
-            self.provide("preproc")
+            self.provide("preprocessed")
         return self._preprocessed_data
 
     @preprocessed_data.setter
@@ -793,41 +780,36 @@ class KDD98DataProvider:
         """
         Provides data by first checking the hdf store, then loading csv data.
 
-        If clean data is requested, the returned pandas object has:
+        If preprocessed data is requested, the returned pandas object has
         - binary
         - numeric (float, int)
         - ordinal / nominal categorical
         - all missing values np.nan
         - dates in np.datetime64
 
-        If preprocessed data is requested, the returned pandas object has
-        - the contents of cleaned data
-        - date features transformed to time deltas
-
         If numeric data is requested, the returned pandas object has
+        - date features transformed to time deltas
+        - ZIP transformed to coordinates
         - encoded categoricals
-        - imputed features
 
         in it.
 
         Params
         ------
-        type    One of ["raw", "clean", "preproc", "numeric"].
-                Raw is as read by pandas, clean is with
-                cleaning operations applied.
+        type    One of ["raw", "preproc", "numeric"].
+                Raw is as read by pandas, preprocessed is with
+                preprocessing operations applied.
         """
         name_mapper = {
             "raw": {"key": self.raw_data_name,
                     "data_attrib": "_raw_data"},
-            "clean": {"key": self.clean_data_name,
-                      "data_attrib": "_clean_data"},
-            "preproc": {"key": self.preproc_data_name,
-                        "data_attrib": "_preprocessed_data"},
+            "preprocessed": {"key": self.preprocessed_data_name,
+                      "data_attrib": "_preprocessed_data"},
             "numeric": {"key": self.num_data_name,
                         "data_attrib": "_numeric_data"}
         }
 
-        assert(type in ["raw", "clean", "preproc", "numeric"])
+        assert(type in ["raw", "preprocessed", "numeric"])
 
         try:
             # First, try to load the data from hdf
@@ -835,44 +817,28 @@ class KDD98DataProvider:
             data = self._unpickle_df(name_mapper[type]["key"])
             setattr(self, name_mapper[type]["data_attrib"], data)
         except Exception:
-            # If it fails and we ask for clean data,
+            # If it fails and we ask for preprocessed data,
             # try to find the raw data in hdf and, if present,
             # load it. If we ask for preprocessed data, try to find
-            # cleaned data in hdf and load if present.
-            if type == "clean":
+            # preprocessed data in hdf and load if present.
+            if type == "preprocessed":
                 try:
                     self.provide("raw")
                 except Exception as e:
                     logger.error("Failed to provide raw data. "
-                                 "Cannot provide clean data. Reason: {}"
+                                 "Cannot provide preprocessed data. Reason: {}"
                                  .format(e))
-                try:
-                    cln = Cleaner(self)
-                    self.clean_data = cln.apply_transformation()
-                except Exception as e:
-                    logger.error("Failed to clean raw data.\nReason: {}"
-                                 .format(e))
-                    raise e
-                self._pickle_df(self.clean_data, self.clean_data_name)
-            elif type == "preproc":
-                try:
-                    self.provide("clean")
-                except Exception as e:
-                    logger.error("Failed to provide clean data."
-                                 " Cannot provide preprocessed data.\n"
-                                 "Reason: {}".format(e))
-                    raise e
                 try:
                     pre = Preprocessor(self)
                     self.preprocessed_data = pre.apply_transformation()
                 except Exception as e:
-                    logger.error("Failed to preprocess clean data.\n"
-                                 "Reason: {}".format(e))
+                    logger.error("Failed to preprocess raw data.\nReason: {}"
+                                 .format(e))
                     raise e
-                self._pickle_df(self.preprocessed_data, self.preproc_data_name)
+                self._pickle_df(self.preprocessed_data, self.preprocessed_data_name)
             elif type == "numeric":
                 try:
-                    self.provide("preproc")
+                    self.provide("preprocessed")
                 except Exception as e:
                     logger.error("Failed to provide preprocessed data.\n"
                                  "Cannot provide numeric data. Reason: {}"
@@ -1070,8 +1036,7 @@ class KDD98DataTransformer:
         ------
         data:   The dataset to process
         transformer_config: A dict containing an ordered sequence
-                            of transformers to apply. See corresponding
-                            methods Cleaner.clean() and Cleaner.preprocess()
+                            of transformers to apply.
         fit:    Whether to train the transformers
                 on the data (learning data set) or only
                 apply fitted transformers (test/validation data). Default True
@@ -1142,7 +1107,7 @@ class KDD98DataTransformer:
         return self.data.copy(deep=True)
 
 
-class Cleaner(KDD98DataTransformer):
+class Preprocessor(KDD98DataTransformer):
 
     transformer_config = OrderedDict({
         "dates": {
@@ -1161,7 +1126,7 @@ class Cleaner(KDD98DataTransformer):
                  ZipFormatter(),
                  ["ZIP"])
             ]),
-            "dtype": "Int64",
+            "dtype": "int64",
             "file": "zip_format_transformer.pkl",
             "drop": []
         },
@@ -1300,32 +1265,8 @@ class Cleaner(KDD98DataTransformer):
         super().__init__(data_loader)
         self.data = self.dl.raw_data
         self.dimension_cols = None
-        self.step = "Cleaning"
-        self.drop_features = set(DROP_INITIAL + DROP_REDUNDANT)
-
-    def post_steps(self):
-        remaining_object_features = self.data.select_dtypes(include="object").columns.values.tolist()
-        remaining_without_dates = [r for r in remaining_object_features
-                                   if r not in DATE_FEATURES]
-        if remaining_without_dates:
-            logger.warning("After cleaning, the following features"
-                           " were left untreated and automatically"
-                           " coerced to 'category' (nominal): {}"
-                           .format(remaining_without_dates))
-            self.data[remaining_without_dates] = self.data[remaining_without_dates].astype("category")
-
-
-class Preprocessor(KDD98DataTransformer):
-
-    transformer_config = OrderedDict()
-
-    def __init__(self, data_loader):
-        super().__init__(data_loader)
-        self.data = self.dl.clean_data
         self.step = "Preprocessing"
-        self.transformer_config = OrderedDict({
-
-        })
+        self.drop_features = set(DROP_INITIAL + DROP_REDUNDANT)
 
     def post_steps(self, fit=True):
         zv = ZeroVarianceSparseDropper(override=['TARGET_B', 'TARGET_D'])
@@ -1337,6 +1278,16 @@ class Preprocessor(KDD98DataTransformer):
         logger.info("About to drop these sparse / constant features: {}"
                     .format(sorted(zv._dropped)))
         self.data = self.drop_if_exists(self.data, zv._dropped)
+
+        remaining_object_features = self.data.select_dtypes(include="object").columns.values.tolist()
+        remaining_without_dates = [r for r in remaining_object_features
+                                   if r not in DATE_FEATURES]
+        if remaining_without_dates:
+            logger.warning("After preprocessing, the following (object) features"
+                           " were left untreated and automatically"
+                           " coerced to 'category' (nominal): {}"
+                           .format(remaining_without_dates))
+            self.data[remaining_without_dates] = self.data[remaining_without_dates].astype("category")
 
 
 class Engineer(KDD98DataTransformer):
@@ -1354,10 +1305,21 @@ class Engineer(KDD98DataTransformer):
         self.step = "Feature Engineering"
         self.ALL_FEATURES = self.data.columns.values.tolist()
         self.CATEGORICAL_FEATURES = self.data.select_dtypes(include="category").columns.values.tolist()
-        self.NUMERICAL_FEATURES = [f for f in self.data.columns.values.tolist() if f not in self.CATEGORICAL_FEATURES]
-        self.BE_CATEGORICALS = ['OSOURCE', 'TCODE', 'ZIP', 'STATE', 'CLUSTER']
+        self.NUMERICAL_FEATURES = [f for f in self.data.columns.values.tolist()
+                                   if f not in self.CATEGORICAL_FEATURES]
+        self.BE_CATEGORICALS = ['OSOURCE', 'TCODE', 'STATE', 'CLUSTER']
         self.OHE_CATEGORICALS = [f for f in self.CATEGORICAL_FEATURES if f not in self.BE_CATEGORICALS]
         self.transformer_config = OrderedDict({
+            "zip_to_coords": {
+                "transformer": ColumnTransformer([
+                    ("zip_to_coords",
+                    ZipToCoords(),
+                    ["ZIP", "STATE"])
+                ]),
+                "dtype": None,
+                "file": "zip_to_coords_transformer.pkl",
+                "drop": ["ZIP"]
+            },
             "donation_hist": {
                 "transformer": ColumnTransformer([
                     ("months_to_donation",
@@ -1389,8 +1351,7 @@ class Engineer(KDD98DataTransformer):
                     ("be_osource", BinaryEncoder(handle_missing="return_nan"), self.filter_features(['OSOURCE'])),
                     ("be_state", BinaryEncoder(handle_missing="return_nan"), self.filter_features(['STATE'])),
                     ("be_cluster", BinaryEncoder(handle_missing="return_nan"), self.filter_features(['CLUSTER'])),
-                    ("be_tcode", BinaryEncoder(handle_missing="return_nan"), self.filter_features(['TCODE'])),
-                    ("be_zip", BinaryEncoder(handle_missing="return_nan"), self.filter_features(['ZIP']))
+                    ("be_tcode", BinaryEncoder(handle_missing="return_nan"), self.filter_features(['TCODE']))
                 ]),
                 "dtype": "Int64",
                 "file": "binary_encoding_transformer.pkl",

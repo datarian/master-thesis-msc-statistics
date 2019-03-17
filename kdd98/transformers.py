@@ -5,21 +5,22 @@ Created on Fri Aug 24 10:18:44 2018
 @author: Florian Hochstrasser
 """
 
-import copy
-import datetime
-import hashlib
 import logging
-import sys
+import pathlib
+import pickle
 
 import numpy as np
 import pandas as pd
 from dateutil import relativedelta
 from dateutil.rrule import MONTHLY, YEARLY, rrule
+from fancyimpute import KNN, IterativeImputer
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import StandardScaler
 
-from category_encoders import OrdinalEncoder, HashingEncoder
-from fancyimpute import IterativeImputer, KNN
+from category_encoders import HashingEncoder, OrdinalEncoder
+from geopy.exc import GeocoderTimedOut
+from geopy.extra.rate_limiter import RateLimiter
+from geopy.geocoders import Here
 from kdd98.config import Config
 
 # Set up the logger
@@ -282,6 +283,7 @@ class RAMNTFixer(NamedFeatureTransformer):
 
         return X_trans
 
+
 class RFAFixer(NamedFeatureTransformer):
     """ Sets invalid RFA features to NaN.
         This occurs if strings are not of length 3.
@@ -404,8 +406,8 @@ class DeltaTime(DateHandler, NamedFeatureTransformer):
             elif self.unit.lower() == 'years':
                 duration = delta.years + 1
         else:
-            logger.info("Failed to calculate time delta. Dates: {} and {}.".format(
-                target, self.reference_date))
+            logger.info("Failed to calculate time delta. Dates: {} and {}."
+                        .format(target, self.reference_date))
             duration = np.nan
         return duration
 
@@ -632,6 +634,73 @@ class TargetImputer(NamedFeatureTransformer):
 
         X_trans['TARGET_B'] = X.agg(set_true_if_donated, axis=1)
 
+        return X_trans
+
+
+class ZipToCoords(NamedFeatureTransformer):
+
+    def __init__(self):
+        super().__init__()
+        self.app_id = "ZJBxigwxa1QPHlWrtWH6"
+        self.app_code = "OJBun02aepkFbuHmYn1bOg"
+        try:
+            with open(pathlib.Path(Config.get("data_dir", "zip_db.pkl")), "rb") as zdb:
+                self.locations = pickle.load(zdb)
+        except Exception:
+            zip_db = pd.read_csv(pathlib.Path(Config.get("data_dir"), "zipcodes2018.txt"))
+            zip_db.columns = ["zip", "ZIP_latitude", "ZIP_longitude"]
+            self.locations = zip_db.set_index("zip").to_dict('index')
+
+    def _do_geo_query(self, q):
+        geolocator = Here(app_id="ZJBxigwxa1QPHlWrtWH6", app_code="OJBun02aepkFbuHmYn1bOg")
+        geocode = RateLimiter(geolocator.geocode, min_delay_seconds=0.01, max_retries=4)
+        try:
+            return geolocator.geocode(query=q, exactly_one=True)
+        except GeocoderTimedOut:
+            return self._do_geo_query(q)
+
+    def _get_location(self, example):
+        if example.ZIP:
+            zip = str(example.ZIP).rjust(5, '0')
+            q = {'postalcode': zip, 'state': example.STATE}
+            location = self._do_geo_query(q)
+            if location:
+                loc = {'ZIP_latitude': location.latitude, 'ZIP_longitude': location.longitude}
+            else: 
+                logger.info("Transformer {}: No location found for zip {} in state {}. Setting to 0, 0"
+                            .format(self.__class__.__str__, zip, example.STATE))
+                loc = {'ZIP_latitude': 0, 'ZIP_longitude': 0}
+        else:
+            print("Transformer {}: ZIP is NaN, setting location to NaN as well."
+                  .format(self.__class__.__str__))
+            loc = {'ZIP_latitude': np.nan, 'ZIP_longitude': np.nan}
+        return loc
+
+    def _extract_coords(self, example):
+        try:
+            return self.locations[example.ZIP]
+        except KeyError:
+            try:
+                loc = self._get_location(example)
+                self.locations[example.ZIP] = loc
+            except Exception as e:
+                logger.info("Transformer {}: Failed to retrieve missing zip. Reason: {}"
+                            .format(self.__class__.__str__, e))
+            return self.locations[example.ZIP]
+
+    def fit(self, X, y=None):
+        assert(isinstance(X, pd.DataFrame))
+        self.feature_names = ["ZIP_latitude", "ZIP_longitude"]
+        return self
+
+    def transform(self, X, y=None):
+        X_trans = pd.DataFrame(index=X.index)
+        X_trans = X.apply(self._extract_coords, axis=1, result_type="expand")
+        try:
+            with open(pathlib.Path(Config.get("data_dir"), "zip_db.pkl"), "wb") as zdb:
+                pickle.dump(self.locations, zdb)
+        except Exception as e:
+            logger.warning("Failed to store updated zipcode database.")
         return X_trans
 
 
