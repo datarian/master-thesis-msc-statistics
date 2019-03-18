@@ -643,7 +643,7 @@ class ZipToCoords(NamedFeatureTransformer):
         self.app_id = "ZJBxigwxa1QPHlWrtWH6"
         self.app_code = "OJBun02aepkFbuHmYn1bOg"
         try:
-            with open(pathlib.Path(Config.get("data_dir", "zip_db.pkl")), "rb") as zdb:
+            with open(pathlib.Path(Config.get("data_dir"), "zip_db.pkl"), "rb") as zdb:
                 self.locations = pickle.load(zdb)
         except Exception:
             zip_db = pd.read_csv(pathlib.Path(Config.get("data_dir"), "zipcodes2018.txt"))
