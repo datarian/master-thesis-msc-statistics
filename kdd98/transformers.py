@@ -272,7 +272,7 @@ class RAMNTFixer(NamedFeatureTransformer):
         def really_missing(example):
             ramnt = None
             if pd.isna(example[0]):
-                ramnt = 0 if example[1] == "nan" else np.nan
+                ramnt = 0 if pd.isna(example[1]) else np.nan
             else:
                 ramnt = example[0]
             return ramnt
@@ -308,8 +308,7 @@ class RFAFixer(NamedFeatureTransformer):
 
 
 class NOEXCHFormatter(NamedFeatureTransformer):
-    """
-    Fixes input errors for zip codes
+    """ Fixes erroneously encoded binary codes
     """
 
     def __init__(self):
@@ -680,12 +679,15 @@ class ZipToCoords(NamedFeatureTransformer):
         try:
             return self.locations[example.ZIP]
         except KeyError:
-            try:
-                loc = self._get_location(example)
-                self.locations[example.ZIP] = loc
-            except Exception as e:
-                logger.info("Transformer {}: Failed to retrieve missing zip. Reason: {}"
-                            .format(self.__class__.__str__, e))
+            if example.STATE in ["AA", "AE", "AP"]:  # military zip, no coords available
+                self.locations[example.ZIP] = {'ZIP_latitude': 0, 'ZIP_longitude': 0}
+            else:
+                try:
+                    loc = self._get_location(example)
+                    self.locations[example.ZIP] = loc
+                except Exception as e:
+                    logger.info("Transformer {}: Failed to retrieve missing zip. Reason: {}"
+                                .format(self.__class__.__str__, e))
             return self.locations[example.ZIP]
 
     def fit(self, X, y=None):
