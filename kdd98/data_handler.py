@@ -1225,7 +1225,7 @@ class Preprocessor(KDD98DataTransformer):
             "transformer": ColumnTransformer([
                 ("spread_rfa",
                  MultiByteExtract(["R", "F", "A"]),
-                 NOMINAL_FEATURES[2:]),
+                 NOMINAL_FEATURES[3:]),
                 ("spread_domain",
                  MultiByteExtract(["Urbanicity", "SocioEconomic"]),
                  ["DOMAIN"])
