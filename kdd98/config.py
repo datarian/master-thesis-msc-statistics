@@ -11,18 +11,18 @@ import pathlib
 import pandas as pd
 import seaborn as sns
 
-PKG_HOME = pathlib.Path(__file__).resolve().parent
+HOME = pathlib.Path.cwd().resolve()
 
 __all__ = ['Config']
 
 
 class Config:
     __conf = {
-        "root_dir": pathlib.Path(PKG_HOME.resolve().parent),
-        "data_dir": pathlib.Path(PKG_HOME.resolve().parent, "data"),
-        "model_store": pathlib.Path(PKG_HOME.resolve().parent, "models"),
-        "df_store": pathlib.Path(PKG_HOME.resolve().parent, "data", "data_frames"),
-        "cache_dir": pathlib.Path(PKG_HOME.resolve().parent, "cache"),
+        "root_dir": pathlib.Path(HOME),
+        "data_dir": pathlib.Path(HOME, "data"),
+        "model_store": pathlib.Path(HOME, "models"),
+        "df_store": pathlib.Path(HOME, "data", "data_frames"),
+        "cache_dir": pathlib.Path(HOME, "cache"),
         "download_files": ['cup98lrn.zip', 'cup98val.zip', 'cup98doc.txt',
                            'cup98dic.txt', 'instruct.txt', 'valtargt.readme',
                            'valtargt.txt', 'readme'],
