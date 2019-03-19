@@ -680,7 +680,7 @@ class ZipToCoords(NamedFeatureTransformer):
             return self.locations[example.ZIP]
         except KeyError:
             if example.STATE in ["AA", "AE", "AP"]:  # military zip, no coords available
-                self.locations[example.ZIP] = {'ZIP_latitude': 0, 'ZIP_longitude': 0}
+                self.locations[example.ZIP] = {'ZIP_latitude': 38.8719, 'ZIP_longitude': 77.0563}
             else:
                 try:
                     loc = self._get_location(example)
