@@ -1,4 +1,6 @@
 from setuptools import setup, find_packages
+from distutils.core import setup
+import distutils.command.bdist_conda
 
 __version__ = '0.2'
 
@@ -9,7 +11,7 @@ with open('README.md', encoding='utf-8') as f:
 setup(
     name='kdd98',
     version=__version__,
-    description='Data loader for the KDD98 data sets',
+    description='Data handler for the KDD98 data sets',
     long_description=long_description,
     packages=find_packages(exclude=['tests*']),
     include_package_data=True,
@@ -21,6 +23,10 @@ setup(
       'statsmodels>=0.6.1',
       'pandas>=0.21.1',
       'patsy>=0.4.1',
+      'category_encoders>=1.3.0',
+      'geopy',
+      'python-dateutil>=2.8.0',
+
     ],
     author_email='datarian@againstthecurrent.ch'
 )

@@ -3,8 +3,8 @@ import pathlib
 import shutil
 import unittest
 
-import kdd98.data_loader as dl
-from kdd98.data_loader import Cleaner
+import kdd98.data_handler as dh
+from kdd98.data_handler import Cleaner
 from kdd98.config import Config
 
 
@@ -25,7 +25,18 @@ class TestCleanerSetup(unittest.TestCase):
 
 class TestCleaner(TestCleanerSetup):
 
+    def test_binary_encoding(self):
+
+        data_loader = dh.KDD98DataLoader("cup98LRN_snip.txt")
+
+        raw = data_loader.raw_data
+
+        cln = dh.Cleaner(data_loader)
+        cln.clean()
+
+        pass
+
     def test_clean(self):
-        data_loader = dl.KDD98DataLoader("cup98LRN_snip.txt")
+        data_loader = dh.KDD98DataLoader("cup98LRN_snip.txt")
         data = data_loader.clean_data
         print(data.info())
