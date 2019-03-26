@@ -5,7 +5,7 @@ import distutils.command.bdist_conda
 __version__ = '0.2'
 
 # Get the long description from the README file
-with open('README.md', encoding='utf-8') as f:
+with open('README.md') as f:
     long_description = f.read()
 
 setup(
@@ -18,15 +18,14 @@ setup(
     author='Florian Hochstrasser',
     install_requires=[
       'numpy>=1.11.1',
-      'scikit-learn>=0.20',
+      'scikit-learn>=0.20.2',
       'scipy>=0.17.0',
       'statsmodels>=0.6.1',
       'pandas>=0.21.1',
       'patsy>=0.4.1',
-      'category_encoders>=1.3.0',
+      'category_encoders>=2.0.0',
       'geopy',
       'python-dateutil>=2.8.0',
-
     ],
     author_email='datarian@againstthecurrent.ch'
 )
