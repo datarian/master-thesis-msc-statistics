@@ -947,6 +947,7 @@ class KDD98DataProvider:
             path = pathlib.Path(dl_dir)
         else:
             path = pathlib.Path(Config.get("data_dir"))
+        path.mkdir(parents=True, exist_ok=True)
         contents = [f for f in path.iterdir()]
         missing = set(Config.get('download_files')) - set(contents)
         print("Files missing: {}".format(missing))
