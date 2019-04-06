@@ -446,6 +446,9 @@ class MonthsToDonation(DateHandler, NamedFeatureTransformer):
         probably not recorded correctly for the example in question.
         As a consequence, the first sending month will be used to
         calculate the time delta.
+        In some cases, even with this in place, negative durations occur.
+        These are then set to 0.
+        All cases where no donation was made are set to a duration of 1200 months (100 years).
     """
 
     def __init__(self, reference_date=pd.datetime(1998, 6, 1)):
@@ -469,8 +472,11 @@ class MonthsToDonation(DateHandler, NamedFeatureTransformer):
                              "Dates: {} and {}\nMessage: {}"
                              .format(row[0], row[1], e))
                 duration = np.nan
-        else:
-            duration = np.nan
+        elif pd.isna(target):
+            duration = 1200.
+        if duration < 0.0:
+            logger.warning("Calculated negative time difference {} with reference {} and target {}".format(duration, ref, target))
+            duration = 0.
         return duration
 
     def transform(self, X, y=None):
