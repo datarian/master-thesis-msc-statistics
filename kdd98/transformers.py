@@ -272,7 +272,7 @@ class RAMNTFixer(NamedFeatureTransformer):
         def really_missing(example):
             ramnt = None
             if pd.isna(example[0]):
-                ramnt = 0 if pd.isna(example[1]) else np.nan
+                ramnt = 0 if pd.isna(example[1]) or example[1] == 'nan' else np.nan
             else:
                 ramnt = example[0]
             return ramnt
