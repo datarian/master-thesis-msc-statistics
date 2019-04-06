@@ -475,7 +475,7 @@ class MonthsToDonation(DateHandler, NamedFeatureTransformer):
         elif pd.isna(target):
             duration = 1200.
         if duration < 0.0:
-            logger.warning("Calculated negative time difference {} for {} with reference {} and target {}".format(duration, ref, target))
+            logger.warning("Calculated negative time difference {} with reference {} and target {}".format(duration, ref, target))
             duration = 0.
         return duration
 
