@@ -1061,12 +1061,12 @@ class KDD98DataTransformer:
                     data, transformed, transformer, c["dtype"])
 
                 with open(pathlib.Path(
-                        Config.get("model_store"), c["file"]), "wb") as ms:
+                        Config.get("model_store_internal"), c["file"]), "wb") as ms:
                     pkl.dump(transformer, ms)
             else:
                 try:
                     with open(pathlib.Path(
-                            Config.get("model_store", c["file"]), "rb")) as ms:
+                            Config.get("model_store_internal", c["file"]), "rb")) as ms:
                         transformer = pkl.load(ms)
                 except Exception:
                     message = "Failed to load fitted transformer {}.\n"\

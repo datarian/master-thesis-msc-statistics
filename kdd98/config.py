@@ -21,6 +21,7 @@ class Config:
         "root_dir": pathlib.Path(HOME),
         "data_dir": pathlib.Path(HOME, "data"),
         "model_store": pathlib.Path(HOME, "models"),
+        "model_store_internal": pathlib.Path(HOME, "models", "internal"),
         "df_store": pathlib.Path(HOME, "data", "data_frames"),
         "cache_dir": pathlib.Path(HOME, "cache"),
         "download_files": ['cup98lrn.zip', 'cup98val.zip', 'cup98doc.txt',
