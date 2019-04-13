@@ -65,3 +65,7 @@ class Config:
             Config.__conf[key] = value
         else:
             raise NameError("This config value is not settable.")
+
+    @staticmethod
+    def get_keys():
+        return list(Config.__conf.keys())
