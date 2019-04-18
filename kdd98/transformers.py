@@ -788,14 +788,13 @@ class Rescaler(BaseEstimator, TransformerMixin):
     def __init__(self, transformer = "ptrans"):
         self.transformer = transformer
 
+    def _log_trans(self, X):
+        X = np.apply_along_axis(lambda x: np.sign(x) * np.log(abs(x)+1), axis=1, arr=X)
+        return maxabs_scale(X,axis=0)
+
     def fit(self, X, y=None, *args, **kwargs):
-
-        def _log_trans(X):
-            X = np.apply_along_axis(lambda x: np.sign(x) * np.log(abs(x)+1), axis=1, arr=X)
-            return maxabs_scale(X,axis=0)
-
         if self.transformer == "ftrans":
-            self.scaler = FunctionTransformer(_log_trans, validate=False)
+            self.scaler = FunctionTransformer(self._log_trans, validate=False)
         elif self.transformer == "ptrans":
             self.scaler = PowerTransformer()
         self.scaler.fit(X, y, *args, **kwargs)
