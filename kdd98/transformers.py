@@ -16,6 +16,7 @@ from dateutil.rrule import MONTHLY, YEARLY, rrule
 from fancyimpute import KNN, IterativeImputer
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import maxabs_scale, PowerTransformer, FunctionTransformer
 
 from category_encoders import HashingEncoder, OrdinalEncoder
 from geopy.exc import GeocoderTimedOut
@@ -771,3 +772,33 @@ class ZeroVarianceSparseDropper(NamedFeatureTransformer):
         else:
             X_trans = X.drop(self.zero_var, axis=1)
         self.feature_names = X_trans.columns.values.tolist()
+
+
+class Rescaler(BaseEstimator, TransformerMixin):
+    """
+        Provides different rescalers:
+        - A shifted log-transform, scaled to [-1,1]
+        - A Yeo-Johnson transformer, centerd and with unit variance.
+
+        Params
+        ------
+
+        transformer:    ['ftrans', 'ptrans]
+    """
+    def __init__(self, transformer = "ptrans"):
+        self.transformer = transformer
+
+    def _log_trans(X):
+        X = np.apply_along_axis(lambda x: np.sign(x) * np.log(abs(x)+1), axis=1, arr=X)
+        return maxabs_scale(X,axis=0)
+
+    def fit(self, X, y=None, *args, **kwargs):
+        if self.transformer == "ftrans":
+            self.scaler = FunctionTransformer(_log_trans, validate=False)
+        elif self.transformer == "ptrans":
+            self.scaler = PowerTransformer()
+        self.scaler.fit(X, y, *args, **kwargs)
+        return self
+    
+    def transform(self, X, y=None, *args, **kwargs):
+        return self.scaler.transform(X, *args, **kwargs)
