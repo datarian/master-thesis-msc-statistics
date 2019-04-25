@@ -778,7 +778,7 @@ class Rescaler(BaseEstimator, TransformerMixin):
     """
         Provides different rescalers:
         - A shifted log-transform, scaled to [-1,1]
-        - A Yeo-Johnson transformer, centerd and with unit variance.
+        - A Yeo-Johnson transformer, centered and with unit variance.
 
         Params
         ------
@@ -796,7 +796,7 @@ class Rescaler(BaseEstimator, TransformerMixin):
         if self.transformer == "ftrans":
             self.scaler = FunctionTransformer(self._log_trans, validate=False)
         elif self.transformer == "ptrans":
-            self.scaler = PowerTransformer()
+            self.scaler = PowerTransformer(method="yeo-johnson", standardize=True)
         self.scaler.fit(X, y, *args, **kwargs)
         return self
     
