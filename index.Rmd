@@ -1,17 +1,162 @@
 ---
-title: "Designing a relational marketing model to maximize revenues of targeted marketing campaigns."
 author: "Florian Hochstrasser"
 date: "`r Sys.Date()`"
-output: html_document
 description: Thesis for the programme Master in Statistics at the University of Neuchâtel,
   Switzerland.
-documentclass: scrartcl
-link-citations: yes
-bibliography: book.bib
 site: bookdown::bookdown_site
-subtitle: Master Thesis
+link-citations: yes
+papersize: a4
+fontsize: 11pt
+mainfont: Times New Roman
+sansfont: Lato
+monofont: Source Code Pro
+toc-depth: 2
+bibliography: thesis.bib
 biblio-style: apalike
+documentclass: scrbook
+classoption: DIV=12,captions=tableheading,oneside
+always_allow_html: yes
 ---
+
+```{r load_libraries, include=FALSE,results='hide'}
+library(tidyverse)
+library(reticulate)
+reticulate::use_condaenv('mathesis', required=T)
+library(knitr)
+library(kableExtra)
+library(DiagrammeR)
+library(DiagrammeRsvg)
+library(rsvg)
+library(stringr)
+```
+
+```{r global-helpers, include=FALSE,results='hide'}
+
+github_base_url = "https://github.com/datarian/master-thesis-code/tree/master"
+
+make_github_link <- function(..., text = ""){
+  subdirs <- list(...)
+  
+  if (length(subdirs) == 0) {
+    directory = ""
+  } else {
+    directory = paste(...,sep="/")
+  }
+  url = paste(github_base_url, directory, sep="/")
+  
+  if (text == ""){
+    base = str_match(github_base_url, "(https://)([a-z/.-].*)(tree/master)")[3]
+    link_text = paste0(base, directory)
+  } else {
+    link_text = text
+  }
+  sprintf("[%s](%s)", link_text, url)
+}
+
+```
+
+```{r setup_knitr, include=F, results='hide'}
+
+options(bookdown.clean_book = TRUE)
+options(knitr.graphics.auto_pdf = TRUE)
+
+knitr::opts_chunk$set(error=TRUE,
+                      warning=TRUE,
+                      message=FALSE,
+                      echo=FALSE,
+                      cache=TRUE,
+                      dpi=300,
+                      fig.width=7, # Default figure widths
+                      fig.asp=0.618,
+                      fig.align="center",
+                      fig.path = "./figures/",
+                      out.width = "70%",
+                      crop = TRUE,
+                      tidy=TRUE)
+
+knitr::opts_knit$set(eval.after='fig.cap',
+                     verbose=TRUE,
+                     digits=2)
+
+# Setup reticulate as the python enginge
+knitr::knit_engines$set(python = reticulate::eng_python)
+
+
+## a common hook for messages, warnings and errors
+hook_lst_bf = function(x, options) {
+    paste("\\begin{lstlisting}[basicstyle={\\bfseries}]\n", x, 
+        "\\end{lstlisting}\n", sep = "")
+}
+
+knitr::knit_hooks$set(source = function(x, options) {
+    paste("\\begin{lstlisting}[language=Python,stepnumber=2,basicstyle=\\footnotesize]\n", x, 
+        "\\end{lstlisting}\n", sep = "")
+}, output = function(x, options) {
+    paste("\\begin{lstlisting}[basicstyle={\\ttfamily},basicstyle=\\footnotesize]\n", x, 
+        "\\end{lstlisting}\n", sep = "")
+}, warning = hook_lst_bf, message = hook_lst_bf, error = hook_lst_bf)
+
+
+inline_hook <- function (x) {
+  if (is.numeric(x)) {
+    res <- ifelse(x == round(x),
+      sprintf("%d", x),
+      sprintf("%.3f", x)
+    )
+    paste(res, collapse = ", ")
+  }
+}
+
+
+knitr::knit_hooks$set(inline = inline_hook,
+                      rgl = rgl::hook_rgl,
+                      crop = knitr::hook_pdfcrop,
+                      optipng = knitr::hook_optipng)
+
+```
+
+
+```{python python-init, results="hide", echo=F, cache=F}
+import os
+os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = 'C:/Users/flori/Anaconda3/Library/plugins/platforms'
+
+import matplotlib.pyplot as plt
+import pandas as pd
+import kdd98.data_handler as dh
+from kdd98.config import Config
+import numpy as np
+
+import mglearn
+import seaborn as sns
+from cycler import cycler
+
+plt.rc('font',**{'family':'sans-serif','sans-serif':['Lato']})
+plt.rc('font',**{'family':'serif','serif':['Times']})
+#plt.rc('text', usetex=True)
+
+sns.set_context("paper")
+
+#set_matplotlib_formats('pdf', 'png')
+plt.rcParams['axes.labelsize'] = 14
+plt.rcParams['xtick.labelsize'] = 12
+plt.rcParams['ytick.labelsize'] = 12
+plt.rcParams['figure.figsize'] = (14, 10)
+plt.rcParams['figure.dpi'] = 300
+plt.rcParams['image.cmap'] = "viridis"
+plt.rcParams['image.interpolation'] = "none"
+plt.rcParams['savefig.bbox'] = "tight"
+plt.rcParams['lines.linewidth'] = 2
+plt.rcParams['legend.numpoints'] = 1
+plt.rcParams['legend.fancybox'] = True
+plt.rcParams['legend.framealpha'] = 0.4
+
+sns.set(color_codes=True)
+sns.set_style('ticks')
+sns.axes_style({'spines.right': False,
+                'axes.spines.top': False})
+sns.set_palette(Config.get("color_palette"))
+```
+
 
 # Abstract {-}
 
@@ -22,3 +167,5 @@ This work addressed the problem from the perspective of...
 It could be shown that...
 
 Henceforth, it should be considered that...
+
+

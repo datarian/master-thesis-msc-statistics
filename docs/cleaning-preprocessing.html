@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html >
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>3.2 Cleaning &amp; Preprocessing | Master_Thesis_Florian_Hochstrasser.utf8.md</title>
+  <meta name="description" content="Thesis for the programme Master in Statistics at the University of Neuchâtel, Switzerland.">
+  <meta name="generator" content="bookdown  and GitBook 2.6.7">
+
+  <meta property="og:title" content="3.2 Cleaning &amp; Preprocessing | Master_Thesis_Florian_Hochstrasser.utf8.md" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="Thesis for the programme Master in Statistics at the University of Neuchâtel, Switzerland." />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="3.2 Cleaning &amp; Preprocessing | Master_Thesis_Florian_Hochstrasser.utf8.md" />
+  
+  <meta name="twitter:description" content="Thesis for the programme Master in Statistics at the University of Neuchâtel, Switzerland." />
+  
+
+<meta name="author" content="Florian Hochstrasser">
+
+
+<meta name="date" content="2019-04-26">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  
+  
+<link rel="prev" href="raw-data-import.html">
+<link rel="next" href="exploratory-data-analysis.html">
+<script src="assets/jquery-2.2.3/jquery.min.js"></script>
+<link href="assets/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+<script src="assets/kePrint-0.0.1/kePrint.js"></script>
+
+
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Abstract</a></li>
+<li class="chapter" data-level="1" data-path="intro.html"><a href="intro.html"><i class="fa fa-check"></i><b>1</b> Introduction</a><ul>
+<li class="chapter" data-level="1.1" data-path="task.html"><a href="task.html"><i class="fa fa-check"></i><b>1.1</b> Task</a></li>
+<li class="chapter" data-level="1.2" data-path="goal.html"><a href="goal.html"><i class="fa fa-check"></i><b>1.2</b> Goal</a></li>
+<li class="chapter" data-level="1.3" data-path="glossary.html"><a href="glossary.html"><i class="fa fa-check"></i><b>1.3</b> Glossary</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="experimental-setup-and-methods.html"><a href="experimental-setup-and-methods.html"><i class="fa fa-check"></i><b>2</b> Experimental Setup and Methods</a><ul>
+<li class="chapter" data-level="2.1" data-path="tools-used.html"><a href="tools-used.html"><i class="fa fa-check"></i><b>2.1</b> Tools Used</a><ul>
+<li class="chapter" data-level="2.1.1" data-path="tools-used.html"><a href="tools-used.html#jupyter-notebook"><i class="fa fa-check"></i><b>2.1.1</b> Jupyter Notebook</a></li>
+<li class="chapter" data-level="2.1.2" data-path="tools-used.html"><a href="tools-used.html#pandas"><i class="fa fa-check"></i><b>2.1.2</b> Pandas</a></li>
+<li class="chapter" data-level="2.1.3" data-path="tools-used.html"><a href="tools-used.html#scikit-learn"><i class="fa fa-check"></i><b>2.1.3</b> Scikit-learn</a></li>
+<li class="chapter" data-level="2.1.4" data-path="tools-used.html"><a href="tools-used.html#rmarkdown"><i class="fa fa-check"></i><b>2.1.4</b> Rmarkdown</a></li>
+</ul></li>
+<li class="chapter" data-level="2.2" data-path="data-handling.html"><a href="data-handling.html"><i class="fa fa-check"></i><b>2.2</b> Data Handling</a></li>
+<li class="chapter" data-level="2.3" data-path="data-preprocessing.html"><a href="data-preprocessing.html"><i class="fa fa-check"></i><b>2.3</b> Data Preprocessing</a><ul>
+<li class="chapter" data-level="2.3.1" data-path="data-preprocessing.html"><a href="data-preprocessing.html#cleaning"><i class="fa fa-check"></i><b>2.3.1</b> Cleaning</a></li>
+<li class="chapter" data-level="2.3.2" data-path="data-preprocessing.html"><a href="data-preprocessing.html#feature-engineering"><i class="fa fa-check"></i><b>2.3.2</b> Feature Engineering</a></li>
+<li class="chapter" data-level="2.3.3" data-path="data-preprocessing.html"><a href="data-preprocessing.html#imputation"><i class="fa fa-check"></i><b>2.3.3</b> Imputation</a></li>
+<li class="chapter" data-level="2.3.4" data-path="data-preprocessing.html"><a href="data-preprocessing.html#feature-selection"><i class="fa fa-check"></i><b>2.3.4</b> Feature Selection</a></li>
+</ul></li>
+<li class="chapter" data-level="2.4" data-path="model-evaluation.html"><a href="model-evaluation.html"><i class="fa fa-check"></i><b>2.4</b> Model Evaluation</a><ul>
+<li class="chapter" data-level="2.4.1" data-path="model-evaluation.html"><a href="model-evaluation.html#considered-algorithms"><i class="fa fa-check"></i><b>2.4.1</b> Considered Algorithms</a></li>
+<li class="chapter" data-level="2.4.2" data-path="model-evaluation.html"><a href="model-evaluation.html#performance-metrics"><i class="fa fa-check"></i><b>2.4.2</b> Performance Metrics</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="data.html"><a href="data.html"><i class="fa fa-check"></i><b>3</b> Data</a><ul>
+<li class="chapter" data-level="3.1" data-path="raw-data-import.html"><a href="raw-data-import.html"><i class="fa fa-check"></i><b>3.1</b> Raw data import</a></li>
+<li class="chapter" data-level="3.2" data-path="cleaning-preprocessing.html"><a href="cleaning-preprocessing.html"><i class="fa fa-check"></i><b>3.2</b> Cleaning &amp; Preprocessing</a><ul>
+<li class="chapter" data-level="3.2.1" data-path="cleaning-preprocessing.html"><a href="cleaning-preprocessing.html#date-features"><i class="fa fa-check"></i><b>3.2.1</b> Date features</a></li>
+<li class="chapter" data-level="3.2.2" data-path="cleaning-preprocessing.html"><a href="cleaning-preprocessing.html#further-sanitizations"><i class="fa fa-check"></i><b>3.2.2</b> Further sanitizations</a></li>
+<li class="chapter" data-level="3.2.3" data-path="cleaning-preprocessing.html"><a href="cleaning-preprocessing.html#binary-features"><i class="fa fa-check"></i><b>3.2.3</b> Binary Features</a></li>
+<li class="chapter" data-level="3.2.4" data-path="cleaning-preprocessing.html"><a href="cleaning-preprocessing.html#multi-byte-categorical-features"><i class="fa fa-check"></i><b>3.2.4</b> Multi-byte Categorical Features</a></li>
+<li class="chapter" data-level="3.2.5" data-path="cleaning-preprocessing.html"><a href="cleaning-preprocessing.html#missing-values"><i class="fa fa-check"></i><b>3.2.5</b> Missing Values</a></li>
+</ul></li>
+<li class="chapter" data-level="3.3" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html"><i class="fa fa-check"></i><b>3.3</b> Exploratory Data Analysis</a><ul>
+<li class="chapter" data-level="3.3.1" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#general-structure"><i class="fa fa-check"></i><b>3.3.1</b> General structure</a></li>
+<li class="chapter" data-level="3.3.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#correlations"><i class="fa fa-check"></i><b>3.3.2</b> Correlations</a></li>
+<li class="chapter" data-level="3.3.3" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#skewness"><i class="fa fa-check"></i><b>3.3.3</b> Skewness</a></li>
+<li class="chapter" data-level="3.3.4" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#targets"><i class="fa fa-check"></i><b>3.3.4</b> Targets</a></li>
+</ul></li>
+<li class="chapter" data-level="3.4" data-path="preprocessing.html"><a href="preprocessing.html"><i class="fa fa-check"></i><b>3.4</b> Preprocessing</a><ul>
+<li class="chapter" data-level="3.4.1" data-path="preprocessing.html"><a href="preprocessing.html#noisy-data"><i class="fa fa-check"></i><b>3.4.1</b> Noisy data</a></li>
+<li class="chapter" data-level="3.4.2" data-path="preprocessing.html"><a href="preprocessing.html#constant-features"><i class="fa fa-check"></i><b>3.4.2</b> Constant features</a></li>
+<li class="chapter" data-level="3.4.3" data-path="preprocessing.html"><a href="preprocessing.html#missing-values-sparse-features"><i class="fa fa-check"></i><b>3.4.3</b> Missing values / sparse features</a></li>
+<li class="chapter" data-level="3.4.4" data-path="preprocessing.html"><a href="preprocessing.html#categorical-features"><i class="fa fa-check"></i><b>3.4.4</b> Categorical features</a></li>
+<li class="chapter" data-level="3.4.5" data-path="preprocessing.html"><a href="preprocessing.html#feature-engineering-1"><i class="fa fa-check"></i><b>3.4.5</b> Feature Engineering</a></li>
+<li class="chapter" data-level="3.4.6" data-path="preprocessing.html"><a href="preprocessing.html#feature-selection-1"><i class="fa fa-check"></i><b>3.4.6</b> Feature Selection</a></li>
+<li class="chapter" data-level="3.4.7" data-path="preprocessing.html"><a href="preprocessing.html#feature-extraction"><i class="fa fa-check"></i><b>3.4.7</b> Feature Extraction</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="model-evaluation-1.html"><a href="model-evaluation-1.html"><i class="fa fa-check"></i><b>4</b> Model evaluation</a></li>
+<li class="chapter" data-level="5" data-path="results-and-discussion.html"><a href="results-and-discussion.html"><i class="fa fa-check"></i><b>5</b> Results and Discussion</a></li>
+<li class="chapter" data-level="6" data-path="conclusions.html"><a href="conclusions.html"><i class="fa fa-check"></i><b>6</b> Conclusions</a><ul>
+<li class="chapter" data-level="6.1" data-path="comparison-with-cup-winners.html"><a href="comparison-with-cup-winners.html"><i class="fa fa-check"></i><b>6.1</b> Comparison with Cup winners</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+<li class="chapter" data-level="" data-path="appendix.html"><a href="appendix.html"><i class="fa fa-check"></i>Appendix</a><ul>
+<li class="chapter" data-level="6.2" data-path="code.html"><a href="code.html"><i class="fa fa-check"></i><b>6.2</b> Code</a><ul>
+<li class="chapter" data-level="6.2.1" data-path="code.html"><a href="code.html#preprocessing-1"><i class="fa fa-check"></i><b>6.2.1</b> Preprocessing</a></li>
+<li class="chapter" data-level="6.2.2" data-path="code.html"><a href="code.html#appendix-transformers"><i class="fa fa-check"></i><b>6.2.2</b> Transformers</a></li>
+</ul></li>
+<li class="chapter" data-level="6.3" data-path="python-environment.html"><a href="python-environment.html"><i class="fa fa-check"></i><b>6.3</b> Python Environment</a></li>
+<li class="chapter" data-level="6.4" data-path="dataset-dictionary.html"><a href="dataset-dictionary.html"><i class="fa fa-check"></i><b>6.4</b> Dataset Dictionary</a></li>
+</ul></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./"></a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="cleaning-preprocessing" class="section level2">
+<h2><span class="header-section-number">3.2</span> Cleaning &amp; Preprocessing</h2>
+<div id="date-features" class="section level3">
+<h3><span class="header-section-number">3.2.1</span> Date features</h3>
+<p>There were 53 date features specified in the documentation. The specified format for these features is ‘yymm’, the two-digit year followed by the two-digit month.</p>
+<div class="figure" style="text-align: center"><span id="fig:date-cleaning"></span>
+<img src="figures/date-cleaning-1.png" alt="Values for date of birth (DOB) with one missing digit versus age. We observe jumps in July of each year, this is because the reference date for age is 1997-06-01. By looking at the ages, it is evident that these values indeed lack a leading zero to put them in the correct decade." width="70%" />
+<p class="caption">
+Figure 3.1: Values for date of birth (DOB) with one missing digit versus age. We observe jumps in July of each year, this is because the reference date for age is 1997-06-01. By looking at the ages, it is evident that these values indeed lack a leading zero to put them in the correct decade.
+</p>
+</div>
+<p>Several values in the feature DOB (date of birth) are only three digits long. Comparing these values with the corresponding example’s values for feature AGE shows that, considering the reference date of June 1997, it is very likely that the 3-digit DOB’s are lacking a leading zero (see Figure <a href="cleaning-preprocessing.html#fig:date-cleaning">3.1</a>).</p>
+<p>All these values were therefore prepended by a zero.</p>
+</div>
+<div id="further-sanitizations" class="section level3">
+<h3><span class="header-section-number">3.2.2</span> Further sanitizations</h3>
+<p>Several features needed recoding and sanitizing. Information in the data set documentation was used to determine necessary transformations. The transformations are shown in <a href="cleaning-preprocessing.html#tab:sanitize">3.2</a>.</p>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<caption>
+<span id="tab:sanitize">Table 3.2: </span>Overview of trivial data transformations applied.
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:left;">
+Feature explanation
+</th>
+<th style="text-align:left;">
+Operation
+</th>
+<th style="text-align:left;">
+Reason
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+ZIP
+</td>
+<td style="text-align:left;width: 4cm; ">
+U.S. zip code
+</td>
+<td style="text-align:left;width: 4cm; ">
+Remove trailing hyphen
+</td>
+<td style="text-align:left;width: 4cm; ">
+A hyphen after a 5-digit zip most likely stems from incomplete ‘ZIP+4’ codes<a href="#fn10" class="footnote-ref" id="fnref10"><sup>10</sup></a>.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+MDMAUD_*
+</td>
+<td style="text-align:left;width: 4cm; ">
+Major donor matrix features
+</td>
+<td style="text-align:left;width: 4cm; ">
+Replace X with NaN
+</td>
+<td style="text-align:left;width: 4cm; ">
+Encode NaN as specified by the data set documentation.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+TARGET_B
+</td>
+<td style="text-align:left;width: 4cm; ">
+Binary target indicating whether an example has donated or not.
+</td>
+<td style="text-align:left;width: 4cm; ">
+Set to 1 when TARGET_D is $
+ew$ 0
+</td>
+<td style="text-align:left;width: 4cm; ">
+When a dollar amount (TARGET_D) was donated, the binary indicator target has to be 1.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+RFA_*
+</td>
+<td style="text-align:left;width: 4cm; ">
+Multi-byte categorical. Recency, Frequency, Amount.
+</td>
+<td style="text-align:left;width: 4cm; ">
+Set to NaN if length is $
+eq$ 3
+</td>
+<td style="text-align:left;width: 4cm; ">
+The values in these features have to be of length 3, each byte is one categorical.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NOEXCH
+</td>
+<td style="text-align:left;width: 4cm; ">
+NOEXCH: Do not exchange address flag
+</td>
+<td style="text-align:left;width: 4cm; ">
+Recode X to 1
+</td>
+<td style="text-align:left;width: 4cm; ">
+Both X and 1 mean <code>True</code>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+RAMNT_*
+</td>
+<td style="text-align:left;width: 4cm; ">
+RAMNT_*: Amount donated for a certain campaign.
+</td>
+<td style="text-align:left;width: 4cm; ">
+Set to NaN if corresponding RDATE_* (date of donation reception) is not missing, else set to zero.
+</td>
+<td style="text-align:left;width: 4cm; ">
+Avoid NaN values if possible.
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="binary-features" class="section level3">
+<h3><span class="header-section-number">3.2.3</span> Binary Features</h3>
+<p>There are several codings for the different binary features present in the data set. All were recoded to <em>1</em> / <em>0</em> with missing data coded as not a number (NaN). The recoding was done through a custom <code>Transformer</code> class (see Appendix <a href="code.html#appendix-transformers">6.2.2</a>) derived from scikit-learn’s <code>TransformerMixin</code>.</p>
+<p>Table (<a href="cleaning-preprocessing.html#tab:binary-recode">3.3</a>) shows the original coding of the 29 binary features in the raw data set. There are two classes of binary features that have blanks as the <em>False</em> value. Even though the data set documentation states that blanks should be treated as missing values, in these two classes blanks were interpreted as <em>False</em>. For the remaining binary features, blanks were interpreted as missing and coded as <code>NaN</code>.</p>
+<p>The feature <em>NOEXCH</em> had both <code>X</code> and <code>1</code> for True in the data. This was fixed by replacing all occurrences of <code>X</code> by <code>1</code>.</p>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<caption>
+<span id="tab:binary-recode">Table 3.3: </span>Original coding of binary features.
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+True
+</th>
+<th style="text-align:left;">
+False
+</th>
+<th style="text-align:left;">
+Features
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+X
+</td>
+<td style="text-align:left;">
+blank
+</td>
+<td style="text-align:left;width: 10cm; ">
+PEPSTRFL, MAJOR, RECINHSE, RECP3, RECPGVG, RECSWEEP
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Y
+</td>
+<td style="text-align:left;">
+N
+</td>
+<td style="text-align:left;width: 10cm; ">
+COLLECT1, VETERANS, BIBLE, CATLG, HOMEE, PETS, CDPLAY, STEREO,
+PCOWNERS, PHOTO, CRAFTS, FISHER, GARDENIN, BOATS, WALKER, KIDSTUFF,
+CARDS, PLATES
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+0
+</td>
+<td style="text-align:left;width: 10cm; ">
+NOEXCH, HPHONE_D, TARGET_B
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+E
+</td>
+<td style="text-align:left;">
+I
+</td>
+<td style="text-align:left;width: 10cm; ">
+AGEFLAG
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+H
+</td>
+<td style="text-align:left;">
+U
+</td>
+<td style="text-align:left;width: 10cm; ">
+HOMEOWNR
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+B
+</td>
+<td style="text-align:left;">
+blank
+</td>
+<td style="text-align:left;width: 10cm; ">
+MAILCODE
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="multi-byte-categorical-features" class="section level3">
+<h3><span class="header-section-number">3.2.4</span> Multi-byte Categorical Features</h3>
+<p>Several features combine related information into bytewise codes. These codes were split into individual features. A custom child class of <code>scikit-learn.TransformerMixin</code> was written for this purpose (see Appendix <a href="code.html#appendix-transformers">6.2.2</a>).</p>
+<p>The donation history contains recency / frequency / amount (RFA) features for each previous mailing. The dataset already contained one mailing (number 2) where this code was split into individual features. The remaining RFA codes were split also.</p>
+<div id="ordinal-features" class="section level4">
+<h4><span class="header-section-number">3.2.4.1</span> Ordinal Features</h4>
+<p>Ordinal features were recoded using a custom child classes of <code>scikit-learn.TransformerMixin</code> (see Appendix <a href="code.html#appendix-transformers">6.2.2</a>).</p>
+</div>
+</div>
+<div id="missing-values" class="section level3">
+<h3><span class="header-section-number">3.2.5</span> Missing Values</h3>
+<p>Missing values were imputed using a k-Neaerest Neighbors (kNN) algorithm provided in the python package <code>missing_py</code> <span class="citation">Troyanskaya et al. (<a href="references.html#ref-troyanskaya2001missing">2001</a>)</span>. For each example with a missing value in a specific feature, <span class="math inline">\(k=3\)</span> nearest neighbors that have a value for the feature are searched for and the missing value imputed with the metric <em>distance</em>.</p>
+</div>
+</div>
+<div class="footnotes">
+<hr />
+<ol start="10">
+<li id="fn10"><p>see (USPS: ZIP+4 Code)[<a href="https://about.usps.com/publications/pub100/pub100_044.htm" class="uri">https://about.usps.com/publications/pub100/pub100_044.htm</a>]<a href="cleaning-preprocessing.html#fnref10" class="footnote-back">↩</a></p></li>
+</ol>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="raw-data-import.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="exploratory-data-analysis.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="assets/gitbook-2.6.7/js/app.min.js"></script>
+<script src="assets/gitbook-2.6.7/js/lunr.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="assets/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"google": false,
+"linkedin": true,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"all": ["facebook", "google", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"download": ["Master_Thesis_Florian_Hochstrasser.pdf", "Master_Thesis_Florian_Hochstrasser.epub"],
+"toc": {
+"collapse": "subsection"
+},
+"toolbar": {
+"position": "static"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:" && /^https?:/.test(src))
+      src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

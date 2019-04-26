@@ -1,0 +1,375 @@
+# Experimental Setup and Methods
+
+The general workflow with which the problem was solved is shown in Figure \@ref(fig:workflow).
+
+```{r workflow, fig.cap="Implemented workflow. During import, data was type-cast to usable types. During preprocessing, input errors were corrected, binary features recoded, missing values correclty coded for each feature and categorical data processed manually where necessary. During feature engineering, redundant features were dropped, date features converted to time differences and geographical information acquired to visualize locations of examples.", echo=F, out.width="80%"}
+
+workflow_graph <- grViz(
+  " 
+    digraph workflow {
+
+      labeljust='l';
+
+      graph [overlap=false,
+             fontname=Lato,
+             fonsize=18,
+             layout=dot,
+             nodesep=1.1,
+             rankdir=LR]
+
+      node [fontname=Lato, fonsize=18, fillcolor=white, shape=circle, width=1.3]
+      
+      dataimport[label='Data\nImport']
+
+      edge[style='invis', color=red, fontsize=12];
+
+      { rank=same;
+          z0 [group='a', label='.', style = invis];
+          z1 [group='b', label='.', style = invis];
+          z0 -> z1;
+      }
+      
+      subgraph cluster_preprocessing {
+        cleaning[group='a', label='Cleaning'];
+        featureengineering[group='a',label='Feature\nEngineering'];
+        imputation[group='a', label='Imputation'];
+        featureselection[group='a',label='Feature\nSelection'];
+        label = 'Preprocessing'
+        featureengineering -> cleaning [style=solid, color = black]
+        cleaning -> featureengineering [style=solid, color = black]
+        featureengineering -> imputation -> featureselection [style=solid, color = black]
+      }
+      
+      subgraph cluster_learning {
+        modelevaluation[group='b', label='Model\nEvaluation'];
+        modelselection[group='b',label='Model\nSelection'];
+        label = 'Learning'
+        modelevaluation -> modelselection [style=solid, color = black, penwidth=0.95]
+      }
+
+      z0 -> cleaning;
+      z1 -> modelevaluation;
+
+      edge [style=solid, color = black, penwidth=0.95]
+      dataimport -> cleaning
+      featureselection -> modelevaluation
+    }
+  ")
+
+rsvg_pdf(charToRaw(DiagrammeRsvg::export_svg(workflow_graph)),
+         file="figures/preprocessing/workflow.pdf")
+rsvg_png(charToRaw(DiagrammeRsvg::export_svg(workflow_graph)),
+         file="figures/preprocessing/workflow.png")
+knitr::include_graphics("figures/preprocessing/workflow.png")
+```
+
+
+
+## Tools Used
+
+The problem itself was solved using the python language with several established data-science packages. Except for the development of a helper packge, most programming was performed in interactive notebooks. The report was written in rmarkdown (see @allaire2016rmarkdown) and rendered into several different output formats. All work was tracked in version control.
+
+Some key tools are given below.
+
+
+### Jupyter Notebook
+
+Following the principle of literate programming first proposed by @knuth1984literate, Jupyter by @Kluyver:2016aa provides a client-server solution that enables interactive programming sessions in the browser. Blocks of code producing output including interactive plots can be mixed with formatted text. These notebooks can easily be shared with others or exported in various formats. The individual steps in the machine learning process outlined in Figure \@ref(fig:workflow) were developed in several notebooks which are available online^[see `r make_github_link("notebooks")`], enabling the reproduction of the process.
+
+For this thesis, jupyter notebooks were run in the cloud. The results were then exported and integrated in the report.
+
+
+### Pandas
+
+The python package pandas by @mckinney-proc-scipy-2010 facilitates data loading, inspection and -manipulation. The package is very fast at transforming, filtering and selecting in big data sets.
+
+
+### Scikit-learn
+
+The package scikit-learn by @scikit-learn is a self-contained toolset for machine learning purposes in python. Individual tasks in preprocessing, feature engineering and model training can be combined in pipelines. The pipelines ensure that the same transformation steps are applied to all data sets. The pipelines are first trained (fit) on the learning data and then applied (transform / predict) to the test data. A wide range of contribution and 3^rd^ party packages also implement scikit-learn's API so that they can be integrated.
+
+
+### Rmarkdown
+
+The report was written in Rmarkdown. Analogous to a jupyter notebook, formatted text and code *junks* can be integrated into one document. The R packages `knitr`, @xie2015 and `bookdown`, @xie2016bookdown combined with a latex installation can then be employed to generate high-quality pdf documents and/or html versions.
+
+
+
+## Data Handling
+
+The complete data is distributed pre-split into a learning and validation data set.
+
+Preprocessing was performed on the learning data set.
+After preprocessing, the learning data set was split 80/20 into training and validation sets (see Figure \@ref(fig:data-splitting)). The training set was used to train different models while the validation set served to tune hyperparameters. The split was performed using a stratified sampling algorithm to preserve the target class frequencies.
+
+The validation set was kept back until after model selection. The same preprocessing steps that were applied to the learning data set were then applied to the validation data set and the final prediction performed.
+
+
+```{r data-splitting, fig.cap="Data set use for training and predictions.", echo=F, results='asis', out.width="50%"}
+data_graph <- grViz(
+  "
+  digraph d_split {
+    graph [overlap=false, fonsize=18, layout=dot, nodesep=1.4]
+    
+    node [fontname=Lato, fillcolor=white, shape=circle]
+    C [label='Complete Data Set\n191779 examples', width=3.0]
+    L [label='Learning\n95412 examples', width=1.5]
+    T [label='Test\n96367 examples', width=1.5]
+    LT [label='Training', width=0.8]
+    LV [label='Validation', width=0.2]
+    
+    edge [color = black, penwidth=0.95, fontname=Lato]
+    C -> L [label='used for\npreprocessing,\n training models']
+    C -> T [label='kept back\n for final predicitons']
+    L -> LT [label='  80 % of data']
+    L -> LV [label='  20 % of data']
+  }
+  ")
+
+rsvg_pdf(charToRaw(DiagrammeRsvg::export_svg(data_graph)),
+         file="docs/figures/preprocessing/data-splitting.pdf")
+rsvg_png(charToRaw(DiagrammeRsvg::export_svg(data_graph)),
+         file="docs/figures/preprocessing/data-splitting.png")
+knitr::include_graphics("figures/preprocessing/data-splitting.png")
+```
+
+
+## Data Preprocessing
+
+To make data usable for learning algorithms, it generally has to be preprocessed. Preprocessing may encompass fixing input errors, coercing data to correct types, encoding categorical (string) data and dealing with missing values through imputation or removal. The result of this process is an all-numeric data set.
+
+The necessary transformations were determined interactively in jupyter notebooks. Once finalized, the tranformations were implemented in the python package `kdd98`^[see `r make_github_link("kdd98")`]. The package can be used to download and read in raw data and apply all transformations. Each transformation is enclosed in a class  that implements scikit-learn's API for `BaseEstimator` and `TransformerMixin`, which allows for the transformations to be applied within a pipeline. Furthermore, the transformers can be trained and then persisted on disk for later application on other data.
+
+The data set can be obtained at the following intermediate steps from `kdd98.data_handler.KDD98DataProvider`:
+
+* **raw**, as imported from csv using `pandas.read_csv()`
+* **preprocessed**, input errors removed, correct data types for all features, missing at random (MAR) imputations applied
+* **numeric**, after feature engineering (encoded categories, date and zip code transformations)
+* **imputed**, with NaN-values replaced by modelled values
+* **all-relevant**, filtered down to a set of relevant features
+
+
+### Cleaning
+
+The cleaning stage of preprocessing encompassed the following transformations:
+
+* Removing 'noise': Input errors, inconsistent encoding of binary / categorical features
+* Dropping constant and sparse (i.e. those where only few examples have a value set) features
+* Imputation of values missing at random (MAR)
+
+MAR values in the sense of @rubin1976inference are missing conditionally on other features in the data. For example, there are three related features from the promotion and giving history: *ADATE*, the date of mailing a promotion, *RDATE*, the date of receiving a donation in response to the promotion and *RAMOUNT*, the amount received. For missing *RAMOUNT* values, we can check if *RDATE* is non-missing. If *RDATE* is missing, then the example most likely has not donated and we can set *RAMOUNT* to zero. If, on the other hand, both date features have a value, *RAMOUNT* is truly missing.
+
+The transformations applied can be studied in the jupyter notebook *1_Preprocessing.ipynb*^[see `r make_github_link("notebooks", "1_Preprocessing.ipynb")`].
+
+
+### Feature Engineering
+
+During feature engineering, all non-numeric (i.e. categorical) features were encoded into numeric values. Also, several features were transformed to better usable representations. Care was taken to keep the dimensionality of the data set as low as possible.
+
+The result of this transformation step was an all-numeric data set usable for downstream learning. The transformations applied in feature engineering are described in detail in the jupyter notebook *2_Feature Engineering.ipynb*^[see `r make_github_link("notebooks", "2_Feature Engineering.ipynb")`].
+
+
+#### Dates
+
+All date features were transformed into time differences against a reference date according to Table \@ref(tab:date-encoding).
+```{r date-encoding, results="asis", echo=F}
+data <- t(data.frame(DOB = c("Date of birth", "1997-06-01 (date of most recent campaign)", "Years"),
+                     RDATE = c("Month when donation was received", "ADATE (sending date of the corresponding campaign)", "Months"),
+                     LASTDATE = c("Most recent donation prior to last campaign", "1997-06-01", "Months"),
+                     MINRDATE = c("Date of smallest donation", "1997-06-01", "Months"),
+                     MAXRDATE = c("Date of highest donation", "1997-06-01", "Months"),
+                     MAXADATE = c("Date of the most recent promotion received", "1997-06-01", "Months")
+        ))
+
+colnames(data) <- c('Feature Explanation','Reference date', 'Unit')
+
+kable(data,
+      booktabs = T,
+      caption="Transformation of dates to time differences") %>%
+    kable_styling(latex_options=c("hold_position", position="Center")) %>%
+    column_spec(1, width="3cm", bold=T) %>%
+  column_spec(c(2,3), width="6cm")
+```
+
+
+#### Zip Codes
+
+U.S. zip codes were transformed into coordinates (latitude, longitude of the centroid for a given zip) using zip code tabulation data from  @census-gazet. Several of the examples are army members, identifiable through their values in feature 'STATE'. For these zip codes, no geographical data is available. These example's latitude and longitude were set to the coordinates of the pentagon, the U.S. department of defense.
+The 2018 zip code tabulation data was missing several zip codes that existed in 1997, at the time of the campaign. These missing zip codes were looked up on the fly using a web service^[[HERE geocoding](https://developer.here.com/products/geocoding-and-search)]
+
+
+#### Categorical Encoding
+
+Categorical data was encoded using three different methods. For nominal features, the encoding method was chosen with respect to the number of levels in the categories. Nominal features with less than 10 levels were one-hot encoded. Those with more levels were binary-encoded. Ordinal features were consistently encoded to integer values.
+
+A one-hot encoded feature with $n$ levels is transformed into $n$ new binary features, each feature representing one of the original levels. For each example, there can be at most one `true` value in these new features (denoting which category the example had in the original feature). If the original value was missing, all new features are set to missing.
+
+Binary encoding first assigns an ordinal value to each category. These integer values are then binary encoded. For each binary digit, one new feature is created. Compared to one-hot encoding, the dimensionality increases less with this method.
+
+As an example, the US states are represented by a categorical variable with 52 levels. While one-hot encoding would result in 52 new features, we can encode 52 values with only 5 binary digits, thus adding 5 instead of 52 new features.
+
+
+### Imputation
+
+As required by the cup documentation, missing values were imputed. Instead of choosing a simple approach like replacing with the feature's mean or median, a modelling approach was chosen. Package `fancyimpute` provides an iterative imputation algorithm for this purpose. Features are ordered by the fraction of missing values [FINISH EXPLANATION]
+
+
+### Feature Selection
+
+One of the biggest caveats in machine learning is the infamous "Curse of Dimensionality" coined by @bellman1957dynamic. The curse comes from the fact that with an increasing number of dimensions, the required number of examples grows exponentially. In the area of machine learning, high dimensionality frequently leads to an overfitting of the training data, meaning that the generalisation error is unacceptably big (see @Goodfellow-et-al-2016).
+
+It is therefore beneficial to reducde the data set dimensionality while preserving as much relevant information as possible. A method to deal with the problem is called boruta, introduced by @kursa2010boruta. The algorithm was found to perform very well regarding selection of relevant features in @kursa2011boruta. It works sequentially and removes features found to be less relevant at each iteration. By doing so, it solves the so-called all-relevant feature problem.
+The algorithm is actually a wrapper function around a random forest classifier. A random forest classifier is fast, can usually be run without parameters and returns an importance measure for each feature.
+
+In short, the alogrithm works as follows:
+
+1. The input matrix $\mathbf{X}$ of dimension $n\text{ x }p$ is extended with $p$ so-called *shadow features*. The shadow features are permuted copies of the features in $\mathbf{X}$. They are therefore decorrelated with the target.
+2. On the resulting matrix $\mathbf{X^*}$, a random forest classifier is trained and  the Z-scores ($\frac{\bar{loss}}{sd}$) for each of the $2p$ features calculated.
+3. The highest Z-score among the shadow features $MZSA$ is determined.
+4. All original features are compared against $MZSA$ and those features with a higher score selected as important.
+5. With the remaining features, a two-sided test for equality of the Z-scores with $MZSA$ is performed and all features with significantly lower score are deemed unimportant.
+6. All shadow copies are removed, go to step 1.
+
+The algorithm terminates when all attributes are marked as either important or not important or when the maximum number of iterations is reached.
+
+For this thesis, a python implementation^[see [scikit-learn-contrib/boruta_py](https://github.com/scikit-learn-contrib/boruta_py)] was used. In effect, it is a port of the original R package by @kursa2010boruta which plugs into scikit-learn.
+
+
+
+
+## Model Evaluation
+
+During model evaluation, several algorithms were trained and their performance compared.
+
+Randomized grid search with 10-fold cross validation was used to optimize hyperparameters for the algorithms.
+
+The best parameter combination was determined using *recall* as the performance metric (see \@ref(performance-metrics)).
+
+### Considered Algorithms
+
+The algorithms were chosen so as to cover a wide range of approaches to learning. A short introduction of each algorithm, along with the hyperparameters used for regularization is given below.
+
+#### Random Forest
+
+
+
+#### Gradient Boosting Machine
+
+Boosting is a method that can be applied to any learning algorithm. It was introduced by @freund1997decision in the form of the algorithm AdaBoost.M1, intended for classification problems. The main idea behind boosting is to train a set of weak classifiers which are only slightly better than a random decision. The predictions of the individual weak classifiers are then combined into a majority vote.
+
+Gradient boosting extends on this idea. New trees are added in the direction of the gradient of the loss function.
+
+For this thesis, the package `XGBoost` by @chen2016xgboost was used. The general principle of gradient descent is given below.
+
+Assume we have a data set with $n$ examples and $m$ features: $D = \{\{\mathbf{x_i}, y_i\}\} ( |D| = n, \mathbf{x_i} \in \mathbb{R}^m, y_i \in \mathbb{R})$. The implementation uses a tree ensemble using $K$ additive functions (regression trees) to predict the outcome for an example in the data. 
+
+\begin{equation}
+\hat{y}_i = \phi(\mathbf{x_i}) = \sum_{k=1}^K f_k(\mathbf{x_i}), f_k \in F
+(\#eq:gbm-ensemble)
+\end{equation}
+
+where $F = \{f(\mathbf{x}) = w_{q(x)}\} (q: \mathbb{R}^m \rightarrow T, w \in \mathbb{R}^T)$ is the space of regression trees. $T$ is the number of leaves in a tree, $q$ is the structure of each tree, mapping an example to the corresponding leaf index. Each tree $f_k$ has an independent structure $q$ and weights $w$ at the terminal leafs. An example is classified on each tree in $F$ and the weights of the corresponding leafs are summed up to calculate the final prediciton.
+
+For learning the functions in $F$, the following loss function is minimized:
+
+\begin{equation}
+L(\phi) = \sum_{i=1}^n l(y_i, \hat{y_i}) + \sum_k^K \Omega(f_k)
+(\#eq:gbm-loss)
+\end{equation}
+
+Here, $l$ is a differentiable, convex loss function that measures the difference between predictions and true values. Since $l$ is convex, we are guaranteed to find a global minimum. $\Omega(f) = \gamma T + \frac{1}{2}\lambda||w||^2$ is a penalty on the complexity of the trees to counter over-fitting.
+
+For learning the model, an additive approach is used. At each iteration $t$, the tree $f_t$ that improves the model most is added. For this, we add $f_t(\mathbf{x_i})$ to the predictions at $t-1$. 
+
+\begin{equation}
+L^{(t)} = \sum_{i=1}^n l(y_i, \hat{y_i}^{t-1} + f_t(\mathbf{x_i})) +\Omega(f_t)
+(\#eq:gbm-iterate)
+\end{equation}
+
+To find the best $f_t$ to add, the gradients finally come into play. With $g_i$ and $h_i$ the first- and second-order gradient statistics of $l$, the loss function becomes:
+
+\begin{equation}
+\tilde{L}^{(t)} = \sum_{i=1}^n l(y_i, \hat{y_i}^{t-1} + g_if_t(\mathbf{x_i}) + h_i f_t^2(\mathbf{x_i})) +\Omega(f_t)
+(\#eq:gbm-grad)
+\end{equation}
+
+**Regularization**
+
+Apart from the penalization of complicated trees that is implicitly applied in Eq. \@ref(eq:gbm-loss), regularization was controlled with the following hyperparameters:
+
+* Shrinkage: A learning rate < 1.0 decreases step size for the gradient descent, helping convergence. The number of estimators $f_k$ has to be increased for small learning rates in order for the algorithm to converge.
+* Early stopping: Based on an evaluation set, learning stops when no improvement on the performance metric is made for a fixed number of steps.
+* Column Subsampling: A random sample from the $m$ features of size $s, s < m$ is drawn for each $f_k$, countering overfitting and speeding up learning.
+
+#### GLMnet
+
+The GLMnet is an implementation of a generalized linear model (GLM) with penalized maximum likelihood by @hastie2014glmnet. For the binary target in the data, a logistic regression was chosen. Regularization is achieved through $L^2$ and $L^1$ penalties (i.e. ridge and the lasso or their combination known as elastic net).
+
+The logistic regression model for a two-class response $G = \{0,1\}$ with target $y_i = I(g_i=1)$:
+
+$P(G=1|X=x) = \frac{e^{\beta_0+\beta^Tx}}{1+e^{\beta_0+\beta^Tx}}$ or, in the log-odds transformation: $log\frac{P(G=1|X=x)}{P(G=0|X=x)}=\beta_0+\beta^Tx$.
+
+The loss function is:
+
+\begin{equation}
+\min_{(\beta_0,\beta) \in \mathbb{R}^{m+1}} - \left[\frac{1}{n}\sum_{i=1}^ny_i(\beta_0+x_i^T\beta)-log(1+e^{\beta_0+x_i^T\beta})\right] + \lambda\left[\frac{(1-\alpha)}{2}||\beta||_2^2+\alpha||\beta||_1\right]
+(\#eq:glmnet)
+\end{equation}
+
+
+It's first term is the negative log-likelihood for the examples in the data. The second term is the elastic-net penalty. $\lambda$ controls the amount of penalization. Parameter $\alpha, 0 < \alpha < 1$ controls the elastic-net penalty. For $\alpha = 0$, it is pure ridge, for $\alpha = 1$ pure lasso.
+
+For learning, glmnet tries many different $\lambda$ values for a given $\alpha$. Each $\lambda$ is then evaluated through cross validation.
+
+** Regularization **
+
+* The parameter $\alpha$ parametrizes the elastic net.
+* The scoring method for cross validation can be chosen (log-loss, classification error, accuracy, precision, recall, average precision, roc-auc)
+
+#### Multi Layer Perceptron (Neural Network)
+
+
+
+#### Support Vector Machine
+
+
+
+### Performance Metrics
+
+For classification problems, the confusion matrix (see Table \@ref(tab:conf-matrix-def)) helps in constructing several performance measures. If we predict an event correctly, it is a *true positive* (TP), predicting an event if there is none, it is a *false positive* (FP). A *false negative* (FN) occures when predicting no event when there was one and a *true negative* (TN) occurs when no event was predicted correctly.
+
+```{r conf-matrix-def, results="asis", echo=F}
+c_matrix <- data.frame(P = "Predicted",
+                       PEv = c("Event", "No Event"),
+                       Event = c("TP", "FN"),
+                       "No Event" = c("FP", "TN"),
+                       stringsAsFactors = F)
+colnames(c_matrix) <- c(" "," ", "Event", "No Event")
+
+kable(c_matrix, booktabs = T,
+      caption="Definition of the confusion matrix") %>%
+    kable_styling(latex_options=c("hold_position", position="center")) %>%
+    add_header_above(c(" " = 2, "True value" = 2)) %>%
+    column_spec(1:2, bold=T) %>% collapse_rows(1)
+c_matrix
+```
+
+From the confusion matrix, several metrics can be deduced. The definitions of some often-used metrics are given below:
+
+\begin{align*}
+\text{Accuracy} &= \frac{TP + TN}{TP + FP + FN + TN} \\
+\text{Sensitivity} &= \frac{TP}{TP + FN} \\
+\text{Specificity} &= \frac{TN}{TN + FP} \\
+\text{Precision} &= \frac{TP}{TP + FP} \\
+\text{F1 score} &= \frac{2TP}{2TP+FP+FN}
+\end{align*}
+
+In literature the following synonyms are found:
+
+* Precision: Positive predictive value (PPV)
+* Sensitivity: Recall, True positive rate (TPR), hit rate
+* Specificity: Selectivity, True negative rate (TNR)
+
+It is evident that sensitivity measures the proportion of the predicted events from all events present.
+
+Analogous, specificity measures the proportion of correctly predicted no events from all no events present.

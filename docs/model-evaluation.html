@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html >
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>2.4 Model Evaluation | Master_Thesis_Florian_Hochstrasser.utf8.md</title>
+  <meta name="description" content="Thesis for the programme Master in Statistics at the University of Neuchâtel, Switzerland.">
+  <meta name="generator" content="bookdown  and GitBook 2.6.7">
+
+  <meta property="og:title" content="2.4 Model Evaluation | Master_Thesis_Florian_Hochstrasser.utf8.md" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="Thesis for the programme Master in Statistics at the University of Neuchâtel, Switzerland." />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="2.4 Model Evaluation | Master_Thesis_Florian_Hochstrasser.utf8.md" />
+  
+  <meta name="twitter:description" content="Thesis for the programme Master in Statistics at the University of Neuchâtel, Switzerland." />
+  
+
+<meta name="author" content="Florian Hochstrasser">
+
+
+<meta name="date" content="2019-04-26">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  
+  
+<link rel="prev" href="data-preprocessing.html">
+<link rel="next" href="data.html">
+<script src="assets/jquery-2.2.3/jquery.min.js"></script>
+<link href="assets/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+<script src="assets/kePrint-0.0.1/kePrint.js"></script>
+
+
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Abstract</a></li>
+<li class="chapter" data-level="1" data-path="intro.html"><a href="intro.html"><i class="fa fa-check"></i><b>1</b> Introduction</a><ul>
+<li class="chapter" data-level="1.1" data-path="task.html"><a href="task.html"><i class="fa fa-check"></i><b>1.1</b> Task</a></li>
+<li class="chapter" data-level="1.2" data-path="goal.html"><a href="goal.html"><i class="fa fa-check"></i><b>1.2</b> Goal</a></li>
+<li class="chapter" data-level="1.3" data-path="glossary.html"><a href="glossary.html"><i class="fa fa-check"></i><b>1.3</b> Glossary</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="experimental-setup-and-methods.html"><a href="experimental-setup-and-methods.html"><i class="fa fa-check"></i><b>2</b> Experimental Setup and Methods</a><ul>
+<li class="chapter" data-level="2.1" data-path="tools-used.html"><a href="tools-used.html"><i class="fa fa-check"></i><b>2.1</b> Tools Used</a><ul>
+<li class="chapter" data-level="2.1.1" data-path="tools-used.html"><a href="tools-used.html#jupyter-notebook"><i class="fa fa-check"></i><b>2.1.1</b> Jupyter Notebook</a></li>
+<li class="chapter" data-level="2.1.2" data-path="tools-used.html"><a href="tools-used.html#pandas"><i class="fa fa-check"></i><b>2.1.2</b> Pandas</a></li>
+<li class="chapter" data-level="2.1.3" data-path="tools-used.html"><a href="tools-used.html#scikit-learn"><i class="fa fa-check"></i><b>2.1.3</b> Scikit-learn</a></li>
+<li class="chapter" data-level="2.1.4" data-path="tools-used.html"><a href="tools-used.html#rmarkdown"><i class="fa fa-check"></i><b>2.1.4</b> Rmarkdown</a></li>
+</ul></li>
+<li class="chapter" data-level="2.2" data-path="data-handling.html"><a href="data-handling.html"><i class="fa fa-check"></i><b>2.2</b> Data Handling</a></li>
+<li class="chapter" data-level="2.3" data-path="data-preprocessing.html"><a href="data-preprocessing.html"><i class="fa fa-check"></i><b>2.3</b> Data Preprocessing</a><ul>
+<li class="chapter" data-level="2.3.1" data-path="data-preprocessing.html"><a href="data-preprocessing.html#cleaning"><i class="fa fa-check"></i><b>2.3.1</b> Cleaning</a></li>
+<li class="chapter" data-level="2.3.2" data-path="data-preprocessing.html"><a href="data-preprocessing.html#feature-engineering"><i class="fa fa-check"></i><b>2.3.2</b> Feature Engineering</a></li>
+<li class="chapter" data-level="2.3.3" data-path="data-preprocessing.html"><a href="data-preprocessing.html#imputation"><i class="fa fa-check"></i><b>2.3.3</b> Imputation</a></li>
+<li class="chapter" data-level="2.3.4" data-path="data-preprocessing.html"><a href="data-preprocessing.html#feature-selection"><i class="fa fa-check"></i><b>2.3.4</b> Feature Selection</a></li>
+</ul></li>
+<li class="chapter" data-level="2.4" data-path="model-evaluation.html"><a href="model-evaluation.html"><i class="fa fa-check"></i><b>2.4</b> Model Evaluation</a><ul>
+<li class="chapter" data-level="2.4.1" data-path="model-evaluation.html"><a href="model-evaluation.html#considered-algorithms"><i class="fa fa-check"></i><b>2.4.1</b> Considered Algorithms</a></li>
+<li class="chapter" data-level="2.4.2" data-path="model-evaluation.html"><a href="model-evaluation.html#performance-metrics"><i class="fa fa-check"></i><b>2.4.2</b> Performance Metrics</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="data.html"><a href="data.html"><i class="fa fa-check"></i><b>3</b> Data</a><ul>
+<li class="chapter" data-level="3.1" data-path="raw-data-import.html"><a href="raw-data-import.html"><i class="fa fa-check"></i><b>3.1</b> Raw data import</a></li>
+<li class="chapter" data-level="3.2" data-path="cleaning-preprocessing.html"><a href="cleaning-preprocessing.html"><i class="fa fa-check"></i><b>3.2</b> Cleaning &amp; Preprocessing</a><ul>
+<li class="chapter" data-level="3.2.1" data-path="cleaning-preprocessing.html"><a href="cleaning-preprocessing.html#date-features"><i class="fa fa-check"></i><b>3.2.1</b> Date features</a></li>
+<li class="chapter" data-level="3.2.2" data-path="cleaning-preprocessing.html"><a href="cleaning-preprocessing.html#further-sanitizations"><i class="fa fa-check"></i><b>3.2.2</b> Further sanitizations</a></li>
+<li class="chapter" data-level="3.2.3" data-path="cleaning-preprocessing.html"><a href="cleaning-preprocessing.html#binary-features"><i class="fa fa-check"></i><b>3.2.3</b> Binary Features</a></li>
+<li class="chapter" data-level="3.2.4" data-path="cleaning-preprocessing.html"><a href="cleaning-preprocessing.html#multi-byte-categorical-features"><i class="fa fa-check"></i><b>3.2.4</b> Multi-byte Categorical Features</a></li>
+<li class="chapter" data-level="3.2.5" data-path="cleaning-preprocessing.html"><a href="cleaning-preprocessing.html#missing-values"><i class="fa fa-check"></i><b>3.2.5</b> Missing Values</a></li>
+</ul></li>
+<li class="chapter" data-level="3.3" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html"><i class="fa fa-check"></i><b>3.3</b> Exploratory Data Analysis</a><ul>
+<li class="chapter" data-level="3.3.1" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#general-structure"><i class="fa fa-check"></i><b>3.3.1</b> General structure</a></li>
+<li class="chapter" data-level="3.3.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#correlations"><i class="fa fa-check"></i><b>3.3.2</b> Correlations</a></li>
+<li class="chapter" data-level="3.3.3" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#skewness"><i class="fa fa-check"></i><b>3.3.3</b> Skewness</a></li>
+<li class="chapter" data-level="3.3.4" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#targets"><i class="fa fa-check"></i><b>3.3.4</b> Targets</a></li>
+</ul></li>
+<li class="chapter" data-level="3.4" data-path="preprocessing.html"><a href="preprocessing.html"><i class="fa fa-check"></i><b>3.4</b> Preprocessing</a><ul>
+<li class="chapter" data-level="3.4.1" data-path="preprocessing.html"><a href="preprocessing.html#noisy-data"><i class="fa fa-check"></i><b>3.4.1</b> Noisy data</a></li>
+<li class="chapter" data-level="3.4.2" data-path="preprocessing.html"><a href="preprocessing.html#constant-features"><i class="fa fa-check"></i><b>3.4.2</b> Constant features</a></li>
+<li class="chapter" data-level="3.4.3" data-path="preprocessing.html"><a href="preprocessing.html#missing-values-sparse-features"><i class="fa fa-check"></i><b>3.4.3</b> Missing values / sparse features</a></li>
+<li class="chapter" data-level="3.4.4" data-path="preprocessing.html"><a href="preprocessing.html#categorical-features"><i class="fa fa-check"></i><b>3.4.4</b> Categorical features</a></li>
+<li class="chapter" data-level="3.4.5" data-path="preprocessing.html"><a href="preprocessing.html#feature-engineering-1"><i class="fa fa-check"></i><b>3.4.5</b> Feature Engineering</a></li>
+<li class="chapter" data-level="3.4.6" data-path="preprocessing.html"><a href="preprocessing.html#feature-selection-1"><i class="fa fa-check"></i><b>3.4.6</b> Feature Selection</a></li>
+<li class="chapter" data-level="3.4.7" data-path="preprocessing.html"><a href="preprocessing.html#feature-extraction"><i class="fa fa-check"></i><b>3.4.7</b> Feature Extraction</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="model-evaluation-1.html"><a href="model-evaluation-1.html"><i class="fa fa-check"></i><b>4</b> Model evaluation</a></li>
+<li class="chapter" data-level="5" data-path="results-and-discussion.html"><a href="results-and-discussion.html"><i class="fa fa-check"></i><b>5</b> Results and Discussion</a></li>
+<li class="chapter" data-level="6" data-path="conclusions.html"><a href="conclusions.html"><i class="fa fa-check"></i><b>6</b> Conclusions</a><ul>
+<li class="chapter" data-level="6.1" data-path="comparison-with-cup-winners.html"><a href="comparison-with-cup-winners.html"><i class="fa fa-check"></i><b>6.1</b> Comparison with Cup winners</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+<li class="chapter" data-level="" data-path="appendix.html"><a href="appendix.html"><i class="fa fa-check"></i>Appendix</a><ul>
+<li class="chapter" data-level="6.2" data-path="code.html"><a href="code.html"><i class="fa fa-check"></i><b>6.2</b> Code</a><ul>
+<li class="chapter" data-level="6.2.1" data-path="code.html"><a href="code.html#preprocessing-1"><i class="fa fa-check"></i><b>6.2.1</b> Preprocessing</a></li>
+<li class="chapter" data-level="6.2.2" data-path="code.html"><a href="code.html#appendix-transformers"><i class="fa fa-check"></i><b>6.2.2</b> Transformers</a></li>
+</ul></li>
+<li class="chapter" data-level="6.3" data-path="python-environment.html"><a href="python-environment.html"><i class="fa fa-check"></i><b>6.3</b> Python Environment</a></li>
+<li class="chapter" data-level="6.4" data-path="dataset-dictionary.html"><a href="dataset-dictionary.html"><i class="fa fa-check"></i><b>6.4</b> Dataset Dictionary</a></li>
+</ul></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./"></a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="model-evaluation" class="section level2">
+<h2><span class="header-section-number">2.4</span> Model Evaluation</h2>
+<p>During model evaluation, several algorithms were trained and their performance compared.</p>
+<p>Randomized grid search with 10-fold cross validation was used to optimize hyperparameters for the algorithms.</p>
+<p>The best parameter combination was determined using <em>recall</em> as the performance metric (see <a href="model-evaluation.html#performance-metrics">2.4.2</a>).</p>
+<div id="considered-algorithms" class="section level3">
+<h3><span class="header-section-number">2.4.1</span> Considered Algorithms</h3>
+<p>The algorithms were chosen so as to cover a wide range of approaches to learning. A short introduction of each algorithm, along with the hyperparameters used for regularization is given below.</p>
+<div id="random-forest" class="section level4">
+<h4><span class="header-section-number">2.4.1.1</span> Random Forest</h4>
+</div>
+<div id="gradient-boosting-machine" class="section level4">
+<h4><span class="header-section-number">2.4.1.2</span> Gradient Boosting Machine</h4>
+<p>Boosting is a method that can be applied to any learning algorithm. It was introduced by <span class="citation">Freund and Schapire (<a href="references.html#ref-freund1997decision">1997</a>)</span> in the form of the algorithm AdaBoost.M1, intended for classification problems. The main idea behind boosting is to train a set of weak classifiers which are only slightly better than a random decision. The predictions of the individual weak classifiers are then combined into a majority vote.</p>
+<p>Gradient boosting extends on this idea. New trees are added in the direction of the gradient of the loss function.</p>
+<p>For this thesis, the package <code>XGBoost</code> by <span class="citation">Chen and Guestrin (<a href="references.html#ref-chen2016xgboost">2016</a>)</span> was used. The general principle of gradient descent is given below.</p>
+<p>Assume we have a data set with <span class="math inline">\(n\)</span> examples and <span class="math inline">\(m\)</span> features: <span class="math inline">\(D = \{\{\mathbf{x_i}, y_i\}\} ( |D| = n, \mathbf{x_i} \in \mathbb{R}^m, y_i \in \mathbb{R})\)</span>. The implementation uses a tree ensemble using <span class="math inline">\(K\)</span> additive functions (regression trees) to predict the outcome for an example in the data.</p>
+<p><span class="math display" id="eq:gbm-ensemble">\[\begin{equation}
+\hat{y}_i = \phi(\mathbf{x_i}) = \sum_{k=1}^K f_k(\mathbf{x_i}), f_k \in F
+\tag{2.1}
+\end{equation}\]</span></p>
+<p>where <span class="math inline">\(F = \{f(\mathbf{x}) = w_{q(x)}\} (q: \mathbb{R}^m \rightarrow T, w \in \mathbb{R}^T)\)</span> is the space of regression trees. <span class="math inline">\(T\)</span> is the number of leaves in a tree, <span class="math inline">\(q\)</span> is the structure of each tree, mapping an example to the corresponding leaf index. Each tree <span class="math inline">\(f_k\)</span> has an independent structure <span class="math inline">\(q\)</span> and weights <span class="math inline">\(w\)</span> at the terminal leafs. An example is classified on each tree in <span class="math inline">\(F\)</span> and the weights of the corresponding leafs are summed up to calculate the final prediciton.</p>
+<p>For learning the functions in <span class="math inline">\(F\)</span>, the following loss function is minimized:</p>
+<p><span class="math display" id="eq:gbm-loss">\[\begin{equation}
+L(\phi) = \sum_{i=1}^n l(y_i, \hat{y_i}) + \sum_k^K \Omega(f_k)
+\tag{2.2}
+\end{equation}\]</span></p>
+<p>Here, <span class="math inline">\(l\)</span> is a differentiable, convex loss function that measures the difference between predictions and true values. Since <span class="math inline">\(l\)</span> is convex, we are guaranteed to find a global minimum. <span class="math inline">\(\Omega(f) = \gamma T + \frac{1}{2}\lambda||w||^2\)</span> is a penalty on the complexity of the trees to counter over-fitting.</p>
+<p>For learning the model, an additive approach is used. At each iteration <span class="math inline">\(t\)</span>, the tree <span class="math inline">\(f_t\)</span> that improves the model most is added. For this, we add <span class="math inline">\(f_t(\mathbf{x_i})\)</span> to the predictions at <span class="math inline">\(t-1\)</span>.</p>
+<p><span class="math display" id="eq:gbm-iterate">\[\begin{equation}
+L^{(t)} = \sum_{i=1}^n l(y_i, \hat{y_i}^{t-1} + f_t(\mathbf{x_i})) +\Omega(f_t)
+\tag{2.3}
+\end{equation}\]</span></p>
+<p>To find the best <span class="math inline">\(f_t\)</span> to add, the gradients finally come into play. With <span class="math inline">\(g_i\)</span> and <span class="math inline">\(h_i\)</span> the first- and second-order gradient statistics of <span class="math inline">\(l\)</span>, the loss function becomes:</p>
+<p><span class="math display" id="eq:gbm-grad">\[\begin{equation}
+\tilde{L}^{(t)} = \sum_{i=1}^n l(y_i, \hat{y_i}^{t-1} + g_if_t(\mathbf{x_i}) + h_i f_t^2(\mathbf{x_i})) +\Omega(f_t)
+\tag{2.4}
+\end{equation}\]</span></p>
+<p><strong>Regularization</strong></p>
+<p>Apart from the penalization of complicated trees that is implicitly applied in Eq. <a href="model-evaluation.html#eq:gbm-loss">(2.2)</a>, regularization was controlled with the following hyperparameters:</p>
+<ul>
+<li>Shrinkage: A learning rate &lt; 1.0 decreases step size for the gradient descent, helping convergence. The number of estimators <span class="math inline">\(f_k\)</span> has to be increased for small learning rates in order for the algorithm to converge.</li>
+<li>Early stopping: Based on an evaluation set, learning stops when no improvement on the performance metric is made for a fixed number of steps.</li>
+<li>Column Subsampling: A random sample from the <span class="math inline">\(m\)</span> features of size <span class="math inline">\(s, s &lt; m\)</span> is drawn for each <span class="math inline">\(f_k\)</span>, countering overfitting and speeding up learning.</li>
+</ul>
+</div>
+<div id="glmnet" class="section level4">
+<h4><span class="header-section-number">2.4.1.3</span> GLMnet</h4>
+<p>The GLMnet is an implementation of a generalized linear model (GLM) with penalized maximum likelihood by <span class="citation">Hastie and Qian (<a href="references.html#ref-hastie2014glmnet">2014</a>)</span>. For the binary target in the data, a logistic regression was chosen. Regularization is achieved through <span class="math inline">\(L^2\)</span> and <span class="math inline">\(L^1\)</span> penalties (i.e. ridge and the lasso or their combination known as elastic net).</p>
+<p>The logistic regression model for a two-class response <span class="math inline">\(G = \{0,1\}\)</span> with target <span class="math inline">\(y_i = I(g_i=1)\)</span>:</p>
+<p><span class="math inline">\(P(G=1|X=x) = \frac{e^{\beta_0+\beta^Tx}}{1+e^{\beta_0+\beta^Tx}}\)</span> or, in the log-odds transformation: <span class="math inline">\(log\frac{P(G=1|X=x)}{P(G=0|X=x)}=\beta_0+\beta^Tx\)</span>.</p>
+<p>The loss function is:</p>
+<p><span class="math display" id="eq:glmnet">\[\begin{equation}
+\min_{(\beta_0,\beta) \in \mathbb{R}^{m+1}} - \left[\frac{1}{n}\sum_{i=1}^ny_i(\beta_0+x_i^T\beta)-log(1+e^{\beta_0+x_i^T\beta})\right] + \lambda\left[\frac{(1-\alpha)}{2}||\beta||_2^2+\alpha||\beta||_1\right]
+\tag{2.5}
+\end{equation}\]</span></p>
+<p>It’s first term is the negative log-likelihood for the examples in the data. The second term is the elastic-net penalty. <span class="math inline">\(\lambda\)</span> controls the amount of penalization. Parameter <span class="math inline">\(\alpha, 0 &lt; \alpha &lt; 1\)</span> controls the elastic-net penalty. For <span class="math inline">\(\alpha = 0\)</span>, it is pure ridge, for <span class="math inline">\(\alpha = 1\)</span> pure lasso.</p>
+<p>For learning, glmnet tries many different <span class="math inline">\(\lambda\)</span> values for a given <span class="math inline">\(\alpha\)</span>. Each <span class="math inline">\(\lambda\)</span> is then evaluated through cross validation.</p>
+<p>** Regularization **</p>
+<ul>
+<li>The parameter <span class="math inline">\(\alpha\)</span> parametrizes the elastic net.</li>
+<li>The scoring method for cross validation can be chosen (log-loss, classification error, accuracy, precision, recall, average precision, roc-auc)</li>
+</ul>
+</div>
+<div id="multi-layer-perceptron-neural-network" class="section level4">
+<h4><span class="header-section-number">2.4.1.4</span> Multi Layer Perceptron (Neural Network)</h4>
+</div>
+<div id="support-vector-machine" class="section level4">
+<h4><span class="header-section-number">2.4.1.5</span> Support Vector Machine</h4>
+</div>
+</div>
+<div id="performance-metrics" class="section level3">
+<h3><span class="header-section-number">2.4.2</span> Performance Metrics</h3>
+<p>For classification problems, the confusion matrix (see Table <a href="model-evaluation.html#tab:conf-matrix-def">2.2</a>) helps in constructing several performance measures. If we predict an event correctly, it is a <em>true positive</em> (TP), predicting an event if there is none, it is a <em>false positive</em> (FP). A <em>false negative</em> (FN) occures when predicting no event when there was one and a <em>true negative</em> (TN) occurs when no event was predicted correctly.</p>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<caption>
+<span id="tab:conf-matrix-def">Table 2.2: </span>Definition of the confusion matrix
+</caption>
+<thead>
+<tr>
+<th style="border-bottom:hidden" colspan="2">
+</th>
+<th style="border-bottom:hidden; padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="2">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+True value
+</div>
+</th>
+</tr>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:left;">
+</th>
+<th style="text-align:left;">
+Event
+</th>
+<th style="text-align:left;">
+No Event
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;font-weight: bold;vertical-align: middle !important;" rowspan="2">
+Predicted
+</td>
+<td style="text-align:left;font-weight: bold;">
+Event
+</td>
+<td style="text-align:left;">
+TP
+</td>
+<td style="text-align:left;">
+FP
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+No Event
+</td>
+<td style="text-align:left;">
+FN
+</td>
+<td style="text-align:left;">
+TN
+</td>
+</tr>
+</tbody>
+</table>
+<pre><code>              Event No Event</code></pre>
+<p>1 Predicted Event TP FP
+2 Predicted No Event FN TN</p>
+<p>From the confusion matrix, several metrics can be deduced. The definitions of some often-used metrics are given below:</p>
+<p><span class="math display">\[\begin{align*}
+\text{Accuracy} &amp;= \frac{TP + TN}{TP + FP + FN + TN} \\
+\text{Sensitivity} &amp;= \frac{TP}{TP + FN} \\
+\text{Specificity} &amp;= \frac{TN}{TN + FP} \\
+\text{Precision} &amp;= \frac{TP}{TP + FP} \\
+\text{F1 score} &amp;= \frac{2TP}{2TP+FP+FN}
+\end{align*}\]</span></p>
+<p>In literature the following synonyms are found:</p>
+<ul>
+<li>Precision: Positive predictive value (PPV)</li>
+<li>Sensitivity: Recall, True positive rate (TPR), hit rate</li>
+<li>Specificity: Selectivity, True negative rate (TNR)</li>
+</ul>
+<p>It is evident that sensitivity measures the proportion of the predicted events from all events present.</p>
+<p>Analogous, specificity measures the proportion of correctly predicted no events from all no events present.</p>
+
+</div>
+</div>
+<!-- </div> -->
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="data-preprocessing.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="data.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="assets/gitbook-2.6.7/js/app.min.js"></script>
+<script src="assets/gitbook-2.6.7/js/lunr.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="assets/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"google": false,
+"linkedin": true,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"all": ["facebook", "google", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"download": ["Master_Thesis_Florian_Hochstrasser.pdf", "Master_Thesis_Florian_Hochstrasser.epub"],
+"toc": {
+"collapse": "subsection"
+},
+"toolbar": {
+"position": "static"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:" && /^https?:/.test(src))
+      src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

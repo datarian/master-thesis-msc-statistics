@@ -3,3 +3,9 @@
 .RData
 .Ruserdata
 MA_Report.Rproj
+*.RData
+_bookdown_files/Master_Thesis_Florian_Hochstrasser_cache/*
+data/*
+*.log
+ma-thesis.sublime-project
+ma-thesis.sublime-workspace

@@ -1,1 +1,9 @@
 # Model evaluation
+
+Workflow:
+
+Split training dataset 80/20 into training* and test
+
+1. Train on training* dataset
+2. Adjust hyperparameters on validation set
+3. Run on test dataset to get generalisation error estimate

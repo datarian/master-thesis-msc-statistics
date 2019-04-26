@@ -1,0 +1,2 @@
+cat("Loading project packages...\n")
+require(bookdown)

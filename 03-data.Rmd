@@ -1,0 +1,307 @@
+# Data
+
+
+
+The data at hand is a subset of the roughly 3.5 million members of the organization who were targeted by a campaign in 1997. All donors who were contacted in this campaign have donated at least once to the organisation in the past.
+
+```{python data-specs, echo=F, results='hide', cache=F}
+import kdd98.data_handler as dh
+import pandas as pd
+date_features = dh.DATE_FEATURES
+binary_features = dh.BINARY_FEATURES
+data_provider = dh.KDD98DataProvider("cup98LRN.txt")
+raw_data = data_provider.raw_data
+int_features = raw_data.select_dtypes(include="integer").columns.values.tolist()
+float_features = raw_data.select_dtypes(include="float").columns.values.tolist()
+category_features = raw_data.select_dtypes(include="category").columns.values.tolist()
+object_features = raw_data.select_dtypes(include="object").columns.values.tolist()
+
+stats = pd.DataFrame({"Integer": ["Discrete features, no missing values", len(int_features)],
+                      "Float": ["Continuous features and discrete features with missing values", len(float_features)],
+                      "Categorical": ["Nominal and ordinal features", len(category_features)],
+                      "Object": ["Features with alphanumeric values", len(object_features)],
+                      "Total": [" ", raw_data.shape[1]]}).transpose()
+stats.columns = ["Data content", "Number of features"]
+stats.index.name = "Data type"
+```
+
+
+The dataset, which is freely available online^[See [UCI Machine Learning Repository: KDD Cup 1998 Data](https://archive.ics.uci.edu/ml/datasets/KDD+Cup+1998+Data)] contains information on a subset of the turnout of a direct mailing addressed to 3.5 million members in the scope of a fundraising campaign that was conducted in 1997. The dataset contains all donors with a *lapsed* donation status, meaning their last donation was made between 13 and 24 months prior to the 1997 campaign.
+
+The data is provided in two sets, of which one is intended for learning, the other for validation.
+
+In the following section, the learning data set will be characterized. All preprocessing and feature engineering steps were also applied identically to the validation data set.
+
+## Raw data import
+
+The import through `pandas.read_csv()` was facilitated by providing per-feature specifications for missing values and explicit type casting for nominal categories. Ordinal categories, dates and features with binary values were cast to the type string (Object).
+
+The dimension of the input data is `r nrow(py$raw_data)` examples by `r ncol(py$raw_data)+1` features. Of the features, two are the targets and one was used as the index, leaving 478 explanatory features.
+
+The dataset structure after import into a `pandas.DataFrame` object is presented in Table \@ref(tab:data-desc).
+This corresponds to the *raw* stage in preprocessing.
+
+```{r data-desc, results="asis", echo=F}
+kable(py$stats,
+    booktabs = T,
+    caption="Data types after import of raw csv data") %>%
+  kable_styling(latex_options=c("hold_position", position="center")) %>%
+  column_spec(2, width="6cm")
+```
+
+## Cleaning & Preprocessing
+
+### Date features
+
+There were `r length(py$date_features)` date features specified in the documentation. The specified format for these features is 'yymm', the two-digit year followed by the two-digit month.
+
+```{python date-cleaning, fig.cap="Values for date of birth (DOB) with one missing digit versus age. We observe jumps in July of each year, this is because the reference date for age is 1997-06-01. By looking at the ages, it is evident that these values indeed lack a leading zero to put them in the correct decade.", results='asis', echo=F}
+import seaborn as sns
+import matplotlib.ticker as ticker
+
+dates = raw_data[dh.DATE_FEATURES]
+for f in dh.DATE_FEATURES:
+    s = dates.loc[:,f]
+    if len(s.loc[s.str.len() == 3].values) > 0:
+        indices = s.loc[s.str.len() == 3].index
+        df = raw_data.loc[indices, [f,"AGE"]]
+
+df = df.sort_values(by="DOB")
+g = sns.scatterplot(x="DOB", y="AGE", data=df, alpha=0.6)
+
+tick_spacing=6
+g.xaxis.set_major_locator(ticker.MultipleLocator(tick_spacing))
+g
+```
+
+Several values in the feature DOB (date of birth) are only three digits long. Comparing these values with the corresponding example's values for feature AGE shows that, considering the reference date of June 1997, it is very likely that the 3-digit DOB's are lacking a leading zero (see Figure \@ref(fig:date-cleaning)).
+
+All these values were therefore prepended by a zero.
+
+
+### Further sanitizations
+
+Several features needed recoding and sanitizing. Information in the data set documentation was used to determine necessary transformations. The transformations are shown in \@ref(tab:sanitize).
+
+```{r sanitize, results="asis", echo=F}
+sanitizing_features <- data.frame(
+  zip = c("U.S. zip code", 
+            "Remove trailing hyphen",
+            "A hyphen after a 5-digit zip most likely stems from incomplete 'ZIP+4' codes^[see (USPS: ZIP+4 Code)[https://about.usps.com/publications/pub100/pub100_044.htm]]."),
+  mdm = c("Major donor matrix features",
+                 "Replace X with NaN",
+                 "Encode NaN as specified by the data set documentation."),
+  tb = c("Binary target indicating whether an example has donated or not.",
+                 "Set to 1 when TARGET_D is $\new$ 0",
+                 "When a dollar amount (TARGET_D) was donated, the binary indicator target has to be 1."
+                 ),
+  rfa = c("Multi-byte categorical. Recency, Frequency, Amount.",
+              "Set to NaN if length is $\neq$ 3",
+              "The values in these features have to be of length 3, each byte is one categorical."
+              ),
+  nox = c("NOEXCH: Do not exchange address flag",
+               "Recode X to 1",
+               "Both X and 1 mean `True`"
+               ),
+  rmnt = c("RAMNT_*: Amount donated for a certain campaign.",
+                "Set to NaN if corresponding RDATE_* (date of donation reception) is not missing, else set to zero.",
+                "Avoid NaN values if possible."
+               
+               ),
+  stringsAsFactors=FALSE
+)
+sanitizing_features <- t(sanitizing_features)
+colnames(sanitizing_features) <- c("Feature explanation", "Operation", "Reason")
+rownames(sanitizing_features) <- c("ZIP", "MDMAUD_*", "TARGET_B", "RFA_*", "NOEXCH", "RAMNT_*")
+
+kable(sanitizing_features,
+    booktabs = T,
+    caption="Overview of trivial data transformations applied.") %>%
+  kable_styling(latex_options=c("hold_position", position="Center")) %>%
+  column_spec(c(2, 3, 4), width="4cm")
+```
+
+### Binary Features
+
+There are several codings for the different binary features present in the data set. All were recoded to *1* / *0* with missing data coded as not a number (NaN). The recoding was done through a custom `Transformer` class (see Appendix \@ref(appendix-transformers)) derived from scikit-learn's `TransformerMixin`.
+
+Table (\@ref(tab:binary-recode)) shows the original coding of the `r length(py$binary_features)` binary features in the raw data set. There are two classes of binary features that have blanks as the *False* value. Even though the data set documentation states that blanks should be treated as missing values, in these two classes blanks were interpreted as *False*. For the remaining binary features, blanks were interpreted as missing and coded as `NaN`.
+
+The feature *NOEXCH* had both `X` and `1` for True in the data. This was fixed by replacing all occurrences of `X` by `1`.
+
+```{r binary-recode, results="asis", echo=F}
+
+bin_recode <- tibble::tibble(
+    True = list("X", "Y", "1", "E", "H", "B"),
+    False = list("blank", "N", "0", "I", "U", "blank"),
+    Features = list(
+      "PEPSTRFL, MAJOR, RECINHSE, RECP3, RECPGVG, RECSWEEP",
+      "COLLECT1, VETERANS, BIBLE, CATLG, HOMEE, PETS, CDPLAY, STEREO,
+      PCOWNERS, PHOTO, CRAFTS, FISHER, GARDENIN,  BOATS, WALKER, KIDSTUFF,
+      CARDS, PLATES",
+       "NOEXCH, HPHONE_D, TARGET_B",
+      "AGEFLAG",
+      "HOMEOWNR",
+      "MAILCODE"
+      ))
+
+kable(bin_recode,
+      booktabs = T,
+      caption="Original coding of binary features.") %>%
+      kable_styling(latex_options=c("hold_position", position="center")) %>%
+      column_spec(3, width="10cm")
+```
+
+
+### Multi-byte Categorical Features
+
+Several features combine related information into bytewise codes. These codes were split into individual features. A custom child class of `scikit-learn.TransformerMixin` was written for this purpose (see Appendix \@ref(appendix-transformers)).
+
+The donation history contains recency / frequency / amount (RFA) features for each previous mailing. The dataset already contained one mailing (number 2) where this code was split into individual features. The remaining RFA codes were split also.
+
+#### Ordinal Features
+
+Ordinal features were recoded using a custom child classes of `scikit-learn.TransformerMixin` (see Appendix \@ref(appendix-transformers)).
+
+
+### Missing Values
+
+Missing values were imputed using a k-Neaerest Neighbors (kNN) algorithm provided in the python package `missing_py` @troyanskaya2001missing. For each example with a missing value in a specific feature, $k=3$ nearest neighbors that have a value for the feature are searched for and the missing value imputed with the metric *distance*.
+
+
+
+## Exploratory Data Analysis
+
+The detailed analysis can be studied online in the corresponding jupyter notebook^[[KDD-CUP98: EDA notebook](https://github.com/datarian/master-thesis-code/blob/development/notebooks/eda.ipynb)]. The findings are shown here.
+
+### General structure
+
+The data set is provided pre-cut into a learning and validation set with 95412 and 96367 examples. The features are identical between the two except for the target that has been stripped from the validation set.
+
+There are four main sources of information that make up the data:
+
+- Internal member database (index, personal particulars, several member status features): 85 features
+- US census 1990: 286 features
+- Promotion history file: 97 features on promotions received up until the current mailing and response patterns to these promotions
+- Giving history file: 13 features, summary statistics giving maximum and minimum amount donated and dates of donations
+
+In total, there are 479 features plus two [targets](#targets).
+
+### Correlations
+
+### Skewness
+
+Most of the data is skewed. This is an important finding as the data will have to be transformed for learning algorithms that do not perform well for this kind of data.
+
+Figure \@ref(fig:skew-all) gives an abstract idea of the skewness of (numerical) features. It was measured with `pandas.skew()`, which uses the Fisher-Pearson standardized moment coefficient $G_1 = \frac{\sqrt{n(n-1)}}{n-2}\frac{1}{n}\frac{\sum_{i=1}^n (x_i-\bar{x})^3}{s^3}$. Here, the term in the denominator is the sample standard deviation.
+
+```{r skew-all, fig.cap="Absolute values of the Fisher-Pearson standardized moment coefficient (G1) for all numeric features contained in the dataset. The confidence bound indicates the $\\alpha$ = 5 %  bound for the skewness of a symmetric distribution for any given feature. It is evident that no feature passes."}
+
+include_graphics('figures/eda/skewness-numeric-features')
+
+```
+
+The confidence bound in Figure \@ref(fig:skew-all) gives the $\alpha=5 \%$ bound for a normal distribution. Evidently, no feature was found to be strictly normally distributed, although several features show quite symmetric distributions (see Figure \@ref(fig:least-skewed)). These symmetric distributions resemble normal or uniform distributions.
+
+```{r least-skewed, fig.cap="The 9 least skewed features. Skewness metric: adjusted Fisher-Pearson standardized moment coefficient."}
+
+knitr::include_graphics("figures/eda/least-skewed")
+
+```
+
+
+Looking at the most skewed features (see Figure \@ref(fig:most-skewed)), we see heavily right-skewed distributions.
+
+```{r most-skewed, fig.cap="The 9 most skewed features. Skewness metric: adjusted Fisher-Pearson standardized moment coefficient."}
+
+knitr::include_graphics("figures/eda/most-skewed")
+
+```
+
+
+
+### Targets
+
+Of the two targets, one is binary (TARGET_B), the other discrete (TARGET_D). The former indicates whether an example has donated in response to the current promotion. The latter represents the dollar amount donated in response to the current promotion.
+
+The distribution of *TARGET_D*, excluding non-donors, is shown in Figure \@ref(fig:target-distrib). Evidently, most donations are small. The range of donations is between 1 and 200 $ with the 50-percentile at 13 $. The most frequent donation amount is 10 $. There are a few outliers for donations above 100 $.
+
+```{r target-distrib, fig.cap="Distribution of TARGETD. The donation amount in US dollar has a discrete distribution. Most donations are below 20 dollar, peaks are visible at 50, 75 and 100 dollar, while the maximum donation amount is 200 dollar.", echo=F}
+
+knitr::include_graphics('figures/eda/target-distribution')
+
+```
+
+
+As can be seen in Figure \@ref(fig:target-ratio), the target is imbalanced. Only about 5 % of examples have donated. This poses a challenge in model training because there is a high risk of overfitting.
+
+```{r target-ratio, fig.cap="Ratio of donating examples. Less than 6 percent have made a donation.", echo=F}
+
+knitr::include_graphics('figures/eda/ratio-binary')
+
+```
+
+**Datatypes**
+An analysis of the dataset dictionary (see \@ref(dataset-dictionary)) reveals the following datatypes for features:
+
+- Index: CONTROLN, unique record identifier
+- Dates: 48 features in yymm format.
+- Binary: 30 features
+- Categorical: 90 features
+- Numeric: 286
+
+
+
+## Preprocessing
+
+The dataset contains input errors (noisyness), features with datatypes that are impractical to work with (dates, categorical features) and redundant information. Furhtermore, many features contain missing values.
+
+Noisy and categorical features were processed by the author manually before furhter evaluation of the data.
+Handling of missing values, zero variance and sparse features was carried out through scikit-learn preprocessors.
+
+
+### Noisy data
+
+There were two types of noisyness that were treated manually:
+
+- Binary features with a mixture of 0, 1 and other codes
+        Binary features were all recoded to $\{\text{True},\text{False}\}$, preserving missing values. $1$ was always set to $\text{True}$ and $0$ was coded $\text{False}$. Specific mappings for $\text{True} / \text{False}$ values given in the data dictionary per binary field were respected accordingly. As per the data dictionary, $\text{' '}$ was interpreted as $\text{False}$ for some features. For all other features, $\text{' '}$ was interpreted as missing.
+- Dates are expected in *mmyy* as per the dataset dictionary. For several date features, one digit was missing [EXPLAIN HOW FIXED].
+        
+- Zip codes: Input errors, inconsistent data (alphanumeric values)
+
+
+### Constant features
+- Per the cup's documentation, features with zero variance have to be excluded. 
+
+
+### Missing values / sparse features
+
+- Character features: ' ', ''
+- Numeric features: ' ', '', '.'
+- Missing values are to be kept in the dataset for learning. Approriate methods for imputation are to be employed (median, mean, mode, modeled, ...)
+- Exception: Features with more than 99.5 \% missing values are to be dropped
+- Features with a sparse distribution are to be dropped [DEFINITION???]
+
+
+### Categorical features
+
+Several variables are aggregated into byte-wise codes (referred to as *symbolic* fields in the data dictionary) that need to be spread out across separate variables.
+
+Most machine-learning methods require strictly numerical data [REFERENCE]. Several methods exist to transform categorical (string-) values into a usable format. These include:
+
+- One-hot tranformation: Creating dummy variables for each category level.
+This approach greatly increases dimensionality, which is both more resource-intensive and prone to overfitting.
+- Ordinal encoding: The categorical targets are transformed to ordinal values (integer numbers). This preserves dimensionality, but the algorithm chosen to assign the ordinal levels can introduce unwanted effects (an implied similarity based on closeness of the ordinal variables)
+    Feature hashing: The individual values are hashed into a value of fixed length.
+- Hashing: [DEFINITION]
+
+### Feature Engineering
+    
+### Feature Selection
+
+-> Selecting the most useful features
+    
+### Feature Extraction 
+
+-> Trying to group correlated features into one (dimensionality reduction). Unsupervised learning.
