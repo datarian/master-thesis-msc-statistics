@@ -42,10 +42,11 @@ class Config:
         "validation_numeric_name": "kddCup98Validation_numeric",
         "random_seed": 42,
         "reference_date": pd.datetime(1997, 6, 1),
-        "color_palette": sns.cubehelix_palette(8, start=0.7, rot=-.6, reverse=True, dark=0.2, light=0.6),
-        "color_palette_binary": sns.cubehelix_palette(2, start=0.7, rot=-.6, reverse=True, dark=0.2, light=0.6),
-        "color_map": sns.cubehelix_palette(8, start=0.7, rot=-.6, reverse=True, dark=0.2, light=0.6, as_cmap=True),
-        "color_map_diverging": sns.diverging_palette(10, 220, sep=80, n=20, as_cmap=True)
+        "qual_palette": sns.husl_palette(8), # sns.cubehelix_palette(8, start=0.7, rot=-.6, reverse=True, dark=0.2, light=0.6),
+        "qual_palette_binary": sns.husl_palette(2), # sns.cubehelix_palette(2, start=0.7, rot=-.6, reverse=True, dark=0.2, light=0.6),
+        "seq_palette": sns.cubehelix_palette(256, start=2.4, rot=-.75),
+        "seq_color_map": sns.sns.cubehelix_palette(256, start=2.4, rot=-.75, as_cmap=True),
+        "diverging_color_map": sns.diverging_palette(10, 220, sep=8, n=256, as_cmap=True)
     }
 
     __setters = ["data_dir"]
