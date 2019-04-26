@@ -351,7 +351,6 @@ kable(c_matrix, booktabs = T,
     kable_styling(latex_options=c("hold_position", position="center")) %>%
     add_header_above(c(" " = 2, "True value" = 2)) %>%
     column_spec(1:2, bold=T) %>% collapse_rows(1)
-c_matrix
 ```
 
 From the confusion matrix, several metrics can be deduced. The definitions of some often-used metrics are given below:

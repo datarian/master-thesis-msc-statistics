@@ -5,7 +5,7 @@ bookdown::gitbook:
     config:
         toolbar:
             position: static
-        download: ["pdf", "epub"]
+        download: "pdf"
         sharing:
           facebook: yes
           twitter: yes

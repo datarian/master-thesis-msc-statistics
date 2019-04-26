@@ -114,7 +114,7 @@
 \usepackage{float}
 
 \author{Florian Hochstrasser}
-\date{2019-04-24}
+\date{2019-04-26}
 
 \begin{document}
 
@@ -193,10 +193,6 @@ This is a direct measure of profit. The winner will be the participant with the 
 
 In the scope of this thesis, the following naming conventions are used.
 
-\begin{lstlisting}[basicstyle={\bfseries}]
-## Warning: `data_frame()` is deprecated, use `tibble()`.
-## This warning is displayed once per session.
-\end{lstlisting}
 \begin{table}[!h]
 
 \caption{\label{tab:glossary-table}Naming conventions.}
@@ -218,8 +214,8 @@ Target & The solution, or target variable, in the learning dataset. Used in supe
 \end{tabular}
 \end{table}
 
-\hypertarget{methods}{%
-\chapter{Methods}\label{methods}}
+\hypertarget{experimental-setup-and-methods}{%
+\chapter{Experimental Setup and Methods}\label{experimental-setup-and-methods}}
 
 The general workflow with which the problem was solved is shown in Figure \ref{fig:workflow}.
 
@@ -368,20 +364,20 @@ A one-hot encoded feature with \(n\) levels is transformed into \(n\) new binary
 
 Binary encoding first assigns an ordinal value to each category. These integer values are then binary encoded. For each binary digit, one new feature is created. Compared to one-hot encoding, the dimensionality increases less with this method.
 
-As an example, the US states are represented by a categorical variable with 52 levels. While one-hot encoding would result in 52 new features, we can encode 52 values with only 5 binary
+As an example, the US states are represented by a categorical variable with 52 levels. While one-hot encoding would result in 52 new features, we can encode 52 values with only 5 binary digits, thus adding 5 instead of 52 new features.
 
 \hypertarget{imputation}{%
 \subsection{Imputation}\label{imputation}}
 
-As required by the cup documentation, missing values were imputed. Instead of choosing a simple approach like replacing with the feature's mean or median, a modelling approach was chosen. Package \texttt{fancyimpute} provides an iterative imputation algorithm for this purpose. Features are ordered by the fraction of missing values.
+As required by the cup documentation, missing values were imputed. Instead of choosing a simple approach like replacing with the feature's mean or median, a modelling approach was chosen. Package \texttt{fancyimpute} provides an iterative imputation algorithm for this purpose. Features are ordered by the fraction of missing values {[}FINISH EXPLANATION{]}
 
 \hypertarget{feature-selection}{%
 \subsection{Feature Selection}\label{feature-selection}}
 
-One of the biggest caveats in machine learning is the infamous ``Curse of Dimensionality'' coined by Bellman, Corporation, and Collection (\protect\hyperlink{ref-bellman1957dynamic}{1957}). The curse comes from the fact that with an increasing number of dimensions, the required number of examples grows exponentially. In the area of machine learning, high dimensionality in short frequently leads to an overfitting of the training data, meaning that the generalisation error is unacceptably big (see Goodfellow, Bengio, and Courville (\protect\hyperlink{ref-Goodfellow-et-al-2016}{2016})).
+One of the biggest caveats in machine learning is the infamous ``Curse of Dimensionality'' coined by Bellman, Corporation, and Collection (\protect\hyperlink{ref-bellman1957dynamic}{1957}). The curse comes from the fact that with an increasing number of dimensions, the required number of examples grows exponentially. In the area of machine learning, high dimensionality frequently leads to an overfitting of the training data, meaning that the generalisation error is unacceptably big (see Goodfellow, Bengio, and Courville (\protect\hyperlink{ref-Goodfellow-et-al-2016}{2016})).
 
-It is therefore beneficial to reducde the data set dimensionality while preserving as much relevant information as possible. A method to deal with the problem is called boruta, introduced by Kursa, Rudnicki, and others (\protect\hyperlink{ref-kursa2010boruta}{2010}). It works sequentially and removes features found to be less relevant at each iteration. By doing so, it solves the so-called all-relevant feature problem.
-The algorithm is acutally a wrapper function around a random forest classifier. A random forest classifier is fast, can usually be run without parameters and returns an importance measure for each feature.
+It is therefore beneficial to reducde the data set dimensionality while preserving as much relevant information as possible. A method to deal with the problem is called boruta, introduced by Kursa, Rudnicki, and others (\protect\hyperlink{ref-kursa2010boruta}{2010}). The algorithm was found to perform very well regarding selection of relevant features in B. Kursa and Rudnicki (\protect\hyperlink{ref-kursa2011boruta}{2011}). It works sequentially and removes features found to be less relevant at each iteration. By doing so, it solves the so-called all-relevant feature problem.
+The algorithm is actually a wrapper function around a random forest classifier. A random forest classifier is fast, can usually be run without parameters and returns an importance measure for each feature.
 
 In short, the alogrithm works as follows:
 
@@ -409,19 +405,30 @@ For this thesis, a python implementation\footnote{see \href{https://github.com/s
 \hypertarget{model-evaluation}{%
 \section{Model Evaluation}\label{model-evaluation}}
 
-For this thesis, several different algorithms were studied.
+During model evaluation, several algorithms were trained and their performance compared.
+
+Randomized grid search with 10-fold cross validation was used to optimize hyperparameters for the algorithms.
+
+The best parameter combination was determined using \emph{recall} as the performance metric (see \ref{performance-metrics}).
 
 \hypertarget{considered-algorithms}{%
 \subsection{Considered Algorithms}\label{considered-algorithms}}
+
+The algorithms were chosen so as to cover a wide range of approaches to learning. A short introduction of each algorithm, along with the hyperparameters used for regularization is given below.
+
+\hypertarget{random-forest}{%
+\subsubsection{Random Forest}\label{random-forest}}
 
 \hypertarget{gradient-boosting-machine}{%
 \subsubsection{Gradient Boosting Machine}\label{gradient-boosting-machine}}
 
 Boosting is a method that can be applied to any learning algorithm. It was introduced by Freund and Schapire (\protect\hyperlink{ref-freund1997decision}{1997}) in the form of the algorithm AdaBoost.M1, intended for classification problems. The main idea behind boosting is to train a set of weak classifiers which are only slightly better than a random decision. The predictions of the individual weak classifiers are then combined into a majority vote.
 
-Gradient boosting extends on this idea.
+Gradient boosting extends on this idea. New trees are added in the direction of the gradient of the loss function.
 
-In the scope of this thesis, the package \texttt{XGBoost} by Chen and Guestrin (\protect\hyperlink{ref-chen2016xgboost}{2016}) was used. Assume we have a data set with \(n\) examples and \(m\) features: \(D = \{\{\mathbf{x_i}, y_i\}\} ( |D| = n, \mathbf{x_i} \in \mathbb{R}^m, y_i \in \mathbb{R})\). The implementation uses a tree ensemble using \(K\) additive functions (regression trees) to predict the outcome for an example in the data.
+For this thesis, the package \texttt{XGBoost} by Chen and Guestrin (\protect\hyperlink{ref-chen2016xgboost}{2016}) was used. The general principle of gradient descent is given below.
+
+Assume we have a data set with \(n\) examples and \(m\) features: \(D = \{\{\mathbf{x_i}, y_i\}\} ( |D| = n, \mathbf{x_i} \in \mathbb{R}^m, y_i \in \mathbb{R})\). The implementation uses a tree ensemble using \(K\) additive functions (regression trees) to predict the outcome for an example in the data.
 
 \begin{equation}
 \hat{y}_i = \phi(\mathbf{x_i}) = \sum_{k=1}^K f_k(\mathbf{x_i}), f_k \in F
@@ -433,23 +440,75 @@ where \(F = \{f(\mathbf{x}) = w_{q(x)}\} (q: \mathbb{R}^m \rightarrow T, w \in \
 For learning the functions in \(F\), the following loss function is minimized:
 
 \begin{equation}
-L(\phi) = \sum_{i=1}^n l(\hat{y}_i, y_i) + \sum_k^K \Omega(f_k)
+L(\phi) = \sum_{i=1}^n l(y_i, \hat{y_i}) + \sum_k^K \Omega(f_k)
 \label{eq:gbm-loss}
 \end{equation}
 
 Here, \(l\) is a differentiable, convex loss function that measures the difference between predictions and true values. Since \(l\) is convex, we are guaranteed to find a global minimum. \(\Omega(f) = \gamma T + \frac{1}{2}\lambda||w||^2\) is a penalty on the complexity of the trees to counter over-fitting.
 
-\hypertarget{random-forest}{%
-\subsubsection{Random Forest}\label{random-forest}}
+For learning the model, an additive approach is used. At each iteration \(t\), the tree \(f_t\) that improves the model most is added. For this, we add \(f_t(\mathbf{x_i})\) to the predictions at \(t-1\).
+
+\begin{equation}
+L^{(t)} = \sum_{i=1}^n l(y_i, \hat{y_i}^{t-1} + f_t(\mathbf{x_i})) +\Omega(f_t)
+\label{eq:gbm-iterate}
+\end{equation}
+
+To find the best \(f_t\) to add, the gradients finally come into play. With \(g_i\) and \(h_i\) the first- and second-order gradient statistics of \(l\), the loss function becomes:
+
+\begin{equation}
+\tilde{L}^{(t)} = \sum_{i=1}^n l(y_i, \hat{y_i}^{t-1} + g_if_t(\mathbf{x_i}) + h_i f_t^2(\mathbf{x_i})) +\Omega(f_t)
+\label{eq:gbm-grad}
+\end{equation}
+
+\textbf{Regularization}
+
+Apart from the penalization of complicated trees that is implicitly applied in Eq. \eqref{eq:gbm-loss}, regularization was controlled with the following hyperparameters:
+
+\begin{itemize}
+\tightlist
+\item
+  Shrinkage: A learning rate \textless{} 1.0 decreases step size for the gradient descent, helping convergence. The number of estimators \(f_k\) has to be increased for small learning rates in order for the algorithm to converge.
+\item
+  Early stopping: Based on an evaluation set, learning stops when no improvement on the performance metric is made for a fixed number of steps.
+\item
+  Column Subsampling: A random sample from the \(m\) features of size \(s, s < m\) is drawn for each \(f_k\), countering overfitting and speeding up learning.
+\end{itemize}
+
+\hypertarget{glmnet}{%
+\subsubsection{GLMnet}\label{glmnet}}
+
+The GLMnet is an implementation of a generalized linear model (GLM) with penalized maximum likelihood by Hastie and Qian (\protect\hyperlink{ref-hastie2014glmnet}{2014}). For the binary target in the data, a logistic regression was chosen. Regularization is achieved through \(L^2\) and \(L^1\) penalties (i.e.~ridge and the lasso or their combination known as elastic net).
+
+The logistic regression model for a two-class response \(G = \{0,1\}\) with target \(y_i = I(g_i=1)\):
+
+\(P(G=1|X=x) = \frac{e^{\beta_0+\beta^Tx}}{1+e^{\beta_0+\beta^Tx}}\) or, in the log-odds transformation: \(log\frac{P(G=1|X=x)}{P(G=0|X=x)}=\beta_0+\beta^Tx\).
+
+The loss function is:
+
+\begin{equation}
+\min_{(\beta_0,\beta) \in \mathbb{R}^{m+1}} - \left[\frac{1}{n}\sum_{i=1}^ny_i(\beta_0+x_i^T\beta)-log(1+e^{\beta_0+x_i^T\beta})\right] + \lambda\left[\frac{(1-\alpha)}{2}||\beta||_2^2+\alpha||\beta||_1\right]
+\label{eq:glmnet}
+\end{equation}
+
+It's first term is the negative log-likelihood for the examples in the data. The second term is the elastic-net penalty. \(\lambda\) controls the amount of penalization. Parameter \(\alpha, 0 < \alpha < 1\) controls the elastic-net penalty. For \(\alpha = 0\), it is pure ridge, for \(\alpha = 1\) pure lasso.
+
+For learning, glmnet tries many different \(\lambda\) values for a given \(\alpha\). Each \(\lambda\) is then evaluated through cross validation.
+
+** Regularization **
+
+\begin{itemize}
+\tightlist
+\item
+  The parameter \(\alpha\) parametrizes the elastic net.
+\item
+  The scoring method for cross validation can be chosen (log-loss, classification error, accuracy, precision, recall, average precision, roc-auc)
+\end{itemize}
+
+\hypertarget{multi-layer-perceptron-neural-network}{%
+\subsubsection{Multi Layer Perceptron (Neural Network)}\label{multi-layer-perceptron-neural-network}}
 
 \hypertarget{support-vector-machine}{%
 \subsubsection{Support Vector Machine}\label{support-vector-machine}}
-
-\hypertarget{neural-network}{%
-\subsubsection{Neural Network}\label{neural-network}}
-
-\hypertarget{glm-net}{%
-\subsubsection{GLM Net}\label{glm-net}}
 
 \hypertarget{performance-metrics}{%
 \subsection{Performance Metrics}\label{performance-metrics}}
@@ -472,13 +531,6 @@ For classification problems, the confusion matrix (see Table \ref{tab:conf-matri
 \bottomrule
 \end{tabular}
 \end{table}
-
-\begin{verbatim}
-                 Event No Event
-\end{verbatim}
-
-1 Predicted Event TP FP
-2 Predicted No Event FN TN
 
 From the confusion matrix, several metrics can be deduced. The definitions of some often-used metrics are given below:
 
@@ -892,6 +944,9 @@ Allaire, J, Joe Cheng, Yihui Xie, Jonathan McPherson, Winston Chang, Jeff Allen,
 \leavevmode\hypertarget{ref-bellman1957dynamic}{}%
 Bellman, R., Rand Corporation, and Karreman Mathematics Research Collection. 1957. \emph{Dynamic Programming}. Rand Corporation Research Study. Princeton University Press. \url{https://books.google.de/books?id=wdtoPwAACAAJ}.
 
+\leavevmode\hypertarget{ref-kursa2011boruta}{}%
+B. Kursa, Miron, and Witold Rudnicki. 2011. ``The All Relevant Feature Selection Using Random Forest,'' June.
+
 \leavevmode\hypertarget{ref-chen2016xgboost}{}%
 Chen, Tianqi, and Carlos Guestrin. 2016. ``Xgboost: A Scalable Tree Boosting System.'' In \emph{Proceedings of the 22nd Acm Sigkdd International Conference on Knowledge Discovery and Data Mining}, 785--94. ACM.
 
@@ -900,6 +955,9 @@ Freund, Yoav, and Robert E Schapire. 1997. ``A Decision-Theoretic Generalization
 
 \leavevmode\hypertarget{ref-Goodfellow-et-al-2016}{}%
 Goodfellow, Ian, Yoshua Bengio, and Aaron Courville. 2016. \emph{Deep Learning}. MIT Press.
+
+\leavevmode\hypertarget{ref-hastie2014glmnet}{}%
+Hastie, Trevor, and Junyang Qian. 2014. ``Glmnet Vignette.'' \emph{Retrieve from Http://Www. Web. Stanford. Edu/\textasciitilde{} Hastie/Papers/Glmnet\_Vignette. Pdf. Accessed September} 20: 2016.
 
 \leavevmode\hypertarget{ref-Kluyver:2016aa}{}%
 Kluyver, Thomas, Benjamin Ragan-Kelley, Fernando Pérez, Brian Granger, Matthias Bussonnier, Jonathan Frederic, Kyle Kelley, et al. 2016. ``Jupyter Notebooks -- a Publishing Format for Reproducible Computational Workflows.'' Edited by F. Loizides and B. Schmidt. IOS Press.

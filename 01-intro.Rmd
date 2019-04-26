@@ -42,7 +42,7 @@ In the scope of this thesis, the following naming conventions are used.
 
 ```{r glossary-table, results='asis', echo=F, cache=F}
 
-data_frame(
+tibble(
     Term = c("Example",
              "Feature",
              "Target",
