@@ -137,9 +137,9 @@ data_graph <- grViz(
   ")
 
 rsvg_pdf(charToRaw(DiagrammeRsvg::export_svg(data_graph)),
-         file="docs/figures/preprocessing/data-splitting.pdf")
+         file="figures/preprocessing/data-splitting.pdf")
 rsvg_png(charToRaw(DiagrammeRsvg::export_svg(data_graph)),
-         file="docs/figures/preprocessing/data-splitting.png")
+         file="figures/preprocessing/data-splitting.png")
 knitr::include_graphics("figures/preprocessing/data-splitting.png")
 ```
 
