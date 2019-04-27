@@ -32,7 +32,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   
   
-<link rel="prev" href="model-evaluation-1.html">
+<link rel="prev" href="model-learning.html">
 <link rel="next" href="conclusions.html">
 <script src="assets/jquery-2.2.3/jquery.min.js"></script>
 <link href="assets/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -81,9 +81,13 @@
 <li class="chapter" data-level="2.2" data-path="data-handling.html"><a href="data-handling.html"><i class="fa fa-check"></i><b>2.2</b> Data Handling</a></li>
 <li class="chapter" data-level="2.3" data-path="data-preprocessing.html"><a href="data-preprocessing.html"><i class="fa fa-check"></i><b>2.3</b> Data Preprocessing</a><ul>
 <li class="chapter" data-level="2.3.1" data-path="data-preprocessing.html"><a href="data-preprocessing.html#cleaning"><i class="fa fa-check"></i><b>2.3.1</b> Cleaning</a></li>
-<li class="chapter" data-level="2.3.2" data-path="data-preprocessing.html"><a href="data-preprocessing.html#feature-engineering"><i class="fa fa-check"></i><b>2.3.2</b> Feature Engineering</a></li>
-<li class="chapter" data-level="2.3.3" data-path="data-preprocessing.html"><a href="data-preprocessing.html#imputation"><i class="fa fa-check"></i><b>2.3.3</b> Imputation</a></li>
-<li class="chapter" data-level="2.3.4" data-path="data-preprocessing.html"><a href="data-preprocessing.html#feature-selection"><i class="fa fa-check"></i><b>2.3.4</b> Feature Selection</a></li>
+<li class="chapter" data-level="2.3.2" data-path="data-preprocessing.html"><a href="data-preprocessing.html#date-features"><i class="fa fa-check"></i><b>2.3.2</b> Date features</a></li>
+<li class="chapter" data-level="2.3.3" data-path="data-preprocessing.html"><a href="data-preprocessing.html#further-sanitizations"><i class="fa fa-check"></i><b>2.3.3</b> Further sanitizations</a></li>
+<li class="chapter" data-level="2.3.4" data-path="data-preprocessing.html"><a href="data-preprocessing.html#binary-features"><i class="fa fa-check"></i><b>2.3.4</b> Binary Features</a></li>
+<li class="chapter" data-level="2.3.5" data-path="data-preprocessing.html"><a href="data-preprocessing.html#multi-byte-categorical-features"><i class="fa fa-check"></i><b>2.3.5</b> Multi-byte Categorical Features</a></li>
+<li class="chapter" data-level="2.3.6" data-path="data-preprocessing.html"><a href="data-preprocessing.html#feature-engineering"><i class="fa fa-check"></i><b>2.3.6</b> Feature Engineering</a></li>
+<li class="chapter" data-level="2.3.7" data-path="data-preprocessing.html"><a href="data-preprocessing.html#imputation"><i class="fa fa-check"></i><b>2.3.7</b> Imputation</a></li>
+<li class="chapter" data-level="2.3.8" data-path="data-preprocessing.html"><a href="data-preprocessing.html#feature-selection"><i class="fa fa-check"></i><b>2.3.8</b> Feature Selection</a></li>
 </ul></li>
 <li class="chapter" data-level="2.4" data-path="model-evaluation.html"><a href="model-evaluation.html"><i class="fa fa-check"></i><b>2.4</b> Model Evaluation</a><ul>
 <li class="chapter" data-level="2.4.1" data-path="model-evaluation.html"><a href="model-evaluation.html#considered-algorithms"><i class="fa fa-check"></i><b>2.4.1</b> Considered Algorithms</a></li>
@@ -91,31 +95,23 @@
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="data.html"><a href="data.html"><i class="fa fa-check"></i><b>3</b> Data</a><ul>
-<li class="chapter" data-level="3.1" data-path="raw-data-import.html"><a href="raw-data-import.html"><i class="fa fa-check"></i><b>3.1</b> Raw data import</a></li>
-<li class="chapter" data-level="3.2" data-path="cleaning-preprocessing.html"><a href="cleaning-preprocessing.html"><i class="fa fa-check"></i><b>3.2</b> Cleaning &amp; Preprocessing</a><ul>
-<li class="chapter" data-level="3.2.1" data-path="cleaning-preprocessing.html"><a href="cleaning-preprocessing.html#date-features"><i class="fa fa-check"></i><b>3.2.1</b> Date features</a></li>
-<li class="chapter" data-level="3.2.2" data-path="cleaning-preprocessing.html"><a href="cleaning-preprocessing.html#further-sanitizations"><i class="fa fa-check"></i><b>3.2.2</b> Further sanitizations</a></li>
-<li class="chapter" data-level="3.2.3" data-path="cleaning-preprocessing.html"><a href="cleaning-preprocessing.html#binary-features"><i class="fa fa-check"></i><b>3.2.3</b> Binary Features</a></li>
-<li class="chapter" data-level="3.2.4" data-path="cleaning-preprocessing.html"><a href="cleaning-preprocessing.html#multi-byte-categorical-features"><i class="fa fa-check"></i><b>3.2.4</b> Multi-byte Categorical Features</a></li>
-<li class="chapter" data-level="3.2.5" data-path="cleaning-preprocessing.html"><a href="cleaning-preprocessing.html#missing-values"><i class="fa fa-check"></i><b>3.2.5</b> Missing Values</a></li>
+<li class="chapter" data-level="3.1" data-path="general-structure.html"><a href="general-structure.html"><i class="fa fa-check"></i><b>3.1</b> General Structure</a></li>
+<li class="chapter" data-level="3.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html"><i class="fa fa-check"></i><b>3.2</b> Exploratory Data Analysis</a><ul>
+<li class="chapter" data-level="3.2.1" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#data-types"><i class="fa fa-check"></i><b>3.2.1</b> Data types</a></li>
+<li class="chapter" data-level="3.2.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#targets"><i class="fa fa-check"></i><b>3.2.2</b> Targets</a></li>
+<li class="chapter" data-level="3.2.3" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#skewness"><i class="fa fa-check"></i><b>3.2.3</b> Skewness</a></li>
 </ul></li>
-<li class="chapter" data-level="3.3" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html"><i class="fa fa-check"></i><b>3.3</b> Exploratory Data Analysis</a><ul>
-<li class="chapter" data-level="3.3.1" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#general-structure"><i class="fa fa-check"></i><b>3.3.1</b> General structure</a></li>
-<li class="chapter" data-level="3.3.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#correlations"><i class="fa fa-check"></i><b>3.3.2</b> Correlations</a></li>
-<li class="chapter" data-level="3.3.3" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#skewness"><i class="fa fa-check"></i><b>3.3.3</b> Skewness</a></li>
-<li class="chapter" data-level="3.3.4" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#targets"><i class="fa fa-check"></i><b>3.3.4</b> Targets</a></li>
-</ul></li>
-<li class="chapter" data-level="3.4" data-path="preprocessing.html"><a href="preprocessing.html"><i class="fa fa-check"></i><b>3.4</b> Preprocessing</a><ul>
-<li class="chapter" data-level="3.4.1" data-path="preprocessing.html"><a href="preprocessing.html#noisy-data"><i class="fa fa-check"></i><b>3.4.1</b> Noisy data</a></li>
-<li class="chapter" data-level="3.4.2" data-path="preprocessing.html"><a href="preprocessing.html#constant-features"><i class="fa fa-check"></i><b>3.4.2</b> Constant features</a></li>
-<li class="chapter" data-level="3.4.3" data-path="preprocessing.html"><a href="preprocessing.html#missing-values-sparse-features"><i class="fa fa-check"></i><b>3.4.3</b> Missing values / sparse features</a></li>
-<li class="chapter" data-level="3.4.4" data-path="preprocessing.html"><a href="preprocessing.html#categorical-features"><i class="fa fa-check"></i><b>3.4.4</b> Categorical features</a></li>
-<li class="chapter" data-level="3.4.5" data-path="preprocessing.html"><a href="preprocessing.html#feature-engineering-1"><i class="fa fa-check"></i><b>3.4.5</b> Feature Engineering</a></li>
-<li class="chapter" data-level="3.4.6" data-path="preprocessing.html"><a href="preprocessing.html#feature-selection-1"><i class="fa fa-check"></i><b>3.4.6</b> Feature Selection</a></li>
-<li class="chapter" data-level="3.4.7" data-path="preprocessing.html"><a href="preprocessing.html#feature-extraction"><i class="fa fa-check"></i><b>3.4.7</b> Feature Extraction</a></li>
+<li class="chapter" data-level="3.3" data-path="preprocessing.html"><a href="preprocessing.html"><i class="fa fa-check"></i><b>3.3</b> Preprocessing</a><ul>
+<li class="chapter" data-level="3.3.1" data-path="preprocessing.html"><a href="preprocessing.html#noisy-data"><i class="fa fa-check"></i><b>3.3.1</b> Noisy data</a></li>
+<li class="chapter" data-level="3.3.2" data-path="preprocessing.html"><a href="preprocessing.html#constant-features"><i class="fa fa-check"></i><b>3.3.2</b> Constant features</a></li>
+<li class="chapter" data-level="3.3.3" data-path="preprocessing.html"><a href="preprocessing.html#missing-values-sparse-features"><i class="fa fa-check"></i><b>3.3.3</b> Missing values / sparse features</a></li>
+<li class="chapter" data-level="3.3.4" data-path="preprocessing.html"><a href="preprocessing.html#categorical-features"><i class="fa fa-check"></i><b>3.3.4</b> Categorical features</a></li>
+<li class="chapter" data-level="3.3.5" data-path="preprocessing.html"><a href="preprocessing.html#feature-engineering-1"><i class="fa fa-check"></i><b>3.3.5</b> Feature Engineering</a></li>
+<li class="chapter" data-level="3.3.6" data-path="preprocessing.html"><a href="preprocessing.html#feature-selection-1"><i class="fa fa-check"></i><b>3.3.6</b> Feature Selection</a></li>
+<li class="chapter" data-level="3.3.7" data-path="preprocessing.html"><a href="preprocessing.html#feature-extraction"><i class="fa fa-check"></i><b>3.3.7</b> Feature Extraction</a></li>
 </ul></li>
 </ul></li>
-<li class="chapter" data-level="4" data-path="model-evaluation-1.html"><a href="model-evaluation-1.html"><i class="fa fa-check"></i><b>4</b> Model evaluation</a></li>
+<li class="chapter" data-level="4" data-path="model-learning.html"><a href="model-learning.html"><i class="fa fa-check"></i><b>4</b> Model Learning</a></li>
 <li class="chapter" data-level="5" data-path="results-and-discussion.html"><a href="results-and-discussion.html"><i class="fa fa-check"></i><b>5</b> Results and Discussion</a></li>
 <li class="chapter" data-level="6" data-path="conclusions.html"><a href="conclusions.html"><i class="fa fa-check"></i><b>6</b> Conclusions</a><ul>
 <li class="chapter" data-level="6.1" data-path="comparison-with-cup-winners.html"><a href="comparison-with-cup-winners.html"><i class="fa fa-check"></i><b>6.1</b> Comparison with Cup winners</a></li>
@@ -155,7 +151,7 @@
           </div>
         </div>
       </div>
-<a href="model-evaluation-1.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="model-learning.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
 <a href="conclusions.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>

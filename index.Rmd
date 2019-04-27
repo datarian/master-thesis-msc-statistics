@@ -157,6 +157,26 @@ sns.axes_style({'spines.right': False,
 sns.set_palette(Config.get("color_palette"))
 ```
 
+```{python data-specs, echo=F, results='hide', cache=F}
+import kdd98.data_handler as dh
+import pandas as pd
+date_features = dh.DATE_FEATURES
+binary_features = dh.BINARY_FEATURES
+data_provider = dh.KDD98DataProvider("cup98LRN.txt")
+raw_data = data_provider.raw_data
+int_features = raw_data.select_dtypes(include="integer").columns.values.tolist()
+float_features = raw_data.select_dtypes(include="float").columns.values.tolist()
+category_features = raw_data.select_dtypes(include="category").columns.values.tolist()
+object_features = raw_data.select_dtypes(include="object").columns.values.tolist()
+
+stats = pd.DataFrame({"Integer": ["Discrete features, no missing values", len(int_features)],
+                      "Float": ["Continuous features and discrete features with missing values", len(float_features)],
+                      "Categorical": ["Nominal and ordinal features", len(category_features)],
+                      "Object": ["Features with alphanumeric values", len(object_features)],
+                      "Total": [" ", raw_data.shape[1]]}).transpose()
+stats.columns = ["Data content", "Number of features"]
+stats.index.name = "Data type"
+```
 
 # Abstract {-}
 
