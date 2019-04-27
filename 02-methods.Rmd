@@ -26,18 +26,24 @@ workflow_graph <- grViz(
       { rank=same;
           z0 [group='a', label='.', style = invis];
           z1 [group='b', label='.', style = invis];
+          z2 [group='c', label='.', style = invis];
           z0 -> z1;
+          z1 -> z2;
       }
       
       subgraph cluster_preprocessing {
         cleaning[group='a', label='Cleaning'];
         featureengineering[group='a',label='Feature\nEngineering'];
+        eda[group='a', label='EDA'];
         imputation[group='a', label='Imputation'];
         featureselection[group='a',label='Feature\nSelection'];
         label = 'Preprocessing'
-        featureengineering -> cleaning [style=solid, color = black]
         cleaning -> featureengineering [style=solid, color = black]
-        featureengineering -> imputation -> featureselection [style=solid, color = black]
+        featureengineering -> eda  [style=solid, color=black]
+        featureengineering -> cleaning [style=solod, color=black]
+        eda -> cleaning  [style=solid, color=black]
+        eda -> featureengineering [style=solid,color=black]
+        eda -> imputation -> featureselection [style=solid, color = black]
       }
       
       subgraph cluster_learning {
@@ -47,12 +53,16 @@ workflow_graph <- grViz(
         modelevaluation -> modelselection [style=solid, color = black, penwidth=0.95]
       }
 
+      predictions[group='b', label='Predictions'];
+
       z0 -> cleaning;
       z1 -> modelevaluation;
 
       edge [style=solid, color = black, penwidth=0.95]
       dataimport -> cleaning
       featureselection -> modelevaluation
+      modelselection -> predictions
+      modelevaluation -> featureengineering
     }
   ")
 
@@ -161,6 +171,118 @@ MAR values in the sense of @rubin1976inference are missing conditionally on othe
 
 The transformations applied can be studied in the jupyter notebook *1_Preprocessing.ipynb*^[see `r make_github_link("notebooks", "1_Preprocessing.ipynb")`].
 
+### Date features
+
+There were `r length(py$date_features)` date features specified in the documentation. The specified format for these features is 'yymm', the two-digit year followed by the two-digit month.
+
+```{python date-cleaning, fig.cap="Values for date of birth (DOB) with one missing digit versus age. We observe jumps in July of each year, this is because the reference date for age is 1997-06-01. By looking at the ages, it is evident that these values indeed lack a leading zero to put them in the correct decade.", results='asis', echo=F}
+import seaborn as sns
+import matplotlib.ticker as ticker
+
+dates = raw_data[dh.DATE_FEATURES]
+for f in dh.DATE_FEATURES:
+    s = dates.loc[:,f]
+    if len(s.loc[s.str.len() == 3].values) > 0:
+        indices = s.loc[s.str.len() == 3].index
+        df = raw_data.loc[indices, [f,"AGE"]]
+
+df = df.sort_values(by="DOB")
+g = sns.scatterplot(x="DOB", y="AGE", data=df, alpha=0.6)
+
+tick_spacing=6
+g.xaxis.set_major_locator(ticker.MultipleLocator(tick_spacing))
+g
+```
+
+Several values in the feature DOB (date of birth) are only three digits long. Comparing these values with the corresponding example's values for feature AGE shows that, considering the reference date of June 1997, it is very likely that the 3-digit DOB's are lacking a leading zero (see Figure \@ref(fig:date-cleaning)).
+
+All these values were therefore prepended by a zero.
+
+
+### Further sanitizations
+
+Several features needed recoding and sanitizing. Information in the data set documentation was used to determine necessary transformations. The transformations are shown in \@ref(tab:sanitize).
+
+```{r sanitize, results="asis", echo=F}
+sanitizing_features <- data.frame(
+  zip = c("U.S. zip code", 
+            "Remove trailing hyphen",
+            "A hyphen after a 5-digit zip most likely stems from incomplete 'ZIP+4' codes^[see (USPS: ZIP+4 Code)[https://about.usps.com/publications/pub100/pub100_044.htm]]."),
+  mdm = c("Major donor matrix features",
+                 "Replace X with NaN",
+                 "Encode NaN as specified by the data set documentation."),
+  tb = c("Binary target indicating whether an example has donated or not.",
+                 "Set to 1 when TARGET_D is $\new$ 0",
+                 "When a dollar amount (TARGET_D) was donated, the binary indicator target has to be 1."
+                 ),
+  rfa = c("Multi-byte categorical. Recency, Frequency, Amount.",
+              "Set to NaN if length is $\neq$ 3",
+              "The values in these features have to be of length 3, each byte is one categorical."
+              ),
+  nox = c("NOEXCH: Do not exchange address flag",
+               "Recode X to 1",
+               "Both X and 1 mean `True`"
+               ),
+  rmnt = c("RAMNT_*: Amount donated for a certain campaign.",
+                "Set to NaN if corresponding RDATE_* (date of donation reception) is not missing, else set to zero.",
+                "Avoid NaN values if possible."
+               
+               ),
+  stringsAsFactors=FALSE
+)
+sanitizing_features <- t(sanitizing_features)
+colnames(sanitizing_features) <- c("Feature explanation", "Operation", "Reason")
+rownames(sanitizing_features) <- c("ZIP", "MDMAUD_*", "TARGET_B", "RFA_*", "NOEXCH", "RAMNT_*")
+
+kable(sanitizing_features,
+    booktabs = T,
+    caption="Overview of trivial data transformations applied.") %>%
+  kable_styling(latex_options=c("hold_position", position="Center")) %>%
+  column_spec(c(2, 3, 4), width="4cm")
+```
+
+### Binary Features
+
+There are several codings for the different binary features present in the data set. All were recoded to *1* / *0* with missing data coded as not a number (NaN). The recoding was done through a custom `Transformer` class (see Appendix \@ref(appendix-transformers)) derived from scikit-learn's `TransformerMixin`.
+
+Table (\@ref(tab:binary-recode)) shows the original coding of the `r length(py$binary_features)` binary features in the raw data set. There are two classes of binary features that have blanks as the *False* value. Even though the data set documentation states that blanks should be treated as missing values, in these two classes blanks were interpreted as *False*. For the remaining binary features, blanks were interpreted as missing and coded as `NaN`.
+
+The feature *NOEXCH* had both `X` and `1` for True in the data. This was fixed by replacing all occurrences of `X` by `1`.
+
+```{r binary-recode, results="asis", echo=F}
+
+bin_recode <- tibble::tibble(
+    True = list("X", "Y", "1", "E", "H", "B"),
+    False = list("blank", "N", "0", "I", "U", "blank"),
+    Features = list(
+      "PEPSTRFL, MAJOR, RECINHSE, RECP3, RECPGVG, RECSWEEP",
+      "COLLECT1, VETERANS, BIBLE, CATLG, HOMEE, PETS, CDPLAY, STEREO,
+      PCOWNERS, PHOTO, CRAFTS, FISHER, GARDENIN,  BOATS, WALKER, KIDSTUFF,
+      CARDS, PLATES",
+       "NOEXCH, HPHONE_D, TARGET_B",
+      "AGEFLAG",
+      "HOMEOWNR",
+      "MAILCODE"
+      ))
+
+kable(bin_recode,
+      booktabs = T,
+      caption="Original coding of binary features.") %>%
+      kable_styling(latex_options=c("hold_position", position="center")) %>%
+      column_spec(3, width="10cm")
+```
+
+
+### Multi-byte Categorical Features
+
+Several features combine related information into bytewise codes. These codes were split into individual features. A custom child class of `scikit-learn.TransformerMixin` was written for this purpose (see Appendix \@ref(appendix-transformers)).
+
+The donation history contains recency / frequency / amount (RFA) features for each previous mailing. The dataset already contained one mailing (number 2) where this code was split into individual features. The remaining RFA codes were split also.
+
+#### Ordinal Features
+
+Ordinal features were recoded using a custom child classes of `scikit-learn.TransformerMixin` (see Appendix \@ref(appendix-transformers)).
+
 
 ### Feature Engineering
 
@@ -212,6 +334,8 @@ As an example, the US states are represented by a categorical variable with 52 l
 ### Imputation
 
 As required by the cup documentation, missing values were imputed. Instead of choosing a simple approach like replacing with the feature's mean or median, a modelling approach was chosen. Package `fancyimpute` provides an iterative imputation algorithm for this purpose. Features are ordered by the fraction of missing values [FINISH EXPLANATION]
+
+Missing values were imputed using a k-Neaerest Neighbors (kNN) algorithm provided in the python package `missing_py` @troyanskaya2001missing. For each example with a missing value in a specific feature, $k=3$ nearest neighbors that have a value for the feature are searched for and the missing value imputed with the metric *distance*.
 
 
 ### Feature Selection
