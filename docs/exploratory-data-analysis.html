@@ -5,11 +5,11 @@
 
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>3.3 Exploratory Data Analysis | Master_Thesis_Florian_Hochstrasser.utf8.md</title>
+  <title>3.2 Exploratory Data Analysis | Master_Thesis_Florian_Hochstrasser.utf8.md</title>
   <meta name="description" content="Thesis for the programme Master in Statistics at the University of Neuchâtel, Switzerland.">
   <meta name="generator" content="bookdown  and GitBook 2.6.7">
 
-  <meta property="og:title" content="3.3 Exploratory Data Analysis | Master_Thesis_Florian_Hochstrasser.utf8.md" />
+  <meta property="og:title" content="3.2 Exploratory Data Analysis | Master_Thesis_Florian_Hochstrasser.utf8.md" />
   <meta property="og:type" content="book" />
   
   
@@ -17,7 +17,7 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="3.3 Exploratory Data Analysis | Master_Thesis_Florian_Hochstrasser.utf8.md" />
+  <meta name="twitter:title" content="3.2 Exploratory Data Analysis | Master_Thesis_Florian_Hochstrasser.utf8.md" />
   
   <meta name="twitter:description" content="Thesis for the programme Master in Statistics at the University of Neuchâtel, Switzerland." />
   
@@ -25,14 +25,14 @@
 <meta name="author" content="Florian Hochstrasser">
 
 
-<meta name="date" content="2019-04-26">
+<meta name="date" content="2019-04-27">
 
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   
   
-<link rel="prev" href="cleaning-preprocessing.html">
+<link rel="prev" href="general-structure.html">
 <link rel="next" href="preprocessing.html">
 <script src="assets/jquery-2.2.3/jquery.min.js"></script>
 <link href="assets/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -51,6 +51,69 @@
 <script src="assets/kePrint-0.0.1/kePrint.js"></script>
 
 
+<style type="text/css">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
 
 <link rel="stylesheet" href="style.css" type="text/css" />
 </head>
@@ -81,9 +144,13 @@
 <li class="chapter" data-level="2.2" data-path="data-handling.html"><a href="data-handling.html"><i class="fa fa-check"></i><b>2.2</b> Data Handling</a></li>
 <li class="chapter" data-level="2.3" data-path="data-preprocessing.html"><a href="data-preprocessing.html"><i class="fa fa-check"></i><b>2.3</b> Data Preprocessing</a><ul>
 <li class="chapter" data-level="2.3.1" data-path="data-preprocessing.html"><a href="data-preprocessing.html#cleaning"><i class="fa fa-check"></i><b>2.3.1</b> Cleaning</a></li>
-<li class="chapter" data-level="2.3.2" data-path="data-preprocessing.html"><a href="data-preprocessing.html#feature-engineering"><i class="fa fa-check"></i><b>2.3.2</b> Feature Engineering</a></li>
-<li class="chapter" data-level="2.3.3" data-path="data-preprocessing.html"><a href="data-preprocessing.html#imputation"><i class="fa fa-check"></i><b>2.3.3</b> Imputation</a></li>
-<li class="chapter" data-level="2.3.4" data-path="data-preprocessing.html"><a href="data-preprocessing.html#feature-selection"><i class="fa fa-check"></i><b>2.3.4</b> Feature Selection</a></li>
+<li class="chapter" data-level="2.3.2" data-path="data-preprocessing.html"><a href="data-preprocessing.html#date-features"><i class="fa fa-check"></i><b>2.3.2</b> Date features</a></li>
+<li class="chapter" data-level="2.3.3" data-path="data-preprocessing.html"><a href="data-preprocessing.html#further-sanitizations"><i class="fa fa-check"></i><b>2.3.3</b> Further sanitizations</a></li>
+<li class="chapter" data-level="2.3.4" data-path="data-preprocessing.html"><a href="data-preprocessing.html#binary-features"><i class="fa fa-check"></i><b>2.3.4</b> Binary Features</a></li>
+<li class="chapter" data-level="2.3.5" data-path="data-preprocessing.html"><a href="data-preprocessing.html#multi-byte-categorical-features"><i class="fa fa-check"></i><b>2.3.5</b> Multi-byte Categorical Features</a></li>
+<li class="chapter" data-level="2.3.6" data-path="data-preprocessing.html"><a href="data-preprocessing.html#feature-engineering"><i class="fa fa-check"></i><b>2.3.6</b> Feature Engineering</a></li>
+<li class="chapter" data-level="2.3.7" data-path="data-preprocessing.html"><a href="data-preprocessing.html#imputation"><i class="fa fa-check"></i><b>2.3.7</b> Imputation</a></li>
+<li class="chapter" data-level="2.3.8" data-path="data-preprocessing.html"><a href="data-preprocessing.html#feature-selection"><i class="fa fa-check"></i><b>2.3.8</b> Feature Selection</a></li>
 </ul></li>
 <li class="chapter" data-level="2.4" data-path="model-evaluation.html"><a href="model-evaluation.html"><i class="fa fa-check"></i><b>2.4</b> Model Evaluation</a><ul>
 <li class="chapter" data-level="2.4.1" data-path="model-evaluation.html"><a href="model-evaluation.html#considered-algorithms"><i class="fa fa-check"></i><b>2.4.1</b> Considered Algorithms</a></li>
@@ -91,31 +158,23 @@
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="data.html"><a href="data.html"><i class="fa fa-check"></i><b>3</b> Data</a><ul>
-<li class="chapter" data-level="3.1" data-path="raw-data-import.html"><a href="raw-data-import.html"><i class="fa fa-check"></i><b>3.1</b> Raw data import</a></li>
-<li class="chapter" data-level="3.2" data-path="cleaning-preprocessing.html"><a href="cleaning-preprocessing.html"><i class="fa fa-check"></i><b>3.2</b> Cleaning &amp; Preprocessing</a><ul>
-<li class="chapter" data-level="3.2.1" data-path="cleaning-preprocessing.html"><a href="cleaning-preprocessing.html#date-features"><i class="fa fa-check"></i><b>3.2.1</b> Date features</a></li>
-<li class="chapter" data-level="3.2.2" data-path="cleaning-preprocessing.html"><a href="cleaning-preprocessing.html#further-sanitizations"><i class="fa fa-check"></i><b>3.2.2</b> Further sanitizations</a></li>
-<li class="chapter" data-level="3.2.3" data-path="cleaning-preprocessing.html"><a href="cleaning-preprocessing.html#binary-features"><i class="fa fa-check"></i><b>3.2.3</b> Binary Features</a></li>
-<li class="chapter" data-level="3.2.4" data-path="cleaning-preprocessing.html"><a href="cleaning-preprocessing.html#multi-byte-categorical-features"><i class="fa fa-check"></i><b>3.2.4</b> Multi-byte Categorical Features</a></li>
-<li class="chapter" data-level="3.2.5" data-path="cleaning-preprocessing.html"><a href="cleaning-preprocessing.html#missing-values"><i class="fa fa-check"></i><b>3.2.5</b> Missing Values</a></li>
+<li class="chapter" data-level="3.1" data-path="general-structure.html"><a href="general-structure.html"><i class="fa fa-check"></i><b>3.1</b> General Structure</a></li>
+<li class="chapter" data-level="3.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html"><i class="fa fa-check"></i><b>3.2</b> Exploratory Data Analysis</a><ul>
+<li class="chapter" data-level="3.2.1" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#data-types"><i class="fa fa-check"></i><b>3.2.1</b> Data types</a></li>
+<li class="chapter" data-level="3.2.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#targets"><i class="fa fa-check"></i><b>3.2.2</b> Targets</a></li>
+<li class="chapter" data-level="3.2.3" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#skewness"><i class="fa fa-check"></i><b>3.2.3</b> Skewness</a></li>
 </ul></li>
-<li class="chapter" data-level="3.3" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html"><i class="fa fa-check"></i><b>3.3</b> Exploratory Data Analysis</a><ul>
-<li class="chapter" data-level="3.3.1" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#general-structure"><i class="fa fa-check"></i><b>3.3.1</b> General structure</a></li>
-<li class="chapter" data-level="3.3.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#correlations"><i class="fa fa-check"></i><b>3.3.2</b> Correlations</a></li>
-<li class="chapter" data-level="3.3.3" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#skewness"><i class="fa fa-check"></i><b>3.3.3</b> Skewness</a></li>
-<li class="chapter" data-level="3.3.4" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#targets"><i class="fa fa-check"></i><b>3.3.4</b> Targets</a></li>
-</ul></li>
-<li class="chapter" data-level="3.4" data-path="preprocessing.html"><a href="preprocessing.html"><i class="fa fa-check"></i><b>3.4</b> Preprocessing</a><ul>
-<li class="chapter" data-level="3.4.1" data-path="preprocessing.html"><a href="preprocessing.html#noisy-data"><i class="fa fa-check"></i><b>3.4.1</b> Noisy data</a></li>
-<li class="chapter" data-level="3.4.2" data-path="preprocessing.html"><a href="preprocessing.html#constant-features"><i class="fa fa-check"></i><b>3.4.2</b> Constant features</a></li>
-<li class="chapter" data-level="3.4.3" data-path="preprocessing.html"><a href="preprocessing.html#missing-values-sparse-features"><i class="fa fa-check"></i><b>3.4.3</b> Missing values / sparse features</a></li>
-<li class="chapter" data-level="3.4.4" data-path="preprocessing.html"><a href="preprocessing.html#categorical-features"><i class="fa fa-check"></i><b>3.4.4</b> Categorical features</a></li>
-<li class="chapter" data-level="3.4.5" data-path="preprocessing.html"><a href="preprocessing.html#feature-engineering-1"><i class="fa fa-check"></i><b>3.4.5</b> Feature Engineering</a></li>
-<li class="chapter" data-level="3.4.6" data-path="preprocessing.html"><a href="preprocessing.html#feature-selection-1"><i class="fa fa-check"></i><b>3.4.6</b> Feature Selection</a></li>
-<li class="chapter" data-level="3.4.7" data-path="preprocessing.html"><a href="preprocessing.html#feature-extraction"><i class="fa fa-check"></i><b>3.4.7</b> Feature Extraction</a></li>
+<li class="chapter" data-level="3.3" data-path="preprocessing.html"><a href="preprocessing.html"><i class="fa fa-check"></i><b>3.3</b> Preprocessing</a><ul>
+<li class="chapter" data-level="3.3.1" data-path="preprocessing.html"><a href="preprocessing.html#noisy-data"><i class="fa fa-check"></i><b>3.3.1</b> Noisy data</a></li>
+<li class="chapter" data-level="3.3.2" data-path="preprocessing.html"><a href="preprocessing.html#constant-features"><i class="fa fa-check"></i><b>3.3.2</b> Constant features</a></li>
+<li class="chapter" data-level="3.3.3" data-path="preprocessing.html"><a href="preprocessing.html#missing-values-sparse-features"><i class="fa fa-check"></i><b>3.3.3</b> Missing values / sparse features</a></li>
+<li class="chapter" data-level="3.3.4" data-path="preprocessing.html"><a href="preprocessing.html#categorical-features"><i class="fa fa-check"></i><b>3.3.4</b> Categorical features</a></li>
+<li class="chapter" data-level="3.3.5" data-path="preprocessing.html"><a href="preprocessing.html#feature-engineering-1"><i class="fa fa-check"></i><b>3.3.5</b> Feature Engineering</a></li>
+<li class="chapter" data-level="3.3.6" data-path="preprocessing.html"><a href="preprocessing.html#feature-selection-1"><i class="fa fa-check"></i><b>3.3.6</b> Feature Selection</a></li>
+<li class="chapter" data-level="3.3.7" data-path="preprocessing.html"><a href="preprocessing.html#feature-extraction"><i class="fa fa-check"></i><b>3.3.7</b> Feature Extraction</a></li>
 </ul></li>
 </ul></li>
-<li class="chapter" data-level="4" data-path="model-evaluation-1.html"><a href="model-evaluation-1.html"><i class="fa fa-check"></i><b>4</b> Model evaluation</a></li>
+<li class="chapter" data-level="4" data-path="model-learning.html"><a href="model-learning.html"><i class="fa fa-check"></i><b>4</b> Model Learning</a></li>
 <li class="chapter" data-level="5" data-path="results-and-discussion.html"><a href="results-and-discussion.html"><i class="fa fa-check"></i><b>5</b> Results and Discussion</a></li>
 <li class="chapter" data-level="6" data-path="conclusions.html"><a href="conclusions.html"><i class="fa fa-check"></i><b>6</b> Conclusions</a><ul>
 <li class="chapter" data-level="6.1" data-path="comparison-with-cup-winners.html"><a href="comparison-with-cup-winners.html"><i class="fa fa-check"></i><b>6.1</b> Comparison with Cup winners</a></li>
@@ -147,67 +206,11 @@
 
             <section class="normal" id="section-">
 <div id="exploratory-data-analysis" class="section level2">
-<h2><span class="header-section-number">3.3</span> Exploratory Data Analysis</h2>
-<p>The detailed analysis can be studied online in the corresponding jupyter notebook<a href="#fn11" class="footnote-ref" id="fnref11"><sup>11</sup></a>. The findings are shown here.</p>
-<div id="general-structure" class="section level3">
-<h3><span class="header-section-number">3.3.1</span> General structure</h3>
-<p>The data set is provided pre-cut into a learning and validation set with 95412 and 96367 examples. The features are identical between the two except for the target that has been stripped from the validation set.</p>
-<p>There are four main sources of information that make up the data:</p>
-<ul>
-<li>Internal member database (index, personal particulars, several member status features): 85 features</li>
-<li>US census 1990: 286 features</li>
-<li>Promotion history file: 97 features on promotions received up until the current mailing and response patterns to these promotions</li>
-<li>Giving history file: 13 features, summary statistics giving maximum and minimum amount donated and dates of donations</li>
-</ul>
-<p>In total, there are 479 features plus two <a href="exploratory-data-analysis.html#targets">targets</a>.</p>
-</div>
-<div id="correlations" class="section level3">
-<h3><span class="header-section-number">3.3.2</span> Correlations</h3>
-</div>
-<div id="skewness" class="section level3">
-<h3><span class="header-section-number">3.3.3</span> Skewness</h3>
-<p>Most of the data is skewed. This is an important finding as the data will have to be transformed for learning algorithms that do not perform well for this kind of data.</p>
-<p>Figure <a href="exploratory-data-analysis.html#fig:skew-all">3.2</a> gives an abstract idea of the skewness of (numerical) features. It was measured with <code>pandas.skew()</code>, which uses the Fisher-Pearson standardized moment coefficient <span class="math inline">\(G_1 = \frac{\sqrt{n(n-1)}}{n-2}\frac{1}{n}\frac{\sum_{i=1}^n (x_i-\bar{x})^3}{s^3}\)</span>. Here, the term in the denominator is the sample standard deviation.</p>
-<div class="figure" style="text-align: center"><span id="fig:skew-all"></span>
-<img src="figures/eda/skewness-numeric-features" alt="Absolute values of the Fisher-Pearson standardized moment coefficient (G1) for all numeric features contained in the dataset. The confidence bound indicates the $\alpha$ = 5 %  bound for the skewness of a symmetric distribution for any given feature. It is evident that no feature passes." width="70%" />
-<p class="caption">
-Figure 3.2: Absolute values of the Fisher-Pearson standardized moment coefficient (G1) for all numeric features contained in the dataset. The confidence bound indicates the <span class="math inline">\(\alpha\)</span> = 5 % bound for the skewness of a symmetric distribution for any given feature. It is evident that no feature passes.
-</p>
-</div>
-<p>The confidence bound in Figure <a href="exploratory-data-analysis.html#fig:skew-all">3.2</a> gives the <span class="math inline">\(\alpha=5 \%\)</span> bound for a normal distribution. Evidently, no feature was found to be strictly normally distributed, although several features show quite symmetric distributions (see Figure <a href="exploratory-data-analysis.html#fig:least-skewed">3.3</a>). These symmetric distributions resemble normal or uniform distributions.</p>
-<div class="figure" style="text-align: center"><span id="fig:least-skewed"></span>
-<img src="figures/eda/least-skewed" alt="The 9 least skewed features. Skewness metric: adjusted Fisher-Pearson standardized moment coefficient." width="70%" />
-<p class="caption">
-Figure 3.3: The 9 least skewed features. Skewness metric: adjusted Fisher-Pearson standardized moment coefficient.
-</p>
-</div>
-<p>Looking at the most skewed features (see Figure <a href="exploratory-data-analysis.html#fig:most-skewed">3.4</a>), we see heavily right-skewed distributions.</p>
-<div class="figure" style="text-align: center"><span id="fig:most-skewed"></span>
-<img src="figures/eda/most-skewed" alt="The 9 most skewed features. Skewness metric: adjusted Fisher-Pearson standardized moment coefficient." width="70%" />
-<p class="caption">
-Figure 3.4: The 9 most skewed features. Skewness metric: adjusted Fisher-Pearson standardized moment coefficient.
-</p>
-</div>
-</div>
-<div id="targets" class="section level3">
-<h3><span class="header-section-number">3.3.4</span> Targets</h3>
-<p>Of the two targets, one is binary (TARGET_B), the other discrete (TARGET_D). The former indicates whether an example has donated in response to the current promotion. The latter represents the dollar amount donated in response to the current promotion.</p>
-<p>The distribution of <em>TARGET_D</em>, excluding non-donors, is shown in Figure <a href="exploratory-data-analysis.html#fig:target-distrib">3.5</a>. Evidently, most donations are small. The range of donations is between 1 and 200 $ with the 50-percentile at 13 $. The most frequent donation amount is 10 $. There are a few outliers for donations above 100 $.</p>
-<div class="figure" style="text-align: center"><span id="fig:target-distrib"></span>
-<img src="figures/eda/target-distribution" alt="Distribution of TARGETD. The donation amount in US dollar has a discrete distribution. Most donations are below 20 dollar, peaks are visible at 50, 75 and 100 dollar, while the maximum donation amount is 200 dollar." width="70%" />
-<p class="caption">
-Figure 3.5: Distribution of TARGETD. The donation amount in US dollar has a discrete distribution. Most donations are below 20 dollar, peaks are visible at 50, 75 and 100 dollar, while the maximum donation amount is 200 dollar.
-</p>
-</div>
-<p>As can be seen in Figure <a href="exploratory-data-analysis.html#fig:target-ratio">3.6</a>, the target is imbalanced. Only about 5 % of examples have donated. This poses a challenge in model training because there is a high risk of overfitting.</p>
-<div class="figure" style="text-align: center"><span id="fig:target-ratio"></span>
-<img src="figures/eda/ratio-binary" alt="Ratio of donating examples. Less than 6 percent have made a donation." width="70%" />
-<p class="caption">
-Figure 3.6: Ratio of donating examples. Less than 6 percent have made a donation.
-</p>
-</div>
-<p><strong>Datatypes</strong>
-An analysis of the dataset dictionary (see <a href="dataset-dictionary.html#dataset-dictionary">6.4</a>) reveals the following datatypes for features:</p>
+<h2><span class="header-section-number">3.2</span> Exploratory Data Analysis</h2>
+<p>The detailed analysis can be studied online in the corresponding jupyter notebook<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a>. The findings are shown here.</p>
+<div id="data-types" class="section level3">
+<h3><span class="header-section-number">3.2.1</span> Data types</h3>
+<p>An analysis of the dataset dictionary (see <a href="dataset-dictionary.html#dataset-dictionary">6.4</a>) reveals the following data types:</p>
 <ul>
 <li>Index: CONTROLN, unique record identifier</li>
 <li>Dates: 48 features in yymm format.</li>
@@ -215,12 +218,130 @@ An analysis of the dataset dictionary (see <a href="dataset-dictionary.html#data
 <li>Categorical: 90 features</li>
 <li>Numeric: 286</li>
 </ul>
+<p>The data set structure after import into a <code>pandas.DataFrame</code> object is shown in Table <a href="exploratory-data-analysis.html#tab:data-desc">3.1</a>. Since these numbers do not match with the documented data types, it is evident that several features will need to be transformed.</p>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<caption>
+<span id="tab:data-desc">Table 3.1: </span>Data types after import of raw csv data
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:left;">
+Data content
+</th>
+<th style="text-align:left;">
+Number of features
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Integer
+</td>
+<td style="text-align:left;width: 6cm; ">
+Discrete features, no missing values
+</td>
+<td style="text-align:left;">
+297
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Float
+</td>
+<td style="text-align:left;width: 6cm; ">
+Continuous features and discrete features with missing values
+</td>
+<td style="text-align:left;">
+49
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Categorical
+</td>
+<td style="text-align:left;width: 6cm; ">
+Nominal and ordinal features
+</td>
+<td style="text-align:left;">
+24
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Object
+</td>
+<td style="text-align:left;width: 6cm; ">
+Features with alphanumeric values
+</td>
+<td style="text-align:left;">
+110
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Total
+</td>
+<td style="text-align:left;width: 6cm; ">
+</td>
+<td style="text-align:left;">
+480
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="targets" class="section level3">
+<h3><span class="header-section-number">3.2.2</span> Targets</h3>
+<p>Of the two targets, one is binary (TARGET_B), the other discrete (TARGET_D). The former indicates whether an example has donated in response to the current promotion. The latter represents the dollar amount donated in response to the current promotion.</p>
+<p>The distribution of <em>TARGET_D</em>, excluding non-donors, is shown in Figure <a href="exploratory-data-analysis.html#fig:target-distrib">3.1</a>. Evidently, most donations are small. The range of donations is between 1 and 200 $ with the 50-percentile at 13 $. The most frequent donation amount is 10 $. There are a few outliers for donations above 100 $.</p>
+<div class="figure"><span id="fig:target-distrib"></span>
+<img src="figures/eda/target-distribution.png" alt="Distribution of TARGETD. The donation amount in US dollar has a discrete distribution. Most donations are below 20 dollar, peaks are visible at 50, 75 and 100 dollar, while the maximum donation amount is 200 dollar."  />
+<p class="caption">
+Figure 3.1: Distribution of TARGETD. The donation amount in US dollar has a discrete distribution. Most donations are below 20 dollar, peaks are visible at 50, 75 and 100 dollar, while the maximum donation amount is 200 dollar.
+</p>
+</div>
+<p>As can be seen in Figure <a href="exploratory-data-analysis.html#fig:target-ratio">3.2</a>, the target is imbalanced. Only about 5 % of examples have donated. This poses a challenge in model training because there is a high risk of overfitting.</p>
+<div class="figure"><span id="fig:target-ratio"></span>
+<img src="figures/eda/ratio-binary.png" alt="Ratio of donating examples. Less than 6 percent have made a donation."  />
+<p class="caption">
+Figure 3.2: Ratio of donating examples. Less than 6 percent have made a donation.
+</p>
+</div>
+</div>
+<div id="skewness" class="section level3">
+<h3><span class="header-section-number">3.2.3</span> Skewness</h3>
+<p>Most features are skewed, although several are relatively symmetric.</p>
+<p>Figure <a href="exploratory-data-analysis.html#fig:skew-all">3.3</a> gives an abstract idea of the skewness of (numerical) features. The confidence bound gives the <span class="math inline">\(\alpha=5 \%\)</span> bound for a normal distribution. Evidently, no feature was found to be strictly normally distributed, although several features are relatively symmetric.</p>
+<p>Skewness was measured with <code>pandas.skew()</code>, which uses the Fisher-Pearson standardized moment coefficient <span class="math inline">\(G_1 = \frac{\sqrt{n(n-1)}}{n-2}\frac{1}{n}\frac{\sum_{i=1}^n (x_i-\bar{x})^3}{s^3}\)</span>. Here, the term in the denominator is the sample standard deviation.</p>
+<div class="figure"><span id="fig:skew-all"></span>
+<img src="figures/eda/skewness-numeric-features.png" alt="Absolute values of the Fisher-Pearson standardized moment coefficient (G1) for all numeric features contained in the dataset. The confidence bound indicates the $\alpha$ = 5 %  bound for the skewness of a normal distribution for any given feature. It is evident that no feature passes."  />
+<p class="caption">
+Figure 3.3: Absolute values of the Fisher-Pearson standardized moment coefficient (G1) for all numeric features contained in the dataset. The confidence bound indicates the <span class="math inline">\(\alpha\)</span> = 5 % bound for the skewness of a normal distribution for any given feature. It is evident that no feature passes.
+</p>
+</div>
+Looking at the 9 least skewed features (Figure <a href="exploratory-data-analysis.html#fig:least-skewed">3.4</a>), we find distributions that resemble normal or uniform distributions, or balanced binary features.
+<div class="figure"><span id="fig:least-skewed"></span>
+<img src="figures/eda/least-skewed.png" alt="The 9 least skewed features. Skewness metric: adjusted Fisher-Pearson standardized moment coefficient."  />
+<p class="caption">
+Figure 3.4: The 9 least skewed features. Skewness metric: adjusted Fisher-Pearson standardized moment coefficient.
+</p>
+</div>
+<p>The 9 most skewed features (Figure <a href="exploratory-data-analysis.html#fig:most-skewed">3.5</a>) show heavily right-skewed distributions which are the result of outliers.</p>
+<div class="figure"><span id="fig:most-skewed"></span>
+<img src="figures/eda/most-skewed.png" alt="The 9 most skewed features. Skewness metric: adjusted Fisher-Pearson standardized moment coefficient."  />
+<p class="caption">
+Figure 3.5: The 9 most skewed features. Skewness metric: adjusted Fisher-Pearson standardized moment coefficient.
+</p>
+</div>
 </div>
 </div>
 <div class="footnotes">
 <hr />
-<ol start="11">
-<li id="fn11"><p><a href="https://github.com/datarian/master-thesis-code/blob/development/notebooks/eda.ipynb">KDD-CUP98: EDA notebook</a><a href="exploratory-data-analysis.html#fnref11" class="footnote-back">↩</a></p></li>
+<ol start="2">
+<li id="fn2"><p><a href="https://github.com/datarian/master-thesis-code/blob/development/notebooks/eda.ipynb">KDD-CUP98: EDA notebook</a><a href="exploratory-data-analysis.html#fnref2" class="footnote-back">↩</a></p></li>
 </ol>
 </div>
             </section>
@@ -228,7 +349,7 @@ An analysis of the dataset dictionary (see <a href="dataset-dictionary.html#data
           </div>
         </div>
       </div>
-<a href="cleaning-preprocessing.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="general-structure.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
 <a href="preprocessing.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
