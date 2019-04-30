@@ -1455,9 +1455,13 @@ class Imputer(KDD98DataTransformer):
         self.step = "Imputation (Iterative Imputer)"
         self.transformer_config = OrderedDict({
             "impute_remaining": {
-                "transformer":  NumericImputer(n_iter=5, initial_strategy="median",
-                                    random_state=Config.get("random_seed"),
-                                    verbose=1),
+                "transformer":  NumericImputer(
+                    n_iter=5,
+                    initial_strategy="median",
+                    n_nearest_features=60, # roughly 10%
+                    sample_posterior=True,
+                    random_state=Config.get("random_seed"),
+                    verbose=1),
                 "dtype": None,
                 "file": "iterative_imputer.pkl",
                 "drop": []
