@@ -17,6 +17,8 @@ from fancyimpute import KNN, IterativeImputer
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import maxabs_scale, PowerTransformer, FunctionTransformer
+from sklearn.ensemble import RandomForestClassifier
+from boruta import BorutaPy
 
 from category_encoders import HashingEncoder, OrdinalEncoder
 from geopy.exc import GeocoderTimedOut
@@ -43,7 +45,9 @@ __all__ = ['BinaryFeatureRecode',
            'NumericImputer',
            "TargetImputer",
            "RAMNTFixer",
-           "ZeroVarianceSparseDropper"]
+           "ZeroVarianceSparseDropper",
+           "AllRelevantFeatureFilter",
+           "Rescaler"]
 
 
 class NamedFeatureTransformer(BaseEstimator, TransformerMixin):
@@ -773,7 +777,32 @@ class ZeroVarianceSparseDropper(NamedFeatureTransformer):
             X_trans = X.drop(self.zero_var, axis=1)
         self.feature_names = X_trans.columns.values.tolist()
 
+class AllRelevantFeatureFilter(NamedFeatureTransformer):
 
+    def __init__(self, max_iter=120, n_estimators="auto"):
+        self.max_iter=max_iter
+        self.n_estimators=n_estimators
+        self.estimator = BorutaPy(
+            RandomForestClassifier(n_jobs=-1,class_weight="balanced"),
+            n_estimators = self.n_estimators,
+            max_iter = self.max_iter,
+            verbose=0,
+            random_state=Config.get("random_seed")
+        )
+
+    def fit(self, X, y):
+        self.estimator.fit(X.values, y.values)
+        self.feature_names = X.columns.values[self.estimator.support_].tolist()
+        return self
+
+    def transform(self, X, y=None):
+        X_trans = self.estimator.transform(X.values)
+        return pd.DataFrame(
+            data=X_trans,
+            columns = self.feature_names,
+            index = X.index)
+
+    
 class Rescaler(BaseEstimator, TransformerMixin):
     """
         Provides different rescalers:
