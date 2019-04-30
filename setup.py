@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 from distutils.core import setup
 import distutils.command.bdist_conda
 
-__version__ = '0.2'
+__version__ = '0.3'
 
 # Get the long description from the README file
 with open('README.md') as f:
