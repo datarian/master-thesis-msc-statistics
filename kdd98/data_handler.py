@@ -1458,7 +1458,7 @@ class Imputer(KDD98DataTransformer):
                 "transformer":  NumericImputer(
                     n_iter=5,
                     initial_strategy="median",
-                    n_nearest_features=60, # roughly 10%
+                    n_nearest_features=100, # roughly 10%
                     sample_posterior=True,
                     random_state=Config.get("random_seed"),
                     verbose=1),
