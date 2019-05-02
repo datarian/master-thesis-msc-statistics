@@ -782,6 +782,7 @@ class ZeroVarianceSparseDropper(NamedFeatureTransformer):
             X_trans = X.drop(self.zero_var, axis=1)
         self.feature_names = X_trans.columns.values.tolist()
 
+
 class AllRelevantFeatureFilter(NamedFeatureTransformer):
 
     def __init__(self, max_iter=120, n_estimators="auto"):

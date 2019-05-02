@@ -1343,9 +1343,9 @@ class Preprocessor(KDD98DataTransformer):
         self.step = "Preprocessing"
         self.drop_features = set(DROP_INITIAL + DROP_REDUNDANT)
 
-    def post_steps(self, fit=True):
+    def post_steps(self):
         zv = ZeroVarianceSparseDropper(override=['TARGET_B', 'TARGET_D'])
-        if fit:
+        if self.fit:
             _ = zv.fit_transform(self.data)
         else:
             _ = zv.transform(self.data)
@@ -1386,6 +1386,27 @@ class Engineer(KDD98DataTransformer):
         self.BE_CATEGORICALS = ['OSOURCE', 'TCODE', 'STATE', 'CLUSTER']
         self.OHE_CATEGORICALS = [f for f in self.CATEGORICAL_FEATURES if f not in self.BE_CATEGORICALS]
         self.transformer_config = OrderedDict({
+            "impute_categoricals": {
+                "transformer": ColumnTransformer([
+                    ("impute_categoricals",
+                    CategoricalImputer(),
+                    self.filter_features(self.CATEGORICAL_FEATURES))
+                ]),
+                "dtype": None,
+                "file": "categorical_imputer",
+                "drop": []
+
+            },
+            "impute_binary_features": {
+                "transformer": ColumnTransformer([
+                    ("impute_binary_featues",
+                    CategoricalImputer(),
+                    self.filter_features(BINARY_FEATURES))
+                ]),
+                "dtype": None,
+                "file": "binary_feature_imputer",
+                "drop": []
+            },
             "zip_to_coords": {
                 "transformer": ColumnTransformer([
                     ("zip_to_coords",
@@ -1424,10 +1445,10 @@ class Engineer(KDD98DataTransformer):
             },
             "binary_encode_categoricals": {
                 "transformer": ColumnTransformer([
-                    ("be_osource", BinaryEncoder(handle_missing="return_nan"), self.filter_features(['OSOURCE'])),
-                    ("be_state", BinaryEncoder(handle_missing="return_nan"), self.filter_features(['STATE'])),
-                    ("be_cluster", BinaryEncoder(handle_missing="return_nan"), self.filter_features(['CLUSTER'])),
-                    ("be_tcode", BinaryEncoder(handle_missing="return_nan"), self.filter_features(['TCODE']))
+                    ("be_osource", BinaryEncoder(), self.filter_features(['OSOURCE'])),
+                    ("be_state", BinaryEncoder(), self.filter_features(['STATE'])),
+                    ("be_cluster", BinaryEncoder(), self.filter_features(['CLUSTER'])),
+                    ("be_tcode", BinaryEncoder(), self.filter_features(['TCODE']))
                 ]),
                 "dtype": "Int64",
                 "file": "binary_encoding_transformer.pkl",
@@ -1436,8 +1457,7 @@ class Engineer(KDD98DataTransformer):
             "one_hot_encode_categoricals": {
                 "transformer": ColumnTransformer([
                     ("oh",
-                     OneHotEncoder(use_cat_names=True,
-                                   handle_missing="return_nan"),
+                     OneHotEncoder(use_cat_names=True),
                      self.OHE_CATEGORICALS)
                 ]),
                 "dtype": "Int64",
@@ -1454,11 +1474,11 @@ class Imputer(KDD98DataTransformer):
         self.data = self.dl.numeric_data
         self.step = "Imputation (Iterative Imputer)"
         self.transformer_config = OrderedDict({
-            "impute_remaining": {
+            "impute_numeric": {
                 "transformer":  NumericImputer(
                     n_iter=5,
                     initial_strategy="median",
-                    n_nearest_features=100, # roughly 10%
+                    n_nearest_features=100,
                     sample_posterior=True,
                     random_state=Config.get("random_seed"),
                     verbose=1),
@@ -1467,6 +1487,7 @@ class Imputer(KDD98DataTransformer):
                 "drop": []
             }
         })
+
 
 class Extractor(KDD98DataTransformer):
 
