@@ -12,20 +12,18 @@ import urllib
 import zipfile
 from collections import OrderedDict
 
-import pandas as pd
-from sklearn.compose import ColumnTransformer
-
 import kdd98.utils_transformer as ut
+import pandas as pd
 from category_encoders import BinaryEncoder, OneHotEncoder
 from kdd98.config import Config
-from kdd98.transformers import (BinaryFeatureRecode, DateFormatter, DeltaTime,
-                                MDMAUDFormatter, MonthsToDonation,
-                                MultiByteExtract, NOEXCHFormatter,
-                                OrdinalEncoder,
-                                ZipFormatter, CategoricalImputer,
-                                NumericImputer, TargetImputer, RFAFixer,
-                                RAMNTFixer, ZipToCoords,
-                                ZeroVarianceSparseDropper)
+from kdd98.transformers import (BinaryFeatureRecode, CategoricalImputer,
+                                DateFormatter, DeltaTime, MDMAUDFormatter,
+                                MonthsToDonation, MultiByteExtract,
+                                NOEXCHFormatter, NumericImputer,
+                                OrdinalEncoder, RAMNTFixer, RFAFixer,
+                                TargetImputer, ZeroVarianceSparseDropper,
+                                ZipFormatter, ZipToCoords)
+from sklearn.compose import ColumnTransformer
 
 # Set up the logger
 logging.basicConfig(filename=__name__ + '.log', level=logging.INFO)
