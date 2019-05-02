@@ -16,13 +16,14 @@ import kdd98.utils_transformer as ut
 import pandas as pd
 from category_encoders import BinaryEncoder, OneHotEncoder
 from kdd98.config import Config
-from kdd98.transformers import (BinaryFeatureRecode, CategoricalImputer,
-                                DateFormatter, DeltaTime, MDMAUDFormatter,
-                                MonthsToDonation, MultiByteExtract,
-                                NOEXCHFormatter, NumericImputer,
-                                OrdinalEncoder, RAMNTFixer, RFAFixer,
-                                TargetImputer, ZeroVarianceSparseDropper,
-                                ZipFormatter, ZipToCoords)
+from kdd98.transformers import (AllRelevantFeatureFilter, BinaryFeatureRecode,
+                                CategoricalImputer, DateFormatter, DeltaTime,
+                                MDMAUDFormatter, MonthsToDonation,
+                                MultiByteExtract, NOEXCHFormatter,
+                                NumericImputer, OrdinalEncoder, RAMNTFixer,
+                                RFAFixer, TargetImputer,
+                                ZeroVarianceSparseDropper, ZipFormatter,
+                                ZipToCoords)
 from sklearn.compose import ColumnTransformer
 
 # Set up the logger
@@ -725,6 +726,8 @@ class KDD98DataProvider:
         self._raw_data = pd.DataFrame()
         self._preprocessed_data = pd.DataFrame()
         self._numeric_data = pd.DataFrame()
+        self._imputed_data = pd.DataFrame()
+        self._ar_data = pd.DataFrame()
 
         self.download_url = download_url
         self.reference_date = Config.get("reference_date")
@@ -738,11 +741,17 @@ class KDD98DataProvider:
             if "lrn" in csv_file.lower():
                 self.preprocessed_data_name = Config.get("learn_preprocessed_name")
                 self.num_data_name = Config.get("learn_numeric_name")
+                self.imp_data_name = Config.get("learn_imputed_name")
+                self.ar_data_name = Config.get("learn_ar_name")
+                self.fit_transformations = True
             elif "val" in csv_file.lower():
                 self.preprocessed_data_name = Config.get("validation_preprocessed_name")
                 self.num_data_name = Config.get("validation_numeric_name")
+                self.imp_data_name = Config.get("validation_imputed_name")
+                self.ar_data_name = Config.get("validation_ar_name")
+                self.fit_transformations = False
         else:
-            raise ValueError("Set csv_file to either training- or test-file.")
+            raise ValueError("Set csv_file to either training (kdd98LRN.txt) or validation (kdd98VAL.txt) file.")
 
     @property
     def raw_data(self):
@@ -774,6 +783,26 @@ class KDD98DataProvider:
     def numeric_data(self, value):
         self._numeric_data = value
 
+    @property
+    def imputed_data(self):
+        if self._imputed_data.empty:
+            self.provide("imputed")
+        return self._imputed_data
+
+    @imputed_data.setter
+    def imputed_data(self, value):
+        self._imputed_data = value
+
+    @property
+    def all_relevant_data(self):
+        if self._ar_data.empty:
+            self.provide("all_relevant")
+        return self._ar_data
+
+    @all_relevant_data.setter
+    def all_relevant_data(self, value):
+        self._ar_data = value
+
     def provide(self, type):
         """
         Provides data by first checking the hdf store, then loading csv data.
@@ -794,20 +823,30 @@ class KDD98DataProvider:
 
         Params
         ------
-        type    One of ["raw", "preproc", "numeric"].
+        type    One of ["raw", "preproc", "numeric", "imputed", "all_relevant"].
                 Raw is as read by pandas, preprocessed is with
                 preprocessing operations applied.
         """
         name_mapper = {
-            "raw": {"key": self.raw_data_name,
-                    "data_attrib": "_raw_data"},
-            "preprocessed": {"key": self.preprocessed_data_name,
-                      "data_attrib": "_preprocessed_data"},
-            "numeric": {"key": self.num_data_name,
-                        "data_attrib": "_numeric_data"}
+            "raw": {
+                "key": self.raw_data_name,
+                "data_attrib": "_raw_data"},
+            "preprocessed": {
+                "key": self.preprocessed_data_name,
+                "data_attrib": "_preprocessed_data"},
+            "numeric": {
+                "key": self.num_data_name,
+                "data_attrib": "_numeric_data"},
+            "imputed": {
+                "key": self.imp_data_name,
+                "data_attrib": "_imputed_data"},
+            "all_relevant": {
+                "key": self.ar_data_name,
+                "data_attrib": "_ar_data"
+            }
         }
 
-        assert(type in ["raw", "preprocessed", "numeric"])
+        assert(type in ["raw", "preprocessed", "numeric", "imputed", "all_relevant"])
 
         try:
             # First, try to load the data from hdf
@@ -850,6 +889,43 @@ class KDD98DataProvider:
                                  "Reason: {}".format(e))
                     raise e
                 self._pickle_df(self.numeric_data, self.num_data_name)
+            elif type == "imputed":
+                try:
+                    self.provide("numeric")
+                except Exception as e:
+                    logger.error("Failed to provide numeric data.\n"
+                        "Cannot provide imputed data. Reason: {}"
+                        .format(e))
+                    raise e
+                logger.error("Not implemented")
+                raise NotImplementedError()
+                # try:
+                    
+                #     imp = Imputer(self)
+                #     self.imputed_data = imp.apply_transformation()
+                # except Exception as e:
+                #     logger.error("Failed to impute numeric data.\n"
+                #                  "Reason: {}".format(e))
+                #     raise e
+                # self._pickle_df(self.imputed_data, self.imp_data_name)
+            elif type == "all_relevant":
+                try:
+                    self.provide("imputed")
+                except Exception as e:
+                    logger.error("Failed to provide imputed data.\n"
+                        "Cannot provide all-relevant data. Reason: {}"
+                        .format(e))
+                    raise e
+                logger.error("Not implemented")
+                raise NotImplementedError()
+                # try:
+                #     fext = Extractor(self)
+                #     self.all_relevant_data = fext.apply_transformation()
+                # except Exception as e:
+                #     logger.error("Failed to extract features.\n"
+                #                  "Reason: {}".format(e))
+                #     raise e
+                # self._pickle_df(self.ar_data_name, self.ar_data_name)
             else:
                 try:
                     self._read_csv_data()
@@ -967,9 +1043,12 @@ class KDD98DataTransformer:
         self.data = None
         self.drop_features = set()
         self.step = "UNDEFINED"
+        self.fit = data_loader.fit_transformations
 
         try:
             pathlib.Path(Config.get("model_store")).mkdir(
+                parents=True, exist_ok=True)
+            pathlib.Path(Config.get("model_store_internal")).mkdir(
                 parents=True, exist_ok=True)
         except Exception as e:
             message = "Failed to create model store directory '{}'.\n"\
@@ -1004,7 +1083,7 @@ class KDD98DataTransformer:
     def post_steps(self):
         return self.data
 
-    def process_transformers(self, fit):
+    def process_transformers(self):
         """
         Works on a set of predefined transformers,
         applying each one consecutively to the data.
@@ -1046,8 +1125,8 @@ class KDD98DataTransformer:
 
         for t, c in self.transformer_config.items():
             logging.info("Working on transformer '{}'".format(t))
-            transformed, transformer = None, None
-            if fit:
+            transformed, transformer = [None]*2
+            if self.fit:
                 transformer = c["transformer"]
                 try:
                     transformed = transformer.fit_transform(data)
@@ -1069,16 +1148,15 @@ class KDD98DataTransformer:
                         transformer = pkl.load(ms)
                 except Exception:
                     message = "Failed to load fitted transformer {}.\n"\
-                              "Call function with fit=True first"\
-                              "to learn the transformers.\n"\
-                              "Aborting preprocessing...".format(t)
+                              "Process kdd98LRN.txt first to learn transformations."\
+                              "Aborting...".format(t)
                     logger.error(message)
                     raise(RuntimeError(message))
                 try:
                     transformed = transformer.transform(data)
                 except Exception as e:
                     message = "Failed to transform with {}.\n"\
-                              "Aborting preprocessing...".format(t)
+                              "Aborting...".format(t)
                     logger.error(message)
                     raise e
                 data = ut.update_df_with_transformed(
@@ -1091,7 +1169,7 @@ class KDD98DataTransformer:
 
         self.pre_steps()
 
-        self.data, drop = self.process_transformers(fit)
+        self.data, drop = self.process_transformers()
         self.drop_features.update(drop)
 
         # Now, drop all features marked for removal
@@ -1268,9 +1346,9 @@ class Preprocessor(KDD98DataTransformer):
         self.step = "Preprocessing"
         self.drop_features = set(DROP_INITIAL + DROP_REDUNDANT)
 
-    def post_steps(self, fit=True):
+    def post_steps(self):
         zv = ZeroVarianceSparseDropper(override=['TARGET_B', 'TARGET_D'])
-        if fit:
+        if self.fit:
             _ = zv.fit_transform(self.data)
         else:
             _ = zv.transform(self.data)
@@ -1302,10 +1380,11 @@ class Engineer(KDD98DataTransformer):
     def __init__(self, data_loader):
         super().__init__(data_loader)
         self.data = self.dl.preprocessed_data
+        features = self.data.drop(["TARGET_B", "TARGET_D"], axis=1)
         self.step = "Feature Engineering"
-        self.ALL_FEATURES = self.data.columns.values.tolist()
-        self.CATEGORICAL_FEATURES = self.data.select_dtypes(include="category").columns.values.tolist()
-        self.NUMERICAL_FEATURES = [f for f in self.data.columns.values.tolist()
+        self.ALL_FEATURES = features.columns.values.tolist()
+        self.CATEGORICAL_FEATURES = features.select_dtypes(include="category").columns.values.tolist()
+        self.NUMERICAL_FEATURES = [f for f in features.columns.values.tolist()
                                    if f not in self.CATEGORICAL_FEATURES]
         self.BE_CATEGORICALS = ['OSOURCE', 'TCODE', 'STATE', 'CLUSTER']
         self.OHE_CATEGORICALS = [f for f in self.CATEGORICAL_FEATURES if f not in self.BE_CATEGORICALS]
@@ -1348,10 +1427,10 @@ class Engineer(KDD98DataTransformer):
             },
             "binary_encode_categoricals": {
                 "transformer": ColumnTransformer([
-                    ("be_osource", BinaryEncoder(handle_missing="return_nan"), self.filter_features(['OSOURCE'])),
-                    ("be_state", BinaryEncoder(handle_missing="return_nan"), self.filter_features(['STATE'])),
-                    ("be_cluster", BinaryEncoder(handle_missing="return_nan"), self.filter_features(['CLUSTER'])),
-                    ("be_tcode", BinaryEncoder(handle_missing="return_nan"), self.filter_features(['TCODE']))
+                    ("be_osource", BinaryEncoder(handle_missing="indicator"), self.filter_features(['OSOURCE'])),
+                    ("be_state", BinaryEncoder(handle_missing="indicator"), self.filter_features(['STATE'])),
+                    ("be_cluster", BinaryEncoder(handle_missing="indicator"), self.filter_features(['CLUSTER'])),
+                    ("be_tcode", BinaryEncoder(handle_missing="indicator"), self.filter_features(['TCODE']))
                 ]),
                 "dtype": "Int64",
                 "file": "binary_encoding_transformer.pkl",
@@ -1360,33 +1439,48 @@ class Engineer(KDD98DataTransformer):
             "one_hot_encode_categoricals": {
                 "transformer": ColumnTransformer([
                     ("oh",
-                     OneHotEncoder(use_cat_names=True,
-                                   handle_missing="return_nan"),
+                     OneHotEncoder(use_cat_names=True, handle_missing="indicator"),
                      self.OHE_CATEGORICALS)
                 ]),
                 "dtype": "Int64",
                 "file": "oh_encoding_transformer.pkl",
                 "drop": self.OHE_CATEGORICALS
-            },
-            #"impute_remaining": {
-            #    "transformer": ColumnTransformer([
-            #        ("impute_numeric",
-            #         NumericImputer(n_iter=5, initial_strategy="median",
-            #                        random_state=Config.get("random_seed"),
-            #                        verbose=1),
-            #         self.NUMERICAL_FEATURES)
-            #    ]),
-            #    "dtype": None,
-            #    "file": "iterative_impute_numerics.pkl",
-            #    "drop": []
-            #},
-            #"impute_": {
-            #    "transformer": NumericImputer(n_iter=5,
-            #                                  initial_strategy="median",
-            #                                  random_state=Config.get("random_seed"),
-            #                                  verbose=1),
-            #    "dtype": None,
-            #    "file": "iterative_impute.pkl",
-            #    "drop": []
-            #}
+            }
+        })
+
+
+class Imputer(KDD98DataTransformer):
+
+    def __init__(self, data_loader):
+        super().__init__(data_loader)
+        self.data = self.dl.numeric_data
+        self.step = "Imputation (Iterative Imputer)"
+        self.transformer_config = OrderedDict({
+            "impute_numeric": {
+                "transformer":  NumericImputer(
+                    n_iter=5,
+                    initial_strategy="median",
+                    sample_posterior=True,
+                    random_state=Config.get("random_seed"),
+                    verbose=1),
+                "dtype": None,
+                "file": "iterative_imputer.pkl",
+                "drop": []
+            }
+        })
+
+
+class Extractor(KDD98DataTransformer):
+
+    def __init__(self, data_loader):
+        super().__init__(data_loader)
+        self.data = self.dl.imputed_data
+        self.step = "Feature Extraction (Boruta all-relevant)"
+        self.transformer_config = OrderedDict({
+            "boruta_extractor": {
+                "transformer": AllRelevantFeatureFilter(),
+                "dtype": None,
+                "file": "boruta_extractor.pkl",
+                "drop": []
+            }
         })
