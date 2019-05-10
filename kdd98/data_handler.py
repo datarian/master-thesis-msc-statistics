@@ -1121,7 +1121,10 @@ class KDD98DataTransformer:
                 apply fitted transformers (test/validation data). Default True
         """
         data = self.data.copy(deep=True)
-        target = data.loc[:,["TARGET_B", "TARGET_D"]]
+        if self.fit:
+            target = data.loc[:,["TARGET_B", "TARGET_D"]]
+        else:
+            target = None
         drop_features = set()
 
         for t, c in self.transformer_config.items():
