@@ -1148,12 +1148,12 @@ class KDD98DataTransformer:
             else:
                 try:
                     with open(pathlib.Path(
-                            Config.get("model_store_internal", c["file"]), "rb")) as ms:
+                            Config.get("model_store_internal"), c["file"]), "rb") as ms:
                         transformer = pkl.load(ms)
                 except Exception:
                     message = "Failed to load fitted transformer {}.\n"\
                               "Process kdd98LRN.txt first to learn transformations."\
-                              "Aborting...".format(t)
+                              "Aborting...".format(c["file"])
                     logger.error(message)
                     raise(RuntimeError(message))
                 try:
