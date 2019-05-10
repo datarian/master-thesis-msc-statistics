@@ -25,6 +25,7 @@ from kdd98.transformers import (AllRelevantFeatureFilter, BinaryFeatureRecode,
                                 ZeroVarianceSparseDropper, ZipFormatter,
                                 ZipToCoords)
 from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
 
 # Set up the logger
 logging.basicConfig(filename=__name__ + '.log', level=logging.INFO)
@@ -700,14 +701,14 @@ class KDD98DataProvider:
     # Where necessary, these are included here for explicit datatype casting.
     # The rest of the features will be guessed by pandas on reading the CSV.
     dtype_specs = {}
-    for binary in BINARY_FEATURES:
-        dtype_specs[binary] = 'str'
-    for categorical in CATEGORICAL_FEATURES:
-        dtype_specs[categorical] = 'category'
-    for nominal in NOMINAL_FEATURES:
-        dtype_specs[nominal] = 'str'
-    for date in DATE_FEATURES:
-        dtype_specs[date] = 'str'
+    for b in BINARY_FEATURES:
+        dtype_specs[b] = 'str'
+    for c in CATEGORICAL_FEATURES:
+        dtype_specs[c] = 'category'
+    for n in NOMINAL_FEATURES:
+        dtype_specs[n] = 'str'
+    for d in DATE_FEATURES:
+        dtype_specs[d] = 'str'
     dtype_specs['TARGET_B'] = 'str'
 
     def __init__(self, csv_file=None, pull_stored=True, download_url=None):
@@ -1228,16 +1229,6 @@ class Preprocessor(KDD98DataTransformer):
             "file": "mdmaud_format_transformer.pkl",
             "drop": []
         },
-        "target_b": {
-            "transformer": ColumnTransformer([
-                ("fix_targ_b",
-                 TargetImputer(),
-                 ['TARGET_B', 'TARGET_D'])
-            ]),
-            "dtype": "int64",
-            "file": "impute_target_b.pkl",
-            "drop": []
-        },
         "rfa": {
             "transformer": ColumnTransformer([
                 ("fix_rfa",
@@ -1454,6 +1445,9 @@ class Imputer(KDD98DataTransformer):
     def __init__(self, data_loader):
         super().__init__(data_loader)
         self.data = self.dl.numeric_data
+        self.NUMERIC_FEATURES = None
+        self.CATEGORICAL_FEATURES = None
+        self.BINARY_FEATURES = None
         self.step = "Imputation (Iterative Imputer)"
         self.transformer_config = OrderedDict({
             "impute_numeric": {
