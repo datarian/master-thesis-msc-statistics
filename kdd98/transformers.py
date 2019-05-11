@@ -471,17 +471,18 @@ class MonthsToDonation(DateHandler, NamedFeatureTransformer):
             try:
                 duration = relativedelta.relativedelta(target, ref).years * 12
                 duration += relativedelta.relativedelta(target, ref).months
-
+                if duration < 0.0: # most likely, the target year was off
+                    logger.warning("Calculated negative time difference {}"\
+                        " with reference {} and target {},\n"\
+                        "Adding one year to the target.".format(duration, ref, target))
+                    duration = 12. + duration
             except Exception as e:
                 logger.error("Failed to calculate time delta. "
                              "Dates: {} and {}\nMessage: {}"
                              .format(row[0], row[1], e))
                 duration = np.nan
         elif pd.isna(target):
-            duration = 1200.
-        if duration < 0.0:
-            logger.warning("Calculated negative time difference {} with reference {} and target {}".format(duration, ref, target))
-            duration = 0.
+            duration = np.nan
         return duration
 
     def transform(self, X, y=None):
