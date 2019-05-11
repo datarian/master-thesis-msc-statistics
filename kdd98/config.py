@@ -40,6 +40,7 @@ class Config:
         "learn_imputed_name": "kddCup98Learn_imputed",
         "learn_ar_name": "kddCup98Learn_all_relevant",
         "validation_file_name": "cup98VAL.txt",
+        "validation_target_file_name": "valtargt.txt",
         "validation_raw_name": "kddCup98Validation_raw",
         "validation_preprocessed_name": "kddCup98Validation_preprocessed",
         "validation_numeric_name": "kddCup98Validation_numeric",

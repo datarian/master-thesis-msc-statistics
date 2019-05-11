@@ -724,11 +724,11 @@ class KDD98DataProvider:
         pull_stored: Whether to attempt loading raw data from HDF store.
         """
         self.raw_data_file_name = csv_file
-        self._raw_data = pd.DataFrame()
-        self._preprocessed_data = pd.DataFrame()
-        self._numeric_data = pd.DataFrame()
-        self._imputed_data = pd.DataFrame()
-        self._ar_data = pd.DataFrame()
+        self._raw_data = {}
+        self._preprocessed_data = {}
+        self._numeric_data = {}
+        self._imputed_data = {}
+        self._ar_data = {}
 
         self.download_url = download_url
         self.reference_date = Config.get("reference_date")
@@ -756,7 +756,7 @@ class KDD98DataProvider:
 
     @property
     def raw_data(self):
-        if self._raw_data.empty:
+        if not self._raw_data:
             self.provide("raw")
         return self._raw_data
 
@@ -766,7 +766,7 @@ class KDD98DataProvider:
 
     @property
     def preprocessed_data(self):
-        if self._preprocessed_data.empty:
+        if not self._preprocessed_data:
             self.provide("preprocessed")
         return self._preprocessed_data
 
@@ -776,7 +776,7 @@ class KDD98DataProvider:
 
     @property
     def numeric_data(self):
-        if self._numeric_data.empty:
+        if not self._numeric_data:
             self.provide("numeric")
         return self._numeric_data
 
@@ -786,7 +786,7 @@ class KDD98DataProvider:
 
     @property
     def imputed_data(self):
-        if self._imputed_data.empty:
+        if not self._imputed_data:
             self.provide("imputed")
         return self._imputed_data
 
@@ -796,7 +796,7 @@ class KDD98DataProvider:
 
     @property
     def all_relevant_data(self):
-        if self._ar_data.empty:
+        if not self._ar_data:
             self.provide("all_relevant")
         return self._ar_data
 
@@ -954,7 +954,7 @@ class KDD98DataProvider:
                         .format(self.download_url))
 
             logger.info("Reading csv file: " + self.raw_data_file_name)
-            self.raw_data = pd.read_csv(
+            raw_data = pd.read_csv(
                 pathlib.Path(Config.get("data_dir"), self.raw_data_file_name),
                 index_col=INDEX_NAME,
                 na_values=NA_CODES,
@@ -965,6 +965,32 @@ class KDD98DataProvider:
         except Exception as exc:
             logger.error(exc)
             raise
+
+        if "val" in self.raw_data_file_name.lower():
+            try:
+                target_file = Config.get("data_dir") / Config.get("validation_target_file_name")
+                logger.info("Reading csv file: " + self.raw_data_file_name)
+                targets = pd.read_csv(
+                    pathlib.Path(Config.get("data_dir"), self.raw_data_file_name),
+                    index_col=INDEX_NAME,
+                    dtype=self.dtype_specs,
+                    low_memory=False,  # needed for mixed type columns
+                    memory_map=True  # load file in memory
+                )
+                raw_data = raw_data.join(targets, on=INDEX_NAME,)
+            except Exception as exc:
+                logger.error(exc)
+                raise
+
+        self.raw_data = {
+            "data": raw_data.drop(TARGETS, axis=1),
+            "feature_names": raw_data.drop(TARGETS, axis=1).columns.values.tolist(),
+            "target_names": TARGETS,
+            "targets": raw_data.loc[:,TARGETS],
+            "stage": "raw"
+        }
+
+
         self._pickle_df(self.raw_data, self.raw_data_name)
 
     def _unpickle_df(self, key_name):
@@ -1041,7 +1067,7 @@ class KDD98DataTransformer:
 
     def __init__(self, data_loader):
         self.dl = data_loader
-        self.data = None
+        self.dataset = None
         self.drop_features = set()
         self.step = "UNDEFINED"
         self.fit = data_loader.fit_transformations
@@ -1058,7 +1084,7 @@ class KDD98DataTransformer:
             logger.error(message)
             raise(RuntimeError(message))
 
-    def drop_if_exists(self, data, features):
+    def drop_if_exists(self, dataset, features):
         """
         Drops features if they exist in the dataframe.
         Silently ignores errors if feature is not present.
@@ -1066,7 +1092,7 @@ class KDD98DataTransformer:
 
         for f in features:
             try:
-                data.drop(f, axis=1, inplace=True)
+                dataset["data"].drop(f, axis=1, inplace=True)
                 logger.info("Dropped feature {} from dataset"
                             .format(f))
             except KeyError:
@@ -1076,13 +1102,14 @@ class KDD98DataTransformer:
             except Exception as e:
                 logger.info("Removing feature {} failed for reason {}"
                             .format(f, e))
-        return data
+            dataset["feature_names"] = dataset["data"].columns.values.tolist()
+        return dataset
 
     def pre_steps(self):
-        return self.data
+        return self.dataset
 
     def post_steps(self):
-        return self.data
+        return self.dataset
 
     def process_transformers(self):
         """
@@ -1113,16 +1140,16 @@ class KDD98DataTransformer:
 
         Params
         ------
-        data:   The dataset to process
+        dataset:   The dataset to process
         transformer_config: A dict containing an ordered sequence
                             of transformers to apply.
         fit:    Whether to train the transformers
                 on the data (learning data set) or only
                 apply fitted transformers (test/validation data). Default True
         """
-        data = self.data.copy(deep=True)
+        features = self.dataset["data"]
         if self.fit:
-            target = data.loc[:,["TARGET_B", "TARGET_D"]]
+            target = self.dataset["targets"]
         else:
             target = None
         drop_features = set()
@@ -1133,14 +1160,14 @@ class KDD98DataTransformer:
             if self.fit:
                 transformer = c["transformer"]
                 try:
-                    transformed = transformer.fit_transform(data)
+                    transformed = transformer.fit_transform(features)
                 except Exception as e:
                     message = "Failed to fit_transform with '{}'"\
                               ". Message: {}".format(t, e)
                     logger.error(message)
                     raise RuntimeError(message)
-                data = ut.update_df_with_transformed(
-                    data, transformed, transformer, c["dtype"])
+                features = ut.update_df_with_transformed(
+                    features, transformed, transformer, c["dtype"])
 
                 with open(pathlib.Path(
                         Config.get("model_store_internal"), c["file"]), "wb") as ms:
@@ -1157,36 +1184,38 @@ class KDD98DataTransformer:
                     logger.error(message)
                     raise(RuntimeError(message))
                 try:
-                    transformed = transformer.transform(data)
+                    transformed = transformer.transform(features)
                 except Exception as e:
                     message = "Failed to transform with {}.\n"\
                               "Aborting...".format(t)
                     logger.error(message)
                     raise e
-                data = ut.update_df_with_transformed(
-                    data, transformed, transformer)
+                features = ut.update_df_with_transformed(
+                    features, transformed, transformer)
             drop_features.update(c["drop"])
-        return (data, drop_features)
+        self.dataset["data"] = features
+        self.dataset["feature_names"] = features.columns.values.tolist()
+        return (self.dataset, drop_features)
 
     def apply_transformation(self, fit=True):
         logger.info("Transformation step {} started...".format(self.step))
 
         self.pre_steps()
 
-        self.data, drop = self.process_transformers()
+        self.dataset, drop = self.process_transformers()
         self.drop_features.update(drop)
 
         # Now, drop all features marked for removal
         logger.info("About to drop the following"
                     " features in transformation {}: {}"
                     .format(self.step, sorted(self.drop_features)))
-        self.data = self.drop_if_exists(self.data, self.drop_features)
+        self.dataset = self.drop_if_exists(self.dataset, self.drop_features)
 
         self.post_steps()
 
         logger.info("Transformation step {} completed..."
                     .format(self.step))
-        return self.data.copy(deep=True)
+        return self.dataset
 
 
 class Preprocessor(KDD98DataTransformer):
@@ -1335,23 +1364,25 @@ class Preprocessor(KDD98DataTransformer):
 
     def __init__(self, data_loader):
         super().__init__(data_loader)
-        self.data = self.dl.raw_data
+        self.dataset = self.dl.raw_data
         self.dimension_cols = None
         self.step = "Preprocessing"
         self.drop_features = set(DROP_INITIAL + DROP_REDUNDANT)
 
     def post_steps(self):
+        # We train the zero variance dropper, which will populate a list of 
+        # features to remove in _dropped.
         zv = ZeroVarianceSparseDropper(override=['TARGET_B', 'TARGET_D'])
         if self.fit:
-            _ = zv.fit_transform(self.data)
+            _ = zv.fit_transform(self.dataset["data"])
         else:
-            _ = zv.transform(self.data)
+            _ = zv.transform(self.dataset["data"])
 
         logger.info("About to drop these sparse / constant features: {}"
                     .format(sorted(zv._dropped)))
-        self.data = self.drop_if_exists(self.data, zv._dropped)
+        self.dataset = self.drop_if_exists(self.dataset, zv._dropped)
 
-        remaining_object_features = self.data.select_dtypes(include="object").columns.values.tolist()
+        remaining_object_features = self.dataset["data"].select_dtypes(include="object").columns.values.tolist()
         remaining_without_dates = [r for r in remaining_object_features
                                    if r not in DATE_FEATURES]
         if remaining_without_dates:
@@ -1359,7 +1390,7 @@ class Preprocessor(KDD98DataTransformer):
                            " were left untreated and automatically"
                            " coerced to 'category' (nominal): {}"
                            .format(remaining_without_dates))
-            self.data[remaining_without_dates] = self.data[remaining_without_dates].astype("category")
+            self.dataset["data"][remaining_without_dates] = self.dataset["data"][remaining_without_dates].astype("category")
 
 
 class Engineer(KDD98DataTransformer):
@@ -1373,10 +1404,10 @@ class Engineer(KDD98DataTransformer):
 
     def __init__(self, data_loader):
         super().__init__(data_loader)
-        self.data = self.dl.preprocessed_data
-        features = self.data.drop(["TARGET_B", "TARGET_D"], axis=1)
+        self.dataset = self.dl.preprocessed_data
+        features = self.dataset["data"]
         self.step = "Feature Engineering"
-        self.ALL_FEATURES = features.columns.values.tolist()
+        self.ALL_FEATURES = self.dataset["feature_names"]
         self.CATEGORICAL_FEATURES = features.select_dtypes(include="category").columns.values.tolist()
         self.NUMERICAL_FEATURES = [f for f in features.columns.values.tolist()
                                    if f not in self.CATEGORICAL_FEATURES]
@@ -1447,7 +1478,7 @@ class Imputer(KDD98DataTransformer):
 
     def __init__(self, data_loader):
         super().__init__(data_loader)
-        self.data = self.dl.numeric_data
+        self.dataset = self.dl.numeric_data
         self.NUMERIC_FEATURES = None
         self.CATEGORICAL_FEATURES = None
         self.BINARY_FEATURES = None
@@ -1471,7 +1502,7 @@ class Extractor(KDD98DataTransformer):
 
     def __init__(self, data_loader):
         super().__init__(data_loader)
-        self.data = self.dl.imputed_data
+        self.dataset = self.dl.imputed_data
         self.step = "Feature Extraction (Boruta all-relevant)"
         self.transformer_config = OrderedDict({
             "boruta_extractor": {
