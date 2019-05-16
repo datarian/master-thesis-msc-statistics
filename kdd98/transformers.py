@@ -47,7 +47,8 @@ __all__ = ['BinaryFeatureRecode',
            "RAMNTFixer",
            "ZeroVarianceSparseDropper",
            "AllRelevantFeatureFilter",
-           "Rescaler"]
+           "Rescaler",
+           "TargetDTransformer"]
 
 
 class NamedFeatureTransformer(BaseEstimator, TransformerMixin):
@@ -836,3 +837,22 @@ class Rescaler(BaseEstimator, TransformerMixin):
     
     def transform(self, X, y=None, *args, **kwargs):
         return self.scaler.transform(X, *args, **kwargs)
+
+
+class TargetDTransformer(BaseEstimator, TransformerMixin):
+
+    def __init__(self):
+        self.transformer = PowerTransformer(method="yeo-johnson", standardize=True)
+
+    def _make_2d_array(y):
+        y = np.array(y).reshape(-1,1)
+        return y
+
+    def fit(self, X=None, y=None):
+        y = _make_2d_array(y)
+        self.transformer.fit(y)
+
+    def transform(self, X=None, y=None):
+        y = _make_2d_array(y)
+        y_trans = self.transformer.transform(y).ravel()
+        return y_trans
