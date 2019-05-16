@@ -91,7 +91,7 @@ class Kdd98ProfitEstimator(BaseEstimator):
 
         # Transform y_d before predicting, also training the target transformer
         y_d_trans = self.target_transformer.fit_transform(
-            self._make_2d_array(y_d))
+            self._make_2d_array(y_d)).ravel()
 
         # Fit regressor to predict donation amounts
         self.regressor.fit(X_d, y_d_trans)
