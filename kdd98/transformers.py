@@ -848,11 +848,11 @@ class TargetDTransformer(BaseEstimator, TransformerMixin):
         y = np.array(y).reshape(-1,1)
         return y
 
-    def fit(self, X=None, y=None):
-        y = self._make_2d_array(y)
+    def fit(self, X, y=None):
+        y = self._make_2d_array(X)
         self.transformer.fit(y)
 
-    def transform(self, X=None, y=None):
-        y = self._make_2d_array(y)
+    def transform(self, X, y=None):
+        y = self._make_2d_array(X)
         y_trans = self.transformer.transform(y).ravel()
         return y_trans

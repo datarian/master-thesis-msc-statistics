@@ -82,10 +82,10 @@ class Kdd98ProfitEstimator(BaseEstimator):
         
         X_d, y_d = self._filter_data_for_donations(X, y)
 
-        self.target_transformer.fit(y=y_d)
+        self.target_transformer.fit(y_d)
 
         # Transform y_d before predicting
-        y_d_trans = self.target_transformer.fit_transform(y=y_d)
+        y_d_trans = self.target_transformer.fit_transform(y_d)
 
         # Fit regressor to predict donation amounts
         self.regressor.fit(X_d, y_d_trans)
