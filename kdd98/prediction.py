@@ -101,10 +101,7 @@ class Kdd98ProfitEstimator(BaseEstimator):
 
     def predict(self, X, y=None):
         y_b = self.classifier.predict(X)
-
-        X_d = X.loc[self.mask, :].values
-        y_d = self.regressor.predict(X_d) * self.alpha_star
-
+        y_d = self.regressor.predict(X) * self.alpha_star
         profit = np.dot(y_b, y_d)
 
         return profit
