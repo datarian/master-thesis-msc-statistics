@@ -8,7 +8,7 @@ from kdd98.transformers import TargetDTransformer
 
 class Kdd98ProfitEstimator(BaseEstimator):
     
-    def __init__(self, classifier, regressor, target_transformer):
+    def __init__(self, classifier, regressor):
         self.classifier = classifier
         self.regressor = regressor
         self.target_transformer = PowerTransformer(method="box-cox", standardize=True)
@@ -21,7 +21,7 @@ class Kdd98ProfitEstimator(BaseEstimator):
         mask = y.TARGET_B.astype("int").astype("bool")
         X_d = X.loc[mask,:].values
         y_d = y.TARGET_D[mask].values
-        return X_d, y_d
+        return (X_d, y_d)
 
     def _optimize_alpha(self,  y_d_predict, y_d, **kwargs):
         profit_data = self._generate_profit_for_alphas(y_d_predict, y_d, **kwargs)
@@ -54,6 +54,7 @@ class Kdd98ProfitEstimator(BaseEstimator):
     def _pi_alpha(self, y_d_predict, y_d, alpha = 1.0, u=0.68):
         """
         Calculates the net profit for a given optimization parameter alpha.
+        This function is solely used to help find the optimal parameter alpha*.
         
         Params
         ------
@@ -61,14 +62,14 @@ class Kdd98ProfitEstimator(BaseEstimator):
         y_d_true:    True donation amount
         transformer: Transformation applied to y_true to normalize distribution
         alpha:       Optimization parameter
-        u:           Utility cost, defaults to 0.68 $ US
+        u:           Unit cost, defaults to 0.68 $ US
 
         Returns
         -------
         profit A list with the predicted profits
         """
         
-        # we transform the unit with the same power transformer used for the target transformation.
+        # we transform the unit cost with the same power transformer used for the target transformation.
         u_trans = self.target_transformer.transform(np.array(u).reshape(-1,1)).ravel()[0]
         
         # The indicator function used to determine if an example is predicted to yield a profit.
