@@ -837,22 +837,3 @@ class Rescaler(BaseEstimator, TransformerMixin):
     
     def transform(self, X, y=None, *args, **kwargs):
         return self.scaler.transform(X, *args, **kwargs)
-
-
-class TargetDTransformer(BaseEstimator, TransformerMixin):
-
-    def __init__(self):
-        self.transformer = PowerTransformer(method="box-cox", standardize=True)
-
-    def _make_2d_array(self, y):
-        y = np.array(y).reshape(-1,1)
-        return y
-
-    def fit(self, X, y=None):
-        y = self._make_2d_array(X)
-        self.transformer.fit(y)
-
-    def transform(self, X, y=None):
-        y = self._make_2d_array(X)
-        y_trans = self.transformer.transform(y).ravel()
-        return y_trans

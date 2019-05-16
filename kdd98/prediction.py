@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator
+from sklearn.preprocessing import PowerTransformer
 from scipy.optimize import minimize, curve_fit
 from kdd98.transformers import TargetDTransformer
 
@@ -10,7 +11,11 @@ class Kdd98ProfitEstimator(BaseEstimator):
     def __init__(self, classifier, regressor, target_transformer):
         self.classifier = classifier
         self.regressor = regressor
-        self.target_transformer = TargetDTransformer()
+        self.target_transformer = PowerTransformer(method="box-cox", standardize=True)
+
+    def _make_2d_array(self, y):
+        y = np.array(y).reshape(-1,1)
+        return y
         
     def _filter_data_for_donations(self, X, y):
         mask = y.TARGET_B.astype("int").astype("bool")
@@ -82,17 +87,13 @@ class Kdd98ProfitEstimator(BaseEstimator):
         
         X_d, y_d = self._filter_data_for_donations(X, y)
 
-        self.target_transformer.fit(y_d)
-
-        # Transform y_d before predicting
-        y_d_trans = self.target_transformer.fit_transform(y_d)
+        # Transform y_d before predicting, also training the target transformer
+        y_d_trans = self.target_transformer.fit_transform(self._make_2d_array(y_d))
 
         # Fit regressor to predict donation amounts
         self.regressor.fit(X_d, y_d_trans)
 
         self.alpha_star = self._optimize_alpha(self.regressor.predict(X_d),y_d_trans)
-        
-        
         
     def predict(self, X, y=None):
         y_b = self.classifier.predict(X)
