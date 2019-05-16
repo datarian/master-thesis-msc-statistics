@@ -842,7 +842,7 @@ class Rescaler(BaseEstimator, TransformerMixin):
 class TargetDTransformer(BaseEstimator, TransformerMixin):
 
     def __init__(self):
-        self.transformer = PowerTransformer(method="yeo-johnson", standardize=True)
+        self.transformer = PowerTransformer(method="box-cox", standardize=True)
 
     def _make_2d_array(self, y):
         y = np.array(y).reshape(-1,1)
