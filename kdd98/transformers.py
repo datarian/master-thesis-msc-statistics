@@ -844,15 +844,15 @@ class TargetDTransformer(BaseEstimator, TransformerMixin):
     def __init__(self):
         self.transformer = PowerTransformer(method="yeo-johnson", standardize=True)
 
-    def _make_2d_array(y):
+    def _make_2d_array(self, y):
         y = np.array(y).reshape(-1,1)
         return y
 
     def fit(self, X=None, y=None):
-        y = _make_2d_array(y)
+        y = self._make_2d_array(y)
         self.transformer.fit(y)
 
     def transform(self, X=None, y=None):
-        y = _make_2d_array(y)
+        y = self._make_2d_array(y)
         y_trans = self.transformer.transform(y).ravel()
         return y_trans
