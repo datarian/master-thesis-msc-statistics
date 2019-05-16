@@ -709,7 +709,7 @@ class KDD98DataProvider:
         dtype_specs[n] = 'str'
     for d in DATE_FEATURES:
         dtype_specs[d] = 'str'
-    dtype_specs['TARGET_B'] = 'str'
+    dtype_specs['TARGET_B'] = 'Int64'
 
     def __init__(self, csv_file=None, pull_stored=True, download_url=None):
         """
@@ -973,7 +973,7 @@ class KDD98DataProvider:
                 targets = pd.read_csv(
                     pathlib.Path(Config.get("data_dir"), self.raw_data_file_name),
                     index_col=INDEX_NAME,
-                    dtype=self.dtype_specs,
+                    dtype={"TARGET_B": "Int64", "TARGET_D": "float64"},
                     low_memory=False,  # needed for mixed type columns
                     memory_map=True  # load file in memory
                 )
