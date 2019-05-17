@@ -23,7 +23,7 @@ class Kdd98ProfitEstimator(BaseEstimator):
         y_d = y.TARGET_D[self.mask].values
         return (X_d, y_d)
 
-    def _optimize_alpha(self, y_b_predict, y_d_predict, y_d):
+    def _optimize_alpha(self, y_b_predict, y_d_predict, y_true):
         """
         Finds \alpha* using cubic splines. The derivative of
         the splines is taken and the roots calculated. These
@@ -33,7 +33,7 @@ class Kdd98ProfitEstimator(BaseEstimator):
         profit is chosen as \alpha*.
         """
         profit_data = self._generate_profit_for_alphas(
-            y_b_predict, y_d_predict, y_d)
+            y_b_predict, y_d_predict, y_true)
 
         s = CubicSpline(profit_data.alpha.values, profit_data.prediction.values)
         ds = s.derivative()
@@ -43,19 +43,19 @@ class Kdd98ProfitEstimator(BaseEstimator):
 
         return alpha_star
 
-    def _generate_profit_for_alphas(self, y_b_predict, y_d_predict, y_d, u=0.68):
+    def _generate_profit_for_alphas(self, y_b_predict, y_d_predict, y_true, u=0.68):
         """
         Generates profit estimates for a grid of alpha values.
         """
         alpha_grid = np.linspace(0.0, 1., 10000)
 
         data = [{"alpha": a,
-                 "prediction": self._pi_alpha(y_b_predict, y_d_predict, y_d, alpha=a)}
+                 "prediction": self._pi_alpha(y_b_predict, y_d_predict, y_true, alpha=a)}
                 for a in alpha_grid]
         
         return pd.DataFrame(data)
 
-    def _pi_alpha(self, y_b_predict, y_d_predict, y_d, alpha=1.0, u=0.68):
+    def _pi_alpha(self, y_b_predict, y_d_predict, y_true, alpha=1.0, u=0.68):
         """
         Calculates the net profit for a given optimization parameter alpha.
         This function is solely used to help find the optimal parameter alpha*.
@@ -83,7 +83,7 @@ class Kdd98ProfitEstimator(BaseEstimator):
 
         # We subtract the unit cost from
         # true donation amounts to get true profit per example.
-        true_profit = y_d - u
+        true_profit = y_true - u
 
         # We filter the true profit and return the sum
         return np.sum(true_profit[indicator])
@@ -96,15 +96,17 @@ class Kdd98ProfitEstimator(BaseEstimator):
 
         X_d, y_d = self._filter_data_for_donations(X, y)
 
-        # Transform y_d before predicting, also training the target transformer
+        # Transform y_d before model training, also training the target transformer
         y_d_trans = self.target_transformer.fit_transform(
             self._make_2d_array(y_d)).ravel()
 
         # Fit regressor to predict donation amounts
         self.regressor.fit(X_d, y_d_trans)
 
+        y_d = self.regressor.transform(X)
+
         self.alpha_star = self._optimize_alpha(
-            y_b, self.regressor.predict(X_d), y_d_trans)
+            y_b, y_d, y.TARGET_D.values)
 
     def predict(self, X, y=None):
         y_b = self.classifier.predict(X)
