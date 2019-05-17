@@ -91,7 +91,8 @@ class Kdd98ProfitEstimator(BaseEstimator):
     def fit(self, X, y):
 
         # Fit classifier and predict donors
-        y_b = self.classifier.fit_predict(X, y.TARGET_B.values.astype("int"))
+        self.classifier.fit(X, y.TARGET_B.values.astype("int"))
+        y_b = self.classifier.predict(X)
 
         X_d, y_d = self._filter_data_for_donations(X, y)
 
