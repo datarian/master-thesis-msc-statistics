@@ -90,9 +90,8 @@ class Kdd98ProfitEstimator(BaseEstimator):
 
     def fit(self, X, y):
 
-        # Fit classifier to predict donors
-        y_b = y.TARGET_B.values.astype("int")
-        self.classifier.fit(X, y_b)
+        # Fit classifier and predict donors
+        y_b = self.classifier.fit_predict(X, y.TARGET_B.values.astype("int"))
 
         X_d, y_d = self._filter_data_for_donations(X, y)
 
@@ -103,7 +102,7 @@ class Kdd98ProfitEstimator(BaseEstimator):
         # Fit regressor to predict donation amounts
         self.regressor.fit(X_d, y_d_trans)
 
-        y_d = self.regressor.transform(X)
+        y_d = self.regressor.predict(X)
 
         self.alpha_star = self._optimize_alpha(
             y_b, y_d, y.TARGET_D.values)
