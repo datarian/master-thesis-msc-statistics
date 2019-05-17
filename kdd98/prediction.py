@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from scipy.optimize import curve_fit, minimize
+from scipy.interpolate import CubicSpline
 from sklearn.base import BaseEstimator
 from sklearn.preprocessing import PowerTransformer
 
@@ -23,41 +23,46 @@ class Kdd98ProfitEstimator(BaseEstimator):
         y_d = y.TARGET_D[self.mask].values
         return (X_d, y_d)
 
-    def _optimize_alpha(self,  y_d_predict, y_d, **kwargs):
+    def _optimize_alpha(self, y_b_predict, y_d_predict, y_d):
+        """
+        Finds \alpha* using cubic splines. The derivative of
+        the splines is taken and the roots calculated. These
+        are the candidates for \alpha*.
+        Next, profit is calculated by interpolating the cubic spline
+        at these candidate locations and the root leading to highest
+        profit is chosen as \alpha*.
+        """
         profit_data = self._generate_profit_for_alphas(
-            y_d_predict, y_d, **kwargs)
+            y_b_predict, y_d_predict, y_d)
 
-        def gauss_pdf(x, mu, sigma):
-            return 1/sigma*np.sqrt(2*np.pi)*np.exp(-0.5*((x-mu)/sigma)**2)
+        s = CubicSpline(profit_data.alpha.values, profit_data.prediction.values)
+        ds = s.derivative()
 
-        params = curve_fit(gauss_pdf, profit_data.alpha.values,
-                           profit_data.prediction.values)
-        alpha_star = params[0][0]
+        roots = ds.roots()
+        alpha_star = roots[np.argmax(s(roots))]
+
         return alpha_star
 
-    def _generate_profit_for_alphas(self, y_d_predict, y_d, u=0.68, n_iter_no_change=20):
-        # Generates profit for a grid of alpha values.
-        # Stops once there's no change (all predicted examples are selected)
-        alpha_grid = np.linspace(0.0, 1., 1000)
-        data = []
-        profits = []
-        for a in alpha_grid:
-            # Check if profit converged, if it has, we selected all examples.
-            # In that case, break and return the data
-            if len(profits) > n_iter_no_change and profits[-1] != 0.0:
-                if len(set(profits[-n_iter_no_change:])) == 1:
-                    break
-            profits.append(self._pi_alpha(y_d_predict, y_d, alpha=a))
-            data.append({"alpha": a, "prediction": profits[-1]})
+    def _generate_profit_for_alphas(self, y_b_predict, y_d_predict, y_d, u=0.68):
+        """
+        Generates profit estimates for a grid of alpha values.
+        """
+        alpha_grid = np.linspace(0.0, 1., 10000)
+
+        data = [{"alpha": a,
+                 "prediction": self._pi_alpha(y_b_predict, y_d_predict, y_d, alpha=a)}
+                for a in alpha_grid]
+        
         return pd.DataFrame(data)
 
-    def _pi_alpha(self, y_d_predict, y_d, alpha=1.0, u=0.68):
+    def _pi_alpha(self, y_b_predict, y_d_predict, y_d, alpha=1.0, u=0.68):
         """
         Calculates the net profit for a given optimization parameter alpha.
         This function is solely used to help find the optimal parameter alpha*.
 
         Params
         ------
+        y_b_predict: Predictios for wheter an example donates.
         y_d_predict: Predicted donation amount, transformed with a power-transform
         y_d_true:    True donation amount
         transformer: Transformation applied to y_true to normalize distribution
@@ -74,8 +79,10 @@ class Kdd98ProfitEstimator(BaseEstimator):
             np.array(u).reshape(-1, 1)).ravel()[0]
 
         # The indicator function used to determine if an example is predicted to yield a profit.
-        indicator = (np.exp(y_d_predict) * alpha > np.exp(u_trans)).ravel()
+        indicator = (y_b_predict * np.exp(y_d_predict) * alpha > np.exp(u_trans)).ravel()
 
+        # We subtract the unit cost from
+        # true donation amounts to get true profit per example.
         true_profit = y_d - u
 
         # We filter the true profit and return the sum
@@ -101,7 +108,7 @@ class Kdd98ProfitEstimator(BaseEstimator):
 
     def predict(self, X, y=None):
         y_b = self.classifier.predict(X)
-        y_d = self.regressor.predict(X) * self.alpha_star
-        profit = np.dot(y_b, y_d)
+        y_d = self.regressor.predict(X)
+        profit = np.dot(y_b, (y_d * self.alpha_star))
 
         return profit
