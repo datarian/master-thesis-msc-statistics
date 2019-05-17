@@ -969,15 +969,15 @@ class KDD98DataProvider:
         if "val" in self.raw_data_file_name.lower():
             try:
                 target_file = Config.get("data_dir") / Config.get("validation_target_file_name")
-                logger.info("Reading csv file: " + self.raw_data_file_name)
+                logger.info("Reading csv file: " + Config.get("validation_target_file_name"))
                 targets = pd.read_csv(
-                    pathlib.Path(Config.get("data_dir"), self.raw_data_file_name),
+                    pathlib.Path(Config.get("data_dir"), Config.get("validation_target_file_name")),
                     index_col=INDEX_NAME,
                     dtype={"TARGET_B": "Int64", "TARGET_D": "float64"},
                     low_memory=False,  # needed for mixed type columns
                     memory_map=True  # load file in memory
                 )
-                raw_data = raw_data.join(targets, on=INDEX_NAME,)
+                raw_data = raw_data.merge(targets, on=INDEX_NAME)
             except Exception as exc:
                 logger.error(exc)
                 raise
