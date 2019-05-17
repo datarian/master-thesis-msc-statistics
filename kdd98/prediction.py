@@ -104,7 +104,7 @@ class Kdd98ProfitEstimator(BaseEstimator):
         self.regressor.fit(X_d, y_d_trans)
 
         self.alpha_star = self._optimize_alpha(
-            self.regressor.predict(X_d), y_d_trans)
+            y_b, self.regressor.predict(X_d), y_d_trans)
 
     def predict(self, X, y=None):
         y_b = self.classifier.predict(X)
