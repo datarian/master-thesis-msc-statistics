@@ -127,7 +127,7 @@ class Kdd98ProfitEstimator(BaseEstimator):
     def predict(self, X, y=None):
         y_b_predict = self.classifier.predict_proba(X)[:,1]
         y_d_predict_transformed = self.regressor.predict(X)
-        y_d_predict = self.transformer.inverse_transform(self._make_2d_array(y_d_predict_transformed))
+        y_d_predict = self.target_transformer.inverse_transform(self._make_2d_array(y_d_predict_transformed))
         expected_profit = np.dot(y_b_predict, (y_d_predict * self.alpha_star))
 
         return expected_profit
