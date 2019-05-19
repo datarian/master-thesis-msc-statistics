@@ -106,6 +106,8 @@ venv.bak/
 # Raw data files
 data/*.txt
 data/*.h5
+data/*.zip
+data/*readme
 !data/zipcodes2018.txt
 data/zip_db.pkl
 
@@ -122,3 +124,4 @@ data/data_frames/*.pkl
 knn_impute.py
 
 
+data/cup98LRN_pd.pkl
