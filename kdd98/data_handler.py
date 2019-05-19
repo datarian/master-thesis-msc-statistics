@@ -1191,7 +1191,7 @@ class KDD98DataTransformer:
                     logger.error(message)
                     raise e
                 features = ut.update_df_with_transformed(
-                    features, transformed, transformer)
+                    features, transformed, transformer, c["dtype"])
             drop_features.update(c["drop"])
         self.dataset["data"] = features
         self.dataset["feature_names"] = features.columns.values.tolist()
