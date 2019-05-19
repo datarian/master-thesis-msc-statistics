@@ -1372,11 +1372,22 @@ class Preprocessor(KDD98DataTransformer):
     def post_steps(self):
         # We train the zero variance dropper, which will populate a list of 
         # features to remove in _dropped.
-        zv = ZeroVarianceSparseDropper(override=['TARGET_B', 'TARGET_D'])
+        
         if self.fit:
+            zv = ZeroVarianceSparseDropper(override=['TARGET_B', 'TARGET_D'])
             _ = zv.fit_transform(self.dataset["data"])
+            with open(pathlib.Path(
+                        Config.get("model_store_internal"), "zero_var_sparse_dropper.pkl"), "wb") as ms:
+                    pkl.dump(zv, ms)
         else:
-            _ = zv.transform(self.dataset["data"])
+            try:
+                with open(pathlib.Path(
+                        Config.get("model_store_internal"), "zero_var_sparse_dropper.pkl"), "rb") as ms:
+                    zv = pkl.load(ms)
+                _ = zv.transform(self.dataset["data"])
+            except Exception as e:
+                "Failed to load pickled transformer ZeroVarianceSparseDropper. Aborting...."
+                raise(e)
 
         logger.info("About to drop these sparse / constant features: {}"
                     .format(sorted(zv._dropped)))
