@@ -725,7 +725,7 @@ class KDD98DataProvider:
         """
         self.raw_data_file_name = csv_file
         self._raw_data = {}
-        self._preprocessed_data = {}
+        self._cleaned_data = {}
         self._numeric_data = {}
         self._imputed_data = {}
         self._ar_data = {}
@@ -740,13 +740,13 @@ class KDD98DataProvider:
             logger.info("Set raw data file name to: {}"
                         .format(self.raw_data_name))
             if "lrn" in csv_file.lower():
-                self.preprocessed_data_name = Config.get("learn_preprocessed_name")
+                self.cleaned_data_name = Config.get("learn_cleaned_name")
                 self.num_data_name = Config.get("learn_numeric_name")
                 self.imp_data_name = Config.get("learn_imputed_name")
                 self.ar_data_name = Config.get("learn_ar_name")
                 self.fit_transformations = True
             elif "val" in csv_file.lower():
-                self.preprocessed_data_name = Config.get("validation_preprocessed_name")
+                self.cleaned_data_name = Config.get("validation_cleaned_name")
                 self.num_data_name = Config.get("validation_numeric_name")
                 self.imp_data_name = Config.get("validation_imputed_name")
                 self.ar_data_name = Config.get("validation_ar_name")
@@ -765,14 +765,14 @@ class KDD98DataProvider:
         self._raw_data = value
 
     @property
-    def preprocessed_data(self):
-        if not self._preprocessed_data:
-            self.provide("preprocessed")
-        return self._preprocessed_data
+    def cleaned_data(self):
+        if not self._cleaned_data:
+            self.provide("cleaned")
+        return self._cleaned_data
 
-    @preprocessed_data.setter
-    def preprocessed_data(self, value):
-        self._preprocessed_data = value
+    @cleaned_data.setter
+    def cleaned_data(self, value):
+        self._cleaned_data = value
 
     @property
     def numeric_data(self):
@@ -808,7 +808,7 @@ class KDD98DataProvider:
         """
         Provides data by first checking the hdf store, then loading csv data.
 
-        If preprocessed data is requested, the returned pandas object has
+        If cleaned data is requested, the returned pandas object has
         - binary
         - numeric (float, int)
         - ordinal / nominal categorical
@@ -825,16 +825,16 @@ class KDD98DataProvider:
         Params
         ------
         type    One of ["raw", "preproc", "numeric", "imputed", "all_relevant"].
-                Raw is as read by pandas, preprocessed is with
+                Raw is as read by pandas, cleaned is with
                 preprocessing operations applied.
         """
         name_mapper = {
             "raw": {
                 "key": self.raw_data_name,
                 "data_attrib": "_raw_data"},
-            "preprocessed": {
-                "key": self.preprocessed_data_name,
-                "data_attrib": "_preprocessed_data"},
+            "cleaned": {
+                "key": self.cleaned_data_name,
+                "data_attrib": "_cleaned_data"},
             "numeric": {
                 "key": self.num_data_name,
                 "data_attrib": "_numeric_data"},
@@ -847,7 +847,7 @@ class KDD98DataProvider:
             }
         }
 
-        assert(type in ["raw", "preprocessed", "numeric", "imputed", "all_relevant"])
+        assert(type in ["raw", "cleaned", "numeric", "imputed", "all_relevant"])
 
         try:
             # First, try to load the data from hdf
@@ -855,30 +855,30 @@ class KDD98DataProvider:
             data = self._unpickle_df(name_mapper[type]["key"])
             setattr(self, name_mapper[type]["data_attrib"], data)
         except Exception:
-            # If it fails and we ask for preprocessed data,
+            # If it fails and we ask for cleaned data,
             # try to find the raw data in hdf and, if present,
-            # load it. If we ask for preprocessed data, try to find
-            # preprocessed data in hdf and load if present.
-            if type == "preprocessed":
+            # load it. If we ask for cleaned data, try to find
+            # cleaned data in hdf and load if present.
+            if type == "cleaned":
                 try:
                     self.provide("raw")
                 except Exception as e:
                     logger.error("Failed to provide raw data. "
-                                 "Cannot provide preprocessed data. Reason: {}"
+                                 "Cannot provide cleaned data. Reason: {}"
                                  .format(e))
                 try:
                     pre = Preprocessor(self)
-                    self.preprocessed_data = pre.apply_transformation()
+                    self.cleaned_data = pre.apply_transformation()
                 except Exception as e:
                     logger.error("Failed to preprocess raw data.\nReason: {}"
                                  .format(e))
                     raise e
-                self._pickle_df(self.preprocessed_data, self.preprocessed_data_name)
+                self._pickle_df(self.cleaned_data, self.cleaned_data_name)
             elif type == "numeric":
                 try:
-                    self.provide("preprocessed")
+                    self.provide("cleaned")
                 except Exception as e:
-                    logger.error("Failed to provide preprocessed data.\n"
+                    logger.error("Failed to provide cleaned data.\n"
                                  "Cannot provide numeric data. Reason: {}"
                                  .format(e))
                     raise e
@@ -886,7 +886,7 @@ class KDD98DataProvider:
                     eng = Engineer(self)
                     self.numeric_data = eng.apply_transformation()
                 except Exception as e:
-                    logger.error("Failed to engineer preprocessed data.\n"
+                    logger.error("Failed to engineer cleaned data.\n"
                                  "Reason: {}".format(e))
                     raise e
                 self._pickle_df(self.numeric_data, self.num_data_name)
@@ -1415,7 +1415,7 @@ class Engineer(KDD98DataTransformer):
 
     def __init__(self, data_loader):
         super().__init__(data_loader)
-        self.dataset = self.dl.preprocessed_data
+        self.dataset = self.dl.cleaned_data
         features = self.dataset["data"]
         self.step = "Feature Engineering"
         self.ALL_FEATURES = self.dataset["feature_names"]
