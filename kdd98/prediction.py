@@ -104,6 +104,8 @@ class Kdd98ProfitEstimator(BaseEstimator):
 
     def fit(self, X, y):
 
+        assert(isinstance(X, pd.DataFrame))
+
         # Fit classifier and predict donation probability
         self.classifier.fit(X, y.TARGET_B.values.astype("int"))
         # Predictions are returned as tuples (p_class_0, p_class_1)
@@ -125,6 +127,8 @@ class Kdd98ProfitEstimator(BaseEstimator):
             y_b_predict, y_d_predict, y.TARGET_D.values)
 
     def predict(self, X, y=None):
+        if isinstance(X, pd.DataFrame):
+            X = X.values
         y_b_predict = self.classifier.predict_proba(X)[:,1]
         y_d_predict_transformed = self.regressor.predict(X)
         y_d_predict = self.target_transformer.inverse_transform(self._make_2d_array(y_d_predict_transformed))
