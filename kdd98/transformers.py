@@ -17,6 +17,7 @@ from fancyimpute import KNN, IterativeImputer
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import maxabs_scale, PowerTransformer, FunctionTransformer
+from sklearn.impute import SimpleImputer
 from sklearn.ensemble import RandomForestClassifier
 from boruta import BorutaPy
 
@@ -46,9 +47,9 @@ __all__ = ['BinaryFeatureRecode',
            "TargetImputer",
            "RAMNTFixer",
            "ZeroVarianceSparseDropper",
+           "MedianImputer",
            "AllRelevantFeatureFilter",
-           "Rescaler",
-           "TargetDTransformer"]
+           "Rescaler"]
 
 
 class NamedFeatureTransformer(BaseEstimator, TransformerMixin):
@@ -571,90 +572,6 @@ class CategoricalImputer(NamedFeatureTransformer):
         return X_trans
 
 
-class NumericImputer(BaseEstimator):
-
-    def __init__(self, n_iter=5, initial_strategy="median",
-                 n_nearest_features=100, sample_posterior=True,
-                 random_state=Config.get("random_seed"), verbose=0):
-        super().__init__()
-        self.n_iter = n_iter
-        self.initial_strategy = initial_strategy
-        self.n_nearest_features = n_nearest_features
-        self.sample_posterior=sample_posterior
-        self.random_state = random_state
-        self.verbose = verbose
-        self.feature_names = None
-
-        self.imp = IterativeImputer(n_iter=self.n_iter,
-                                    initial_strategy=self.initial_strategy,
-                                    n_nearest_features=self.n_nearest_features,
-                                    sample_posterior=self.sample_posterior,
-                                    random_state=self.random_state,
-                                    verbose=self.verbose)
-
-    def fit(self, X, y=None):
-        assert(isinstance(X, pd.DataFrame))
-        try:
-            self.imp.fit_transform(X.values, y)
-        except Exception as e:
-            raise e
-        return self
-
-    def transform(self, X, y=None):
-        assert(isinstance(X, pd.DataFrame))
-        self.feature_names = X.columns.values.tolist()
-        try:
-            X_trans = self.imp.fit_transform(X.values)
-        except Exception as e:
-            raise e
-        X_trans = pd.DataFrame(data=X_trans, columns=X.columns, index=X.index)
-        return X_trans
-
-    def fit_transform(self, X, y=None):
-        assert(isinstance(X, pd.DataFrame))
-        self.feature_names = X.columns.values.tolist()
-        try:
-            X_trans = self.imp.fit_transform(X.values, y)
-        except Exception as e:
-            raise e
-        X_trans = pd.DataFrame(data=X_trans, columns=X.columns, index=X.index)
-        return X_trans
-
-    def get_feature_names(self):
-        if isinstance(self.feature_names, list):
-            return self.feature_names
-        else:
-            raise(ValueError("Transformer {} has to be transformed first, cannot return feature names.".format(
-                self.__class__.__name__)))
-
-
-class TargetImputer(NamedFeatureTransformer):
-
-    def __init__(self):
-        super().__init__()
-
-    def fit(self, X, y=None):
-        self.feature_names = ['TARGET_B']
-        return self
-
-    def transform(self, X, y=None):
-        assert(isinstance(X, pd.DataFrame))
-
-        def set_true_if_donated(example):
-            donated = None
-            if pd.isna(example['TARGET_B']):
-                donated = 1 if example['TARGET_D'] > 0.0 else 0
-            else:
-                donated = example['TARGET_B']
-            return donated
-
-        X_trans = pd.DataFrame(index=X.index, columns=['TARGET_B'], dtype="int64")
-
-        X_trans['TARGET_B'] = X.agg(set_true_if_donated, axis=1)
-
-        return X_trans
-
-
 class ZipToCoords(NamedFeatureTransformer):
 
     def __init__(self):
@@ -745,6 +662,7 @@ class ZeroVarianceSparseDropper(NamedFeatureTransformer):
                  unique_cut=0.1,
                  sparse_cut=0.1,
                  override=[]):
+        super().__init__()
         self.near_zero = near_zero
         self.freq_cut = freq_cut
         self.unique_cut = unique_cut
@@ -782,26 +700,55 @@ class ZeroVarianceSparseDropper(NamedFeatureTransformer):
         self.feature_names = X_trans.columns.values.tolist()
         return X_trans
 
+class MedianImputer(NamedFeatureTransformer):
+
+    def __init__(self, missing_values=np.nan, strategy='median'):
+        super().__init__()
+        self.missing_values = missing_values
+        self.strategy = strategy
+        self.imputer = SimpleImputer(missing_values = self.missing_values, strategy=self.strategy)
+
+    def fit(self, X, y=None):
+        assert(isinstance(X, pd.DataFrame))
+        self.imputer.fit(X.values)
+        self.feature_names = X.columns.values.tolist()
+        return self
+
+    def transform(self, X, y=None):
+        assert(isinstance(X,pd.DataFrame))
+        X_trans = self.imputer.transform(X.values)
+        X_trans = pd.DataFrame(data=X_trans,
+                               index = X.index,
+                               columns=X.columns)
+        return X_trans
+
 
 class AllRelevantFeatureFilter(NamedFeatureTransformer):
 
-    def __init__(self, max_iter=120, n_estimators="auto"):
+    def __init__(self, max_iter=120, perc=100, n_estimators="auto"):
+        super().__init__()
         self.max_iter=max_iter
         self.n_estimators=n_estimators
+        self.perc = perc
         self.estimator = BorutaPy(
-            RandomForestClassifier(n_jobs=-1,class_weight="balanced"),
+            RandomForestClassifier(n_jobs=-1, max_depth=6, class_weight="balanced"),
             n_estimators = self.n_estimators,
+            perc=self.perc,
             max_iter = self.max_iter,
             verbose=0,
             random_state=Config.get("random_seed")
         )
 
     def fit(self, X, y):
-        self.estimator.fit(X.values, y.values)
+        assert(isinstance(X, pd.DataFrame))
+        assert(isinstance(y, pd.DataFrame))
+        y_b = y.TARGET_B
+        self.estimator.fit(X.values, y_b.values)
         self.feature_names = X.columns.values[self.estimator.support_].tolist()
         return self
 
     def transform(self, X, y=None):
+        assert(isinstance(X, pd.DataFrame))
         X_trans = self.estimator.transform(X.values)
         return pd.DataFrame(
             data=X_trans,

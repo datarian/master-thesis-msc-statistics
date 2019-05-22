@@ -20,9 +20,8 @@ from kdd98.transformers import (AllRelevantFeatureFilter, BinaryFeatureRecode,
                                 CategoricalImputer, DateFormatter, DeltaTime,
                                 MDMAUDFormatter, MonthsToDonation,
                                 MultiByteExtract, NOEXCHFormatter,
-                                NumericImputer, OrdinalEncoder, RAMNTFixer,
-                                RFAFixer, TargetImputer,
-                                ZeroVarianceSparseDropper, ZipFormatter,
+                                MedianImputer, OrdinalEncoder, RAMNTFixer,
+                                RFAFixer, ZeroVarianceSparseDropper, ZipFormatter,
                                 ZipToCoords)
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
@@ -709,7 +708,7 @@ class KDD98DataProvider:
         dtype_specs[n] = 'str'
     for d in DATE_FEATURES:
         dtype_specs[d] = 'str'
-    dtype_specs['TARGET_B'] = 'Int64'
+    dtype_specs['TARGET_B'] = 'int'
 
     def __init__(self, csv_file=None, pull_stored=True, download_url=None):
         """
@@ -898,17 +897,14 @@ class KDD98DataProvider:
                         "Cannot provide imputed data. Reason: {}"
                         .format(e))
                     raise e
-                logger.error("Not implemented")
-                raise NotImplementedError()
-                # try:
-                    
-                #     imp = Imputer(self)
-                #     self.imputed_data = imp.apply_transformation()
-                # except Exception as e:
-                #     logger.error("Failed to impute numeric data.\n"
-                #                  "Reason: {}".format(e))
-                #     raise e
-                # self._pickle_df(self.imputed_data, self.imp_data_name)
+                try:    
+                    imp = Imputer(self)
+                    self.imputed_data = imp.apply_transformation()
+                except Exception as e:
+                    logger.error("Failed to impute numeric data.\n"
+                                "Reason: {}".format(e))
+                    raise e
+                self._pickle_df(self.imputed_data, self.imp_data_name)
             elif type == "all_relevant":
                 try:
                     self.provide("imputed")
@@ -917,16 +913,14 @@ class KDD98DataProvider:
                         "Cannot provide all-relevant data. Reason: {}"
                         .format(e))
                     raise e
-                logger.error("Not implemented")
-                raise NotImplementedError()
-                # try:
-                #     fext = Extractor(self)
-                #     self.all_relevant_data = fext.apply_transformation()
-                # except Exception as e:
-                #     logger.error("Failed to extract features.\n"
-                #                  "Reason: {}".format(e))
-                #     raise e
-                # self._pickle_df(self.ar_data_name, self.ar_data_name)
+                try:
+                    fext = Extractor(self)
+                    self.all_relevant_data = fext.apply_transformation()
+                except Exception as e:
+                    logger.error("Failed to extract features.\n"
+                                 "Reason: {}".format(e))
+                    raise e
+                self._pickle_df(self.ar_data_name, self.ar_data_name)
             else:
                 try:
                     self._read_csv_data()
@@ -1160,7 +1154,7 @@ class KDD98DataTransformer:
             if self.fit:
                 transformer = c["transformer"]
                 try:
-                    transformed = transformer.fit_transform(features)
+                    transformed = transformer.fit_transform(features, target)
                 except Exception as e:
                     message = "Failed to fit_transform with '{}'"\
                               ". Message: {}".format(t, e)
@@ -1490,20 +1484,12 @@ class Imputer(KDD98DataTransformer):
     def __init__(self, data_loader):
         super().__init__(data_loader)
         self.dataset = self.dl.numeric_data
-        self.NUMERIC_FEATURES = None
-        self.CATEGORICAL_FEATURES = None
-        self.BINARY_FEATURES = None
         self.step = "Imputation (Iterative Imputer)"
         self.transformer_config = OrderedDict({
             "impute_numeric": {
-                "transformer":  NumericImputer(
-                    n_iter=5,
-                    initial_strategy="median",
-                    sample_posterior=True,
-                    random_state=Config.get("random_seed"),
-                    verbose=1),
+                "transformer":  MedianImputer(),
                 "dtype": None,
-                "file": "iterative_imputer.pkl",
+                "file": "median_imputer.pkl",
                 "drop": []
             }
         })
