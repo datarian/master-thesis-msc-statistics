@@ -50,8 +50,13 @@ After installing the package, several folders and files are created in the worki
 
 * ``data`` contains the data files and documentation of the original KDD Cup 1998
 * ``data/data_frames`` contains pickled pandas df's with data at the corresponding transformation step
-* ``models/internal`` contains persisted transformers
+* ``models/internal`` contains persisted transformers for data set transformations.
 * ``out.log`` reports transformation progress / potential problems
+
+**Please note:**
+
+* Do *not* touch the `models/` folder between fitting to LRN and transforming VAL data sets. The persisted models are necessary for the correct functioning of the packe.
+* Upgrading python most likely will invalidate your persisted models and transformed data sets. After an update, clean everything under `models/` and `data/data_frames/` 
 
 Additionally, this repository contains:
 
