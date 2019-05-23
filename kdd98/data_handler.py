@@ -920,7 +920,7 @@ class KDD98DataProvider:
                     logger.error("Failed to extract features.\n"
                                  "Reason: {}".format(e))
                     raise e
-                self._pickle_df(self.ar_data_name, self.ar_data_name)
+                self._pickle_df(self.all_relevant_data, self.ar_data_name)
             else:
                 try:
                     self._read_csv_data()
