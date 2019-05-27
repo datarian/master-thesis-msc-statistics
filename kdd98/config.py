@@ -50,10 +50,10 @@ class Config:
         "reference_date": pd.datetime(1997, 6, 1),
         "qual_palette": sns.husl_palette(8),
         "qual_palette_binary": sns.palettes.color_palette(['#f77189', '#39a7d0']), # 1st and 6th color from husl_palette
-        "seq_palette": sns.cubehelix_palette(12, start=2.4, rot=0.5, gamma=0.9, hue=0.8, light=0.6, dark=0.2),
+        "seq_palette": sns.light_palette(sns.husl_palette(8)[4], n_colors=256),
         "diverging_palette": sns.diverging_palette(204, 359, s=83, l=57, sep=10, n=12),
         "qual_color_map": col.LinearSegmentedColormap.from_list("husl", sns.husl_palette(8), N=8),
-        "seq_color_map": sns.cubehelix_palette(256, start=2.4, rot=0.5, gamma=0.9, hue=0.8, light=0.6, dark=0.2, as_cmap=True),
+        "seq_color_map": sns.light_palette(sns.husl_palette(8)[4], n_colors=256, as_cmap=True),
         "diverging_color_map": sns.diverging_palette(204, 359, s=83, l=57, sep=10, n=12, as_cmap=True)
     }
 
