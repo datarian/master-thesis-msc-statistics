@@ -1509,3 +1509,51 @@ class Extractor(KDD98DataTransformer):
                 "drop": []
             }
         })
+
+    def process_transformers(self):
+        features = self.dataset["data"]
+        if self.fit:
+            target = self.dataset["targets"]
+        else:
+            target = None
+        drop_features = set()
+
+        for t, c in self.transformer_config.items():
+            logging.info("Working on transformer '{}'".format(t))
+            transformed, transformer = [None]*2
+            if self.fit:
+                transformer = c["transformer"]
+                try:
+                    transformer.fit_transform(features, target)
+                except Exception as e:
+                    message = "Failed to fit_transform with '{}'"\
+                              ". Message: {}".format(t, e)
+                    logger.error(message)
+                    raise RuntimeError(message)
+                drop_features.update([f for f in features.columns.values.tolist() if f not in transformer.feature_names])
+
+                with open(pathlib.Path(
+                        Config.get("model_store_internal"), c["file"]), "wb") as ms:
+                    pkl.dump(transformer, ms)
+            else:
+                try:
+                    with open(pathlib.Path(
+                            Config.get("model_store_internal"), c["file"]), "rb") as ms:
+                        transformer = pkl.load(ms)
+                except Exception:
+                    message = "Failed to load fitted transformer {}.\n"\
+                              "Process kdd98LRN.txt first to learn transformations."\
+                              "Aborting...".format(c["file"])
+                    logger.error(message)
+                    raise(RuntimeError(message))
+                try:
+                    drop_features.update([f for f in features.columns.values.tolist() if f not in transformer.feature_names])
+                except Exception as e:
+                    message = "Failed to transform with {}.\n"\
+                              "Aborting...".format(t)
+                    logger.error(message)
+                    raise e
+
+        self.dataset["data"] = features
+        self.dataset["feature_names"] = features.columns.values.tolist()
+        return (self.dataset, drop_features)

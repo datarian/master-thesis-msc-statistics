@@ -452,8 +452,8 @@ class MonthsToDonation(DateHandler, NamedFeatureTransformer):
         As a consequence, the first sending month will be used to
         calculate the time delta.
         In some cases, even with this in place, negative durations occur.
-        These are then set to 0.
-        All cases where no donation was made are set to a duration of 1200 months (100 years).
+        In these cases, one year is subtracted from the donation date.
+        All cases where no donation was made are set to nan.
     """
 
     def __init__(self, reference_date=pd.datetime(1998, 6, 1)):
