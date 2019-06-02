@@ -1,0 +1,146 @@
+# Results and Discussion
+
+Below, the results from data preprocessing, model evaluation, -selection and predictions are shown.
+
+## Preprocessing With Package kdd98
+
+The self-written package `kdd98` ensures consistent data provision. It handles downloading and preprocessing of the data set for both the learning and validation set. The complete preprocessing pipeline is first learned on the training data set. The transforming models are persisted on disk and are then applied to the validation data when it is requested through the package's API.
+
+The data sets can be obtained at the following intermediate steps from `kdd98.data_handler.KDD98DataProvider`:
+
+* **raw**, as imported through `pandas.read_csv()`
+* **preprocessed**, input errors removed, correct data types for all features, missing at random (MAR) imputations applied
+* **numeric**, after feature engineering (encoded categories, date and zip code transformations)
+* **imputed**, with missing values imputed
+* **all-relevant**, filtered down to a set of relevant features
+
+## Imputation
+
+(ref:jupyter-4-imputation) `r make_github_link("notebooks", "4_Imputation.ipynb")`
+
+Several techniques were explored to impute missing values. In the end, a simple approach was chosen: Categorical features had a *missing* level added during encoding. All other features were imputed by their median value to account for the skewed distributions. See the corresponding Jupyter notebook^[(ref:jupyter-4-imputation)] for details.
+
+Missing data before categorical encoding and median-imputation of numeric features is shown in Figure \@ref(fig:before-impute). The matrix displays the complete data set, with missing values indicated by white cells.
+
+(ref:before-impute-legend) Data before imputation of numeric features. The big complete block at the center is the US census data.
+
+```{r before-impute, fig.cap="(ref:before-impute-legend) ", echo=F}
+include_graphics("figures/imputation/missing-matrix.png")
+```
+
+The features with most and fewest missing values are shown in (Figure \@ref(fig:most-fewest-missing)). It is not surprising to find the *MONTHS_TO_DONATION* features among those with most missing because few examples respond to the promotions and hence, don't donate.
+
+(ref:m-f-missing-legend) Features with most (left) and fewest (right) missing features.
+
+```{r most-fewest-missing, fig.cap="(ref:m-f-missing-legend)", out.width="49%", fig.show="hold", echo=F}
+include_graphics(c("figures/imputation/most-missing.png", "figures/imputation/fewest-missing.png"))
+```
+
+## Feature Selection
+
+After preprocessing and feature engineering, `r ncol(py$numeric$data)` features were present in the data. Using boruta, `r ncol(py$all_relevant$data)` features were chosen as important. These were:
+
+`r colnames(py$all_relevant$data)`.
+
+Among them are several of the *RFA* features recorded for previous promotions. These correspond to the RFM features mentioned in literature [REFERENCE] which are usually employed to model customer response. It is therefore reassuring to find them among the all-relevant features. Additionally, there are several features from the US census data:
+
+
+
+## Classifiers
+
+The four classifiers that were evaluated can be compared in terms of their receiver operating characteristic , which indicates overall model performance through an area under the curve value (ROC-AUC), precision-recall (PR) curves, or by their individual performance expressed through confusion matrices.
+
+The ROC-AUC curve is constructed by evaluating the false positive rate (FPR) against the true positive rate (TPR) at various thresholds for the predicted class probabilities of examples in the training data. The closer the curve is to the top-left corner, the better a model performs (we have a large TPR and at the same time a low FPR).
+
+Looking at the ROC-AUC curves shown in Figure \@ref(fig:roc-auc-curve), we see that all classifiers performed rather weak. In the case of imbalanced data, the majority class dominates this metric. The false positive rate is $FPR = \frac{FP}{TN}$. This means that as the false positives (FP) decrease, FPR does not change a lot.
+
+(ref:roc-auc-legend) Comparison of ROC-AUC for the evaluated classifiers.
+
+```{r roc-auc-curve, fig.cap="(ref:roc-auc-legend)", echo=F}
+
+knitr::include_graphics("figures/learning/roc_auc_compared_refit_recall.png")
+```
+
+The PR curve with precision $P = \frac{TP}{TP+FP}$ is sensitive to false positives and, since TN is not directly involved, better suited for our imbalanced data. Figure \@ref(fig:p-r-curve) shows the models in direct comparison.
+
+(ref:p-r-legend) Comparison of precision-recall curves for the classifiers.
+
+```{r p-r-curve, fig.cap="(ref:roc-auc-legend)", echo=F}
+
+knitr::include_graphics("figures/learning/prec_rec_compared_refit_recall.png")
+```
+
+## Regressors
+
+Regressors were learned on the learning data set with *TARGET_D* as 
+
+For the regression models, the target was transformed using a Box-Cox transformation with parameter $\lambda=0.024$. The goal was to linearize the target to improve regression model's performance. The transformed data somewhat resembles a normal distribution, although there are several modes to be made out.
+
+```{r reg-targ-transform, fig.cap="Target before transformation (left) and after a Box-Cox transformation (right).", fig.show="hold", out.width="49%", echo=F}
+
+knitr::include_graphics(c("figures/predictions/target_d-distribution.png", "figures/predictions/target_d-distribution-transformed.png"))
+```
+
+The resulting distribution of predictions on the training data from the models evaluated is shown in Figure \@ref(fig:reg-distrib). Except for SVR, the models produce very similar results. We again find the multimodal distribution, with the SVR capturing the true frequencies of the donation amounts better than the other models.
+
+(ref:reg-distrib-legend) Distributions of the predicted donation amount for all regressors evaluated. Except for SVR, the models perform very similar.
+
+```{r reg-distrib, fig.cap="(ref:reg-distrib-legend)", echo=F}
+
+knitr::include_graphics("figures/predictions/regressor-predictions-comparison.png")
+```
+
+
+The comparison of $R^2$ for the models evaluated shows SVR as the best performing model (see Figure \@ref(fig:reg-eval)). The SVR was therefore chosen for use in the final profit prediction.
+
+(ref:reg-eval-legend) Evaluation metric $R^2$ for all regression models evaluated. SVR performs superior, with near-perfect $R^2$.
+
+```{r reg-eval, fig.cap="(ref:reg-eval-legend)", echo=F}
+
+knitr::include_graphics("figures/predictions/regressor-score-comparison.png")
+```
+
+## Prediction
+
+The intermediate steps for arriving at the final prediction will be examined in this section.
+
+### Conditional Prediction of the Donation Amount
+
+Using the regression model selected in section \@ref(regressors), the predicted donation amount for the learning data is strictly positive because the model was learned conditionally on the examples that made a donation (see Figure \@ref(fig:y-d-predict)). Compared to the original distribution in Figure \@ref(fig:reg-targ-transform), we see a similar distribution, with the mode at approximately 13 \$ and the largest donations in excess of 175 \$.
+
+(ref:y-d-predict-legend) Conditionally predicted donation amounts, transformed back to the original scale (the model was trained on the Box-Cox transformed target).
+
+```{r y-d-predict, fig.cap="(ref:y-d-predict-legend)", echo=F}
+
+knitr::include_graphics("figures/predictions/y_d_predicted-inverse-transform.png")
+```
+
+### Profit Optimization
+
+The correction factor $\alpha$, used to account for the bias introduced by learning the regression models on a non-random sample, was found as described in section \@ref(methods-prediction). First, expected profit $E(Z)$ was calculated using equation \@ref(eq:pi-alpha) for a grid of $\alpha$ values. Then, a polynomial model and a cubic spline were fitted to the data and $\alpha$ optimized subsequently.
+
+As can be seen in Figure \@ref(fig:alpha-grid), profit is very sensitive to $\alpha$. This is not surprising given the distribution in Figure \@ref(fig:y-d-predict) which is narrowly concentrated around 13 $. Furthermore, the curve is constant over much of the domain, meaning that all examples were selected from approximately $\alpha=0.15$. The sharp spike combined with the large proportion of constant expected profit makes fitting a polynomial difficult. The cubic spline was therefore used to find the optimal value $\alpha^*$.
+
+(ref:alpha-grid-legend) Expected profit for a range of $\alpha$ values in $[0,1]$ with overlay-ed cubic spline and polynomial function of order 12. $\alpha^*$ was found by considering the roots of the derivate of the cubic spline, choosing the root where expected profit was highest.
+
+```{r alpha-grid, fig.cap="(ref:alpha-grid-legend)", echo=F}
+knitr::include_graphics("figures/predictions/comparison-alpha-profit-models.png")
+```
+
+### Final Prediction
+
+For final predictions, the complete learning data set was used to train the best performing classifier and regressor and find $\alpha^*$.
+
+The learned estimators were then applied on the test data set. The results are shown in \@ref(tab:prediction-results). The theoretical maximum was calculated with: $\sum_{i=1}^n \mathbb{1}_{\{\text{TARGET}_{D,i} > 0.0\}}*(\text{TARGET}_{D,i} - u)$ with $u$ the unit cost of 0.68 $ per mailing.
+
+
+```{r prediciton-results, echo=F}
+predictions <- t(data.frame(Learning = c(31530, 28951, 72375),
+                            Test = c(31880, 3047, 72775)))
+colnames(predictions) <- c('Members mailed, #','Net Profit, $ US', 'Theoretical maximum profit, $ US')
+
+knitr::kable(predictions,
+             booktabs = T,
+             caption = "Prediction results for the learning and test data set.") %>%
+    kableExtra::kable_styling(latex_options=c("hold_position", position="Center"))
+```

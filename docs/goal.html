@@ -1,39 +1,38 @@
 <!DOCTYPE html>
-<html >
-
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
 <head>
 
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>1.2 Goal | Master_Thesis_Florian_Hochstrasser.utf8.md</title>
-  <meta name="description" content="Thesis for the programme Master in Statistics at the University of Neuchâtel, Switzerland.">
-  <meta name="generator" content="bookdown  and GitBook 2.6.7">
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>1.2 Goal | Profit maximization for direct marketing campaigns</title>
+  <meta name="description" content="Master Thesis submitted in partial fulfillment of the requirements for the degree of Master of Science in Statistics" />
+  <meta name="generator" content="bookdown 0.11 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="1.2 Goal | Master_Thesis_Florian_Hochstrasser.utf8.md" />
+  <meta property="og:title" content="1.2 Goal | Profit maximization for direct marketing campaigns" />
   <meta property="og:type" content="book" />
   
   
-  <meta property="og:description" content="Thesis for the programme Master in Statistics at the University of Neuchâtel, Switzerland." />
+  <meta property="og:description" content="Master Thesis submitted in partial fulfillment of the requirements for the degree of Master of Science in Statistics" />
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="1.2 Goal | Master_Thesis_Florian_Hochstrasser.utf8.md" />
+  <meta name="twitter:title" content="1.2 Goal | Profit maximization for direct marketing campaigns" />
   
-  <meta name="twitter:description" content="Thesis for the programme Master in Statistics at the University of Neuchâtel, Switzerland." />
+  <meta name="twitter:description" content="Master Thesis submitted in partial fulfillment of the requirements for the degree of Master of Science in Statistics" />
   
 
-<meta name="author" content="Florian Hochstrasser">
+<meta name="author" content="Florian Hochstrasser" />
 
 
-<meta name="date" content="2019-04-27">
+<meta name="date" content="2019-05-31" />
 
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="task.html">
-<link rel="next" href="glossary.html">
+<link rel="prev" href="task-background.html">
+<link rel="next" href="conventions.html">
 <script src="assets/jquery-2.2.3/jquery.min.js"></script>
 <link href="assets/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="assets/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
@@ -65,65 +64,57 @@
       <nav role="navigation">
 
 <ul class="summary">
-<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Abstract</a></li>
-<li class="chapter" data-level="1" data-path="intro.html"><a href="intro.html"><i class="fa fa-check"></i><b>1</b> Introduction</a><ul>
-<li class="chapter" data-level="1.1" data-path="task.html"><a href="task.html"><i class="fa fa-check"></i><b>1.1</b> Task</a></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a><ul>
+<li class="chapter" data-level="1.1" data-path="task-background.html"><a href="task-background.html"><i class="fa fa-check"></i><b>1.1</b> Task Background</a></li>
 <li class="chapter" data-level="1.2" data-path="goal.html"><a href="goal.html"><i class="fa fa-check"></i><b>1.2</b> Goal</a></li>
-<li class="chapter" data-level="1.3" data-path="glossary.html"><a href="glossary.html"><i class="fa fa-check"></i><b>1.3</b> Glossary</a></li>
+<li class="chapter" data-level="1.3" data-path="conventions.html"><a href="conventions.html"><i class="fa fa-check"></i><b>1.3</b> Conventions</a></li>
 </ul></li>
-<li class="chapter" data-level="2" data-path="experimental-setup-and-methods.html"><a href="experimental-setup-and-methods.html"><i class="fa fa-check"></i><b>2</b> Experimental Setup and Methods</a><ul>
-<li class="chapter" data-level="2.1" data-path="tools-used.html"><a href="tools-used.html"><i class="fa fa-check"></i><b>2.1</b> Tools Used</a><ul>
-<li class="chapter" data-level="2.1.1" data-path="tools-used.html"><a href="tools-used.html#jupyter-notebook"><i class="fa fa-check"></i><b>2.1.1</b> Jupyter Notebook</a></li>
-<li class="chapter" data-level="2.1.2" data-path="tools-used.html"><a href="tools-used.html#pandas"><i class="fa fa-check"></i><b>2.1.2</b> Pandas</a></li>
-<li class="chapter" data-level="2.1.3" data-path="tools-used.html"><a href="tools-used.html#scikit-learn"><i class="fa fa-check"></i><b>2.1.3</b> Scikit-learn</a></li>
-<li class="chapter" data-level="2.1.4" data-path="tools-used.html"><a href="tools-used.html#rmarkdown"><i class="fa fa-check"></i><b>2.1.4</b> Rmarkdown</a></li>
-</ul></li>
-<li class="chapter" data-level="2.2" data-path="data-handling.html"><a href="data-handling.html"><i class="fa fa-check"></i><b>2.2</b> Data Handling</a></li>
-<li class="chapter" data-level="2.3" data-path="data-preprocessing.html"><a href="data-preprocessing.html"><i class="fa fa-check"></i><b>2.3</b> Data Preprocessing</a><ul>
-<li class="chapter" data-level="2.3.1" data-path="data-preprocessing.html"><a href="data-preprocessing.html#cleaning"><i class="fa fa-check"></i><b>2.3.1</b> Cleaning</a></li>
-<li class="chapter" data-level="2.3.2" data-path="data-preprocessing.html"><a href="data-preprocessing.html#date-features"><i class="fa fa-check"></i><b>2.3.2</b> Date features</a></li>
-<li class="chapter" data-level="2.3.3" data-path="data-preprocessing.html"><a href="data-preprocessing.html#further-sanitizations"><i class="fa fa-check"></i><b>2.3.3</b> Further sanitizations</a></li>
-<li class="chapter" data-level="2.3.4" data-path="data-preprocessing.html"><a href="data-preprocessing.html#binary-features"><i class="fa fa-check"></i><b>2.3.4</b> Binary Features</a></li>
-<li class="chapter" data-level="2.3.5" data-path="data-preprocessing.html"><a href="data-preprocessing.html#multi-byte-categorical-features"><i class="fa fa-check"></i><b>2.3.5</b> Multi-byte Categorical Features</a></li>
-<li class="chapter" data-level="2.3.6" data-path="data-preprocessing.html"><a href="data-preprocessing.html#feature-engineering"><i class="fa fa-check"></i><b>2.3.6</b> Feature Engineering</a></li>
-<li class="chapter" data-level="2.3.7" data-path="data-preprocessing.html"><a href="data-preprocessing.html#imputation"><i class="fa fa-check"></i><b>2.3.7</b> Imputation</a></li>
-<li class="chapter" data-level="2.3.8" data-path="data-preprocessing.html"><a href="data-preprocessing.html#feature-selection"><i class="fa fa-check"></i><b>2.3.8</b> Feature Selection</a></li>
-</ul></li>
-<li class="chapter" data-level="2.4" data-path="model-evaluation.html"><a href="model-evaluation.html"><i class="fa fa-check"></i><b>2.4</b> Model Evaluation</a><ul>
-<li class="chapter" data-level="2.4.1" data-path="model-evaluation.html"><a href="model-evaluation.html#considered-algorithms"><i class="fa fa-check"></i><b>2.4.1</b> Considered Algorithms</a></li>
-<li class="chapter" data-level="2.4.2" data-path="model-evaluation.html"><a href="model-evaluation.html#performance-metrics"><i class="fa fa-check"></i><b>2.4.2</b> Performance Metrics</a></li>
+<li class="chapter" data-level="2" data-path="data.html"><a href="data.html"><i class="fa fa-check"></i><b>2</b> Data</a><ul>
+<li class="chapter" data-level="2.1" data-path="general-structure.html"><a href="general-structure.html"><i class="fa fa-check"></i><b>2.1</b> General Structure</a></li>
+<li class="chapter" data-level="2.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html"><i class="fa fa-check"></i><b>2.2</b> Exploratory Data Analysis</a><ul>
+<li class="chapter" data-level="2.2.1" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#data-types"><i class="fa fa-check"></i><b>2.2.1</b> Data types</a></li>
+<li class="chapter" data-level="2.2.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#targets"><i class="fa fa-check"></i><b>2.2.2</b> Targets</a></li>
+<li class="chapter" data-level="2.2.3" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#skewness"><i class="fa fa-check"></i><b>2.2.3</b> Skewness</a></li>
+<li class="chapter" data-level="2.2.4" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#correlations"><i class="fa fa-check"></i><b>2.2.4</b> Correlations</a></li>
+<li class="chapter" data-level="2.2.5" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#donation-patterns"><i class="fa fa-check"></i><b>2.2.5</b> Donation patterns</a></li>
 </ul></li>
 </ul></li>
-<li class="chapter" data-level="3" data-path="data.html"><a href="data.html"><i class="fa fa-check"></i><b>3</b> Data</a><ul>
-<li class="chapter" data-level="3.1" data-path="general-structure.html"><a href="general-structure.html"><i class="fa fa-check"></i><b>3.1</b> General Structure</a></li>
-<li class="chapter" data-level="3.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html"><i class="fa fa-check"></i><b>3.2</b> Exploratory Data Analysis</a><ul>
-<li class="chapter" data-level="3.2.1" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#data-types"><i class="fa fa-check"></i><b>3.2.1</b> Data types</a></li>
-<li class="chapter" data-level="3.2.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#targets"><i class="fa fa-check"></i><b>3.2.2</b> Targets</a></li>
-<li class="chapter" data-level="3.2.3" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#skewness"><i class="fa fa-check"></i><b>3.2.3</b> Skewness</a></li>
+<li class="chapter" data-level="3" data-path="experimental-setup-and-methods.html"><a href="experimental-setup-and-methods.html"><i class="fa fa-check"></i><b>3</b> Experimental Setup and Methods</a><ul>
+<li class="chapter" data-level="3.1" data-path="tools-used.html"><a href="tools-used.html"><i class="fa fa-check"></i><b>3.1</b> Tools Used</a></li>
+<li class="chapter" data-level="3.2" data-path="data-handling.html"><a href="data-handling.html"><i class="fa fa-check"></i><b>3.2</b> Data Handling</a></li>
+<li class="chapter" data-level="3.3" data-path="data-preprocessing.html"><a href="data-preprocessing.html"><i class="fa fa-check"></i><b>3.3</b> Data Preprocessing</a><ul>
+<li class="chapter" data-level="3.3.1" data-path="data-preprocessing.html"><a href="data-preprocessing.html#cleaning"><i class="fa fa-check"></i><b>3.3.1</b> Cleaning</a></li>
+<li class="chapter" data-level="3.3.2" data-path="data-preprocessing.html"><a href="data-preprocessing.html#methods-feature-engineering"><i class="fa fa-check"></i><b>3.3.2</b> Feature Engineering</a></li>
+<li class="chapter" data-level="3.3.3" data-path="data-preprocessing.html"><a href="data-preprocessing.html#imputation"><i class="fa fa-check"></i><b>3.3.3</b> Imputation</a></li>
+<li class="chapter" data-level="3.3.4" data-path="data-preprocessing.html"><a href="data-preprocessing.html#methods-feature-selection"><i class="fa fa-check"></i><b>3.3.4</b> Feature Selection</a></li>
 </ul></li>
-<li class="chapter" data-level="3.3" data-path="preprocessing.html"><a href="preprocessing.html"><i class="fa fa-check"></i><b>3.3</b> Preprocessing</a><ul>
-<li class="chapter" data-level="3.3.1" data-path="preprocessing.html"><a href="preprocessing.html#noisy-data"><i class="fa fa-check"></i><b>3.3.1</b> Noisy data</a></li>
-<li class="chapter" data-level="3.3.2" data-path="preprocessing.html"><a href="preprocessing.html#constant-features"><i class="fa fa-check"></i><b>3.3.2</b> Constant features</a></li>
-<li class="chapter" data-level="3.3.3" data-path="preprocessing.html"><a href="preprocessing.html#missing-values-sparse-features"><i class="fa fa-check"></i><b>3.3.3</b> Missing values / sparse features</a></li>
-<li class="chapter" data-level="3.3.4" data-path="preprocessing.html"><a href="preprocessing.html#categorical-features"><i class="fa fa-check"></i><b>3.3.4</b> Categorical features</a></li>
-<li class="chapter" data-level="3.3.5" data-path="preprocessing.html"><a href="preprocessing.html#feature-engineering-1"><i class="fa fa-check"></i><b>3.3.5</b> Feature Engineering</a></li>
-<li class="chapter" data-level="3.3.6" data-path="preprocessing.html"><a href="preprocessing.html#feature-selection-1"><i class="fa fa-check"></i><b>3.3.6</b> Feature Selection</a></li>
-<li class="chapter" data-level="3.3.7" data-path="preprocessing.html"><a href="preprocessing.html#feature-extraction"><i class="fa fa-check"></i><b>3.3.7</b> Feature Extraction</a></li>
+<li class="chapter" data-level="3.4" data-path="methods-prediction.html"><a href="methods-prediction.html"><i class="fa fa-check"></i><b>3.4</b> Prediction</a></li>
+<li class="chapter" data-level="3.5" data-path="eval-and-select.html"><a href="eval-and-select.html"><i class="fa fa-check"></i><b>3.5</b> Model Evaluation And -Selection</a><ul>
+<li class="chapter" data-level="3.5.1" data-path="eval-and-select.html"><a href="eval-and-select.html#algorithms-considered"><i class="fa fa-check"></i><b>3.5.1</b> Algorithms Considered</a></li>
+<li class="chapter" data-level="3.5.2" data-path="eval-and-select.html"><a href="eval-and-select.html#regressors"><i class="fa fa-check"></i><b>3.5.2</b> Regressors</a></li>
+<li class="chapter" data-level="3.5.3" data-path="eval-and-select.html"><a href="eval-and-select.html#performance-metrics"><i class="fa fa-check"></i><b>3.5.3</b> Performance Metrics</a></li>
 </ul></li>
 </ul></li>
-<li class="chapter" data-level="4" data-path="model-learning.html"><a href="model-learning.html"><i class="fa fa-check"></i><b>4</b> Model Learning</a></li>
-<li class="chapter" data-level="5" data-path="results-and-discussion.html"><a href="results-and-discussion.html"><i class="fa fa-check"></i><b>5</b> Results and Discussion</a></li>
-<li class="chapter" data-level="6" data-path="conclusions.html"><a href="conclusions.html"><i class="fa fa-check"></i><b>6</b> Conclusions</a><ul>
-<li class="chapter" data-level="6.1" data-path="comparison-with-cup-winners.html"><a href="comparison-with-cup-winners.html"><i class="fa fa-check"></i><b>6.1</b> Comparison with Cup winners</a></li>
+<li class="chapter" data-level="4" data-path="results-and-discussion.html"><a href="results-and-discussion.html"><i class="fa fa-check"></i><b>4</b> Results and Discussion</a><ul>
+<li class="chapter" data-level="4.1" data-path="preprocessing-with-package-kdd98.html"><a href="preprocessing-with-package-kdd98.html"><i class="fa fa-check"></i><b>4.1</b> Preprocessing With Package kdd98</a></li>
+<li class="chapter" data-level="4.2" data-path="imputation-1.html"><a href="imputation-1.html"><i class="fa fa-check"></i><b>4.2</b> Imputation</a></li>
+<li class="chapter" data-level="4.3" data-path="feature-selection.html"><a href="feature-selection.html"><i class="fa fa-check"></i><b>4.3</b> Feature Selection</a></li>
+<li class="chapter" data-level="4.4" data-path="classifiers.html"><a href="classifiers.html"><i class="fa fa-check"></i><b>4.4</b> Classifiers</a></li>
+<li class="chapter" data-level="4.5" data-path="regressors-1.html"><a href="regressors-1.html"><i class="fa fa-check"></i><b>4.5</b> Regressors</a></li>
+<li class="chapter" data-level="4.6" data-path="prediction.html"><a href="prediction.html"><i class="fa fa-check"></i><b>4.6</b> Prediction</a><ul>
+<li class="chapter" data-level="4.6.1" data-path="prediction.html"><a href="prediction.html#conditional-prediction-of-the-donation-amount"><i class="fa fa-check"></i><b>4.6.1</b> Conditional prediction of the donation amount</a></li>
+<li class="chapter" data-level="4.6.2" data-path="prediction.html"><a href="prediction.html#profit-optimization"><i class="fa fa-check"></i><b>4.6.2</b> Profit optimization</a></li>
+<li class="chapter" data-level="4.6.3" data-path="prediction.html"><a href="prediction.html#final-prediction"><i class="fa fa-check"></i><b>4.6.3</b> Final prediction</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="conclusions.html"><a href="conclusions.html"><i class="fa fa-check"></i><b>5</b> Conclusions</a><ul>
+<li class="chapter" data-level="5.1" data-path="comparison-with-cup-winners.html"><a href="comparison-with-cup-winners.html"><i class="fa fa-check"></i><b>5.1</b> Comparison with Cup winners</a></li>
+<li class="chapter" data-level="5.2" data-path="biggest-problems-remaining.html"><a href="biggest-problems-remaining.html"><i class="fa fa-check"></i><b>5.2</b> Biggest problems remaining</a></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
-<li class="chapter" data-level="" data-path="appendix.html"><a href="appendix.html"><i class="fa fa-check"></i>Appendix</a><ul>
-<li class="chapter" data-level="6.2" data-path="code.html"><a href="code.html"><i class="fa fa-check"></i><b>6.2</b> Code</a><ul>
-<li class="chapter" data-level="6.2.1" data-path="code.html"><a href="code.html#preprocessing-1"><i class="fa fa-check"></i><b>6.2.1</b> Preprocessing</a></li>
-<li class="chapter" data-level="6.2.2" data-path="code.html"><a href="code.html#appendix-transformers"><i class="fa fa-check"></i><b>6.2.2</b> Transformers</a></li>
-</ul></li>
-<li class="chapter" data-level="6.3" data-path="python-environment.html"><a href="python-environment.html"><i class="fa fa-check"></i><b>6.3</b> Python Environment</a></li>
-<li class="chapter" data-level="6.4" data-path="dataset-dictionary.html"><a href="dataset-dictionary.html"><i class="fa fa-check"></i><b>6.4</b> Dataset Dictionary</a></li>
+<li class="chapter" data-level="6" data-path="appendix.html"><a href="appendix.html"><i class="fa fa-check"></i><b>6</b> Appendix</a><ul>
+<li class="chapter" data-level="6.1" data-path="python-environment.html"><a href="python-environment.html"><i class="fa fa-check"></i><b>6.1</b> Python Environment</a></li>
+<li class="chapter" data-level="6.2" data-path="data-set-dictionary.html"><a href="data-set-dictionary.html"><i class="fa fa-check"></i><b>6.2</b> Data Set Dictionary</a></li>
 </ul></li>
 </ul>
 
@@ -134,7 +125,7 @@
       <div class="body-inner">
         <div class="book-header" role="navigation">
           <h1>
-            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./"></a>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Profit maximization for direct marketing campaigns</a>
           </h1>
         </div>
 
@@ -144,24 +135,16 @@
             <section class="normal" id="section-">
 <div id="goal" class="section level2">
 <h2><span class="header-section-number">1.2</span> Goal</h2>
-<p>The ultimate goal was to beat the winner of the original cup in terms of the predicted net revenue for the campaign.</p>
+<p>The ultimate goal is to beat the winner of the original cup in terms of the predicted net profit for the promotion. For this, a complete data analysis including data preprocessing, model evaluation and -selection and final prediction was to be performed. A requirement set by the supervisor of this thesis was that the solution be demonstrated using Python as a programming environment.</p>
 <p>Furthermore, the thesis should support future work on the data set by providing a solid basis especially on the preprocessing of the data.</p>
-<p>For reference, the exact problem description from the cup announcement is given in verbatim:</p>
-<blockquote>
-<p>[…], the objective of the analysis will be to maximize the net revenue generated from this mailing – a censored regression or estimation problem. The response variable is, thus, continuous (for the lack of a better common term.) Although we are releasing both the binary and the continuous versions of the target variable (TARGET_B and TARGET_D respectively), the program committee will use the predicted value of the donation (dollar) amount (for the target variable TARGET_D) in evaluating the results. So, returning the predicted value of the binary target variable TARGET_B and its associated probability/strength will not be sufficient.
-The typical outcome of predictive modeling in database marketing is an estimate of the expected response/return per customer in the database. A marketer will mail to a customer so long as the expected return from an order exceeds the cost invested in generating the order, i.e., the cost of promotion. For our purpose, the package cost (including the mail cost) is $0.68 per piece mailed.
-KDD-CUP committee will evaluate the results based solely on the net revenue generated on the hold-out or validation sample.
-The measure we will use is: Sum (the actual donation amount - $0.68) over all records for which the expected revenue (or predicted value of the donation) is over $0.68.
-This is a direct measure of profit. The winner will be the participant with the highest actual sum. The results will be rounded to the nearest 10 dollars.</p>
-</blockquote>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="task.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="glossary.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="task-background.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="conventions.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="assets/gitbook-2.6.7/js/app.min.js"></script>

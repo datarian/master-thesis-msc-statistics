@@ -15,6 +15,7 @@
 \usepackage{threeparttablex}
 \usepackage[normalem]{ulem}
 \usepackage{makecell}
+\usepackage{unicode-math}
 
 \usepackage[font=small]{caption}
 \usepackage{subfig}
@@ -43,3 +44,8 @@
 \graphicspath{ {./figures/} }
 
 \usepackage{float}
+
+\usepackage{algorithm2e}
+
+\let\oldmaketitle\maketitle
+\AtBeginDocument{\let\maketitle\relax}

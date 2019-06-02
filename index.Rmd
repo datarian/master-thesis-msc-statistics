@@ -1,8 +1,8 @@
 ---
 author: "Florian Hochstrasser"
 date: "`r Sys.Date()`"
-description: Thesis for the programme Master in Statistics at the University of Neuchâtel,
-  Switzerland.
+title: Profit maximization for direct marketing campaigns
+description: Master Thesis submitted in partial fulfillment of the requirements for the degree of Master of Science in Statistics
 site: bookdown::bookdown_site
 link-citations: yes
 papersize: a4
@@ -13,9 +13,12 @@ monofont: Source Code Pro
 toc-depth: 2
 bibliography: thesis.bib
 biblio-style: apalike
-documentclass: scrbook
-classoption: DIV=12,captions=tableheading,oneside
+documentclass: scrreprt
+classoption: DIV=12,captions=tableheading,oneside,titlepage=firstiscover,abstracton
 always_allow_html: yes
+output: 
+  html_document: 
+    df_print: kable
 ---
 
 ```{r load_libraries, include=FALSE,results='hide'}
@@ -70,7 +73,7 @@ knitr::opts_chunk$set(error=TRUE,
                       fig.asp=0.618,
                       fig.align="center",
                       fig.path = "./figures/",
-                      out.width = "70%",
+                      out.width = "60%",
                       crop = TRUE,
                       tidy=TRUE)
 
@@ -119,73 +122,91 @@ knitr::knit_hooks$set(inline = inline_hook,
 ```{python python-init, results="hide", echo=F, cache=F}
 import os
 os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = 'C:/Users/flori/Anaconda3/Library/plugins/platforms'
-
-import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
+import seaborn as sns
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+
+# Load custom code
 import kdd98.data_handler as dh
 from kdd98.config import Config
-import numpy as np
-
-import mglearn
-import seaborn as sns
-from cycler import cycler
+import pathlib
+import pickle
+import pathlib
 
 plt.rc('font',**{'family':'sans-serif','sans-serif':['Lato']})
 plt.rc('font',**{'family':'serif','serif':['Times']})
 #plt.rc('text', usetex=True)
 
-sns.set_context("paper")
+sns.set_palette(Config.get("qual_palette"))
+sns.set(color_codes=True)
+sns.set_style('ticks')
+sns.axes_style({'spines.right': False,
+                'axes.spines.top': False})
 
-#set_matplotlib_formats('pdf', 'png')
-plt.rcParams['axes.labelsize'] = 14
-plt.rcParams['xtick.labelsize'] = 12
-plt.rcParams['ytick.labelsize'] = 12
-plt.rcParams['figure.figsize'] = (14, 10)
+plt.rcParams['axes.labelsize'] = 20
+plt.rcParams['xtick.labelsize'] = 18
+plt.rcParams['ytick.labelsize'] = 18
+plt.rcParams['figure.figsize'] = (7*1.618, 7)
 plt.rcParams['figure.dpi'] = 300
-plt.rcParams['image.cmap'] = "viridis"
 plt.rcParams['image.interpolation'] = "none"
 plt.rcParams['savefig.bbox'] = "tight"
 plt.rcParams['lines.linewidth'] = 2
 plt.rcParams['legend.numpoints'] = 1
 plt.rcParams['legend.fancybox'] = True
 plt.rcParams['legend.framealpha'] = 0.4
-
-sns.set(color_codes=True)
-sns.set_style('ticks')
-sns.axes_style({'spines.right': False,
-                'axes.spines.top': False})
-sns.set_palette(Config.get("color_palette"))
 ```
 
 ```{python data-specs, echo=F, results='hide', cache=F}
-import kdd98.data_handler as dh
-import pandas as pd
 date_features = dh.DATE_FEATURES
 binary_features = dh.BINARY_FEATURES
 data_provider = dh.KDD98DataProvider("cup98LRN.txt")
 raw_data = data_provider.raw_data
-int_features = raw_data.select_dtypes(include="integer").columns.values.tolist()
-float_features = raw_data.select_dtypes(include="float").columns.values.tolist()
-category_features = raw_data.select_dtypes(include="category").columns.values.tolist()
-object_features = raw_data.select_dtypes(include="object").columns.values.tolist()
+int_features = raw_data["data"].select_dtypes(include="integer").columns.values.tolist()
+float_features = raw_data["data"].select_dtypes(include="float").columns.values.tolist()
+category_features = raw_data["data"].select_dtypes(include="category").columns.values.tolist()
+object_features = raw_data["data"].select_dtypes(include="object").columns.values.tolist()
 
 stats = pd.DataFrame({"Integer": ["Discrete features, no missing values", len(int_features)],
                       "Float": ["Continuous features and discrete features with missing values", len(float_features)],
                       "Categorical": ["Nominal and ordinal features", len(category_features)],
                       "Object": ["Features with alphanumeric values", len(object_features)],
-                      "Total": [" ", raw_data.shape[1]]}).transpose()
+                      "Total": [" ", raw_data["data"].shape[1]]}).transpose()
 stats.columns = ["Data content", "Number of features"]
 stats.index.name = "Data type"
 ```
+# Introduction {#intro}
 
-# Abstract {-}
+Customer segmentation techniques are used in marketing to identify certain groups of customers in order to produce offers tailored to these groups. The ultimate goal is to maximize profit, which is achieved also through customer retention. In the case of direct marketing, especially when unit costs (the cost associated with addressing a customer) are significant, employing some customer segmentation technique is highly beneficial in terms of profit.
 
-It is known that....
+Historically, the RFM (Recency, Frequency, Monetization) model has been employed with success in designing direct marketing campaigns @kohavi2004visualizing. While definitions vary, generally recency refers to when the last purchase was made. Frequency denotes number of purchases in a certain time period. Monetization can represent the amount of the last purchase, cumulative spending or the average amount spent per purchase.
 
-This work addressed the problem from the perspective of...
+The RFM model proposed by @hughes-rfm-boost-response is often used: Customers are binned into 5 segments for each of the RFM features individually and labeled ordinal, resulting in 125 cells that can then be used to identify customers most likely to respond. The best customers have a high score for each of the 3 features. The drawback of this approach is that generally, marketing efforts go towards the best customer segment.
 
-It could be shown that...
+Over time, different approaches, such as Chi-squared automatic interaction detection and logistic regression were proposed. While in some situations, these alternatives outperformed RFA (see @MCCARTY2007656), RFA remained popular because of it's intuitive interpretation.
 
-Henceforth, it should be considered that...
+## Task Background
 
+A U.S. American veterans organization regularly conducts direct marketing campaigns, asking their members for donations (called gifts in the documentation) for the treatment of veterans with spinal injuries. The goal for the organization is to maximize net profit from their campaigns.
 
+Only a small proportion of the members donate in reply to a campaign, while each letter sent out has a unit cost of 0.68 $US. In order to maximize profit, it is therefore desirable to only mail members who are likely to donate.
+
+The members are grouped, among other criteria, by the recency of their last gift. Of these groups, the so-called *lapsed* donors are of particular interest. These are members who made their last gift to the organization 13 to 24 months prior to a given campaign.
+This group is important for two reasons: Firstly, the probability of a member donating decreases with the time the member has not donated. Enticing these lapsed donors to give again therefore maintains an active member base. Secondly, the organization has found that there is a negative correlation between the dollar amount donated and the probability to respond to a campaign. This means it is important to include the most unlikely donors in future mailings because if they donate, the net revenue is particularly large. If these unlikely donors would be suppressed from future campaigns, the gains from additional *small dollar* lapsed donors would not offset the losses from the potential *high dollar* donors.
+
+The data at hand was distributed for the purpose of the KDD-CUP of the year 1998^[For an archive of past cups, see [SIGKDD - KDD Cup](http://www.kdd.org/kdd-cup)]. The cup was until recently held yearly under the aegis of the special interest group on Knowledge Discovery and Data Mining (SIGKDD), which itself is part of the Association for Computing Machinery^[https://acm.org](ACM).
+
+## Goal
+
+The ultimate goal is to beat the winner of the original cup in terms of the predicted net profit for the promotion. For this, a complete data analysis including data preprocessing, model evaluation and -selection and final prediction was to be performed. A requirement set by the supervisor of this thesis was that the solution be demonstrated using Python as a programming environment.
+
+Furthermore, the thesis should support future work on the data set by providing a solid basis especially on the preprocessing of the data.
+
+## Conventions
+
+A member of the organization will be referred to as an *example*. Each example is described by a set of *features* (explanatory variables) and has two *targets* (dependent variables) associated.
+
+Software packages are denoted as `package` with specific modules contained in packages written as `package.module.Class`. Where available, software used is cited with the article in which it was published. Less established packages are cited by giving their public source code repositories.
+
+All self-written code, including the reproducible analysis process, is published online at [https://github.com/datarian/master-thesis-msc-statistics](https://github.com/datarian/master-thesis-msc-statistics). These resources, especially the folder `notebooks`, form an integral part of this thesis.
