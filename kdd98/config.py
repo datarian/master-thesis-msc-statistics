@@ -57,7 +57,7 @@ class Config:
         "diverging_color_map": sns.diverging_palette(204, 359, s=83, l=57, sep=10, n=12, as_cmap=True)
     }
 
-    __setters = ["data_dir"]
+    __setters = ["data_dir", "model_store"]
 
     @staticmethod
     def get(*keys):
