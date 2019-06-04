@@ -17,9 +17,8 @@ bookdown::pdf_book:
         in_header: preamble.tex
         before_body: title.tex
     latex_engine: xelatex
-    keep_tex: yes
+    keep_tex: no
     highlight: pygments
     pandoc_args: [
         "--top-level-division=chapter",
         "--wrap=none"]
-bookdown::epub_book: default

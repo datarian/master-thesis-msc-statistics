@@ -24,7 +24,7 @@
 <meta name="author" content="Florian Hochstrasser" />
 
 
-<meta name="date" content="2019-05-31" />
+<meta name="date" content="2019-06-04" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -32,7 +32,7 @@
   
   
 <link rel="prev" href="feature-selection.html">
-<link rel="next" href="regressors-1.html">
+<link rel="next" href="regressors.html">
 <script src="assets/jquery-2.2.3/jquery.min.js"></script>
 <link href="assets/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="assets/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
@@ -67,16 +67,16 @@
 <li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a><ul>
 <li class="chapter" data-level="1.1" data-path="task-background.html"><a href="task-background.html"><i class="fa fa-check"></i><b>1.1</b> Task Background</a></li>
 <li class="chapter" data-level="1.2" data-path="goal.html"><a href="goal.html"><i class="fa fa-check"></i><b>1.2</b> Goal</a></li>
-<li class="chapter" data-level="1.3" data-path="conventions.html"><a href="conventions.html"><i class="fa fa-check"></i><b>1.3</b> Conventions</a></li>
+<li class="chapter" data-level="1.3" data-path="conventions-and-notes.html"><a href="conventions-and-notes.html"><i class="fa fa-check"></i><b>1.3</b> Conventions and Notes</a></li>
 </ul></li>
 <li class="chapter" data-level="2" data-path="data.html"><a href="data.html"><i class="fa fa-check"></i><b>2</b> Data</a><ul>
 <li class="chapter" data-level="2.1" data-path="general-structure.html"><a href="general-structure.html"><i class="fa fa-check"></i><b>2.1</b> General Structure</a></li>
 <li class="chapter" data-level="2.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html"><i class="fa fa-check"></i><b>2.2</b> Exploratory Data Analysis</a><ul>
-<li class="chapter" data-level="2.2.1" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#data-types"><i class="fa fa-check"></i><b>2.2.1</b> Data types</a></li>
+<li class="chapter" data-level="2.2.1" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#data-types"><i class="fa fa-check"></i><b>2.2.1</b> Data Types</a></li>
 <li class="chapter" data-level="2.2.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#targets"><i class="fa fa-check"></i><b>2.2.2</b> Targets</a></li>
 <li class="chapter" data-level="2.2.3" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#skewness"><i class="fa fa-check"></i><b>2.2.3</b> Skewness</a></li>
 <li class="chapter" data-level="2.2.4" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#correlations"><i class="fa fa-check"></i><b>2.2.4</b> Correlations</a></li>
-<li class="chapter" data-level="2.2.5" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#donation-patterns"><i class="fa fa-check"></i><b>2.2.5</b> Donation patterns</a></li>
+<li class="chapter" data-level="2.2.5" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#donation-patterns"><i class="fa fa-check"></i><b>2.2.5</b> Donation Patterns</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="experimental-setup-and-methods.html"><a href="experimental-setup-and-methods.html"><i class="fa fa-check"></i><b>3</b> Experimental Setup and Methods</a><ul>
@@ -88,11 +88,13 @@
 <li class="chapter" data-level="3.3.3" data-path="data-preprocessing.html"><a href="data-preprocessing.html#imputation"><i class="fa fa-check"></i><b>3.3.3</b> Imputation</a></li>
 <li class="chapter" data-level="3.3.4" data-path="data-preprocessing.html"><a href="data-preprocessing.html#methods-feature-selection"><i class="fa fa-check"></i><b>3.3.4</b> Feature Selection</a></li>
 </ul></li>
-<li class="chapter" data-level="3.4" data-path="methods-prediction.html"><a href="methods-prediction.html"><i class="fa fa-check"></i><b>3.4</b> Prediction</a></li>
-<li class="chapter" data-level="3.5" data-path="eval-and-select.html"><a href="eval-and-select.html"><i class="fa fa-check"></i><b>3.5</b> Model Evaluation And -Selection</a><ul>
-<li class="chapter" data-level="3.5.1" data-path="eval-and-select.html"><a href="eval-and-select.html#algorithms-considered"><i class="fa fa-check"></i><b>3.5.1</b> Algorithms Considered</a></li>
-<li class="chapter" data-level="3.5.2" data-path="eval-and-select.html"><a href="eval-and-select.html#regressors"><i class="fa fa-check"></i><b>3.5.2</b> Regressors</a></li>
-<li class="chapter" data-level="3.5.3" data-path="eval-and-select.html"><a href="eval-and-select.html#performance-metrics"><i class="fa fa-check"></i><b>3.5.3</b> Performance Metrics</a></li>
+<li class="chapter" data-level="3.4" data-path="methods-prediction.html"><a href="methods-prediction.html"><i class="fa fa-check"></i><b>3.4</b> Prediction</a><ul>
+<li class="chapter" data-level="3.4.1" data-path="methods-prediction.html"><a href="methods-prediction.html#optimization-of-alpha"><i class="fa fa-check"></i><b>3.4.1</b> Optimization of <span class="math inline">\(\alpha^*\)</span></a></li>
+</ul></li>
+<li class="chapter" data-level="3.5" data-path="eval-and-select.html"><a href="eval-and-select.html"><i class="fa fa-check"></i><b>3.5</b> Model Evaluation and -Selection</a><ul>
+<li class="chapter" data-level="3.5.1" data-path="eval-and-select.html"><a href="eval-and-select.html#evaluation"><i class="fa fa-check"></i><b>3.5.1</b> Evaluation</a></li>
+<li class="chapter" data-level="3.5.2" data-path="eval-and-select.html"><a href="eval-and-select.html#dealing-with-imbalanced-data"><i class="fa fa-check"></i><b>3.5.2</b> Dealing With Imbalanced Data</a></li>
+<li class="chapter" data-level="3.5.3" data-path="eval-and-select.html"><a href="eval-and-select.html#algorithms"><i class="fa fa-check"></i><b>3.5.3</b> Algorithms</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="4" data-path="results-and-discussion.html"><a href="results-and-discussion.html"><i class="fa fa-check"></i><b>4</b> Results and Discussion</a><ul>
@@ -100,21 +102,21 @@
 <li class="chapter" data-level="4.2" data-path="imputation-1.html"><a href="imputation-1.html"><i class="fa fa-check"></i><b>4.2</b> Imputation</a></li>
 <li class="chapter" data-level="4.3" data-path="feature-selection.html"><a href="feature-selection.html"><i class="fa fa-check"></i><b>4.3</b> Feature Selection</a></li>
 <li class="chapter" data-level="4.4" data-path="classifiers.html"><a href="classifiers.html"><i class="fa fa-check"></i><b>4.4</b> Classifiers</a></li>
-<li class="chapter" data-level="4.5" data-path="regressors-1.html"><a href="regressors-1.html"><i class="fa fa-check"></i><b>4.5</b> Regressors</a></li>
+<li class="chapter" data-level="4.5" data-path="regressors.html"><a href="regressors.html"><i class="fa fa-check"></i><b>4.5</b> Regressors</a></li>
 <li class="chapter" data-level="4.6" data-path="prediction.html"><a href="prediction.html"><i class="fa fa-check"></i><b>4.6</b> Prediction</a><ul>
-<li class="chapter" data-level="4.6.1" data-path="prediction.html"><a href="prediction.html#conditional-prediction-of-the-donation-amount"><i class="fa fa-check"></i><b>4.6.1</b> Conditional prediction of the donation amount</a></li>
-<li class="chapter" data-level="4.6.2" data-path="prediction.html"><a href="prediction.html#profit-optimization"><i class="fa fa-check"></i><b>4.6.2</b> Profit optimization</a></li>
-<li class="chapter" data-level="4.6.3" data-path="prediction.html"><a href="prediction.html#final-prediction"><i class="fa fa-check"></i><b>4.6.3</b> Final prediction</a></li>
+<li class="chapter" data-level="4.6.1" data-path="prediction.html"><a href="prediction.html#conditional-prediction-of-the-donation-amount"><i class="fa fa-check"></i><b>4.6.1</b> Conditional Prediction of the Donation Amount</a></li>
+<li class="chapter" data-level="4.6.2" data-path="prediction.html"><a href="prediction.html#profit-optimization"><i class="fa fa-check"></i><b>4.6.2</b> Profit Optimization</a></li>
+<li class="chapter" data-level="4.6.3" data-path="prediction.html"><a href="prediction.html#final-prediction"><i class="fa fa-check"></i><b>4.6.3</b> Final Prediction</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="5" data-path="conclusions.html"><a href="conclusions.html"><i class="fa fa-check"></i><b>5</b> Conclusions</a><ul>
-<li class="chapter" data-level="5.1" data-path="comparison-with-cup-winners.html"><a href="comparison-with-cup-winners.html"><i class="fa fa-check"></i><b>5.1</b> Comparison with Cup winners</a></li>
-<li class="chapter" data-level="5.2" data-path="biggest-problems-remaining.html"><a href="biggest-problems-remaining.html"><i class="fa fa-check"></i><b>5.2</b> Biggest problems remaining</a></li>
+<li class="chapter" data-level="5.1" data-path="comparison-with-cup-winners.html"><a href="comparison-with-cup-winners.html"><i class="fa fa-check"></i><b>5.1</b> Comparison With Cup Winners</a></li>
+<li class="chapter" data-level="5.2" data-path="biggest-problems-remaining.html"><a href="biggest-problems-remaining.html"><i class="fa fa-check"></i><b>5.2</b> Biggest Problems Remaining</a></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
-<li class="chapter" data-level="6" data-path="appendix.html"><a href="appendix.html"><i class="fa fa-check"></i><b>6</b> Appendix</a><ul>
-<li class="chapter" data-level="6.1" data-path="python-environment.html"><a href="python-environment.html"><i class="fa fa-check"></i><b>6.1</b> Python Environment</a></li>
-<li class="chapter" data-level="6.2" data-path="data-set-dictionary.html"><a href="data-set-dictionary.html"><i class="fa fa-check"></i><b>6.2</b> Data Set Dictionary</a></li>
+<li class="chapter" data-level="" data-path="appendix-appendix.html"><a href="appendix-appendix.html"><i class="fa fa-check"></i>(APPENDIX) Appendix</a><ul>
+<li class="chapter" data-level="5.3" data-path="python-environment.html"><a href="python-environment.html"><i class="fa fa-check"></i><b>5.3</b> Python Environment</a></li>
+<li class="chapter" data-level="5.4" data-path="data-set-dictionary.html"><a href="data-set-dictionary.html"><i class="fa fa-check"></i><b>5.4</b> Data Set Dictionary</a></li>
 </ul></li>
 </ul>
 
@@ -135,24 +137,36 @@
             <section class="normal" id="section-">
 <div id="classifiers" class="section level2">
 <h2><span class="header-section-number">4.4</span> Classifiers</h2>
-<p>The four classifiers that were evaluated can be compared in terms of their receiver operating characteristic , which indicates overall model performance through an area under the curve value (ROC-AUC), precision-recall (PR) curves, or by their individual performance expressed through confusion matrices.</p>
-<p>The ROC-AUC curve is constructed by evaluating the false positive rate (FPR) against the true positive rate (TPR) at various thresholds for the predicted class probabilities of examples in the training data. The closer the curve is to the top-left corner, the better a model performs (we have a large TPR and at the same time a low FPR).</p>
-<p>Looking at the ROC-AUC curves shown in Figure <a href="classifiers.html#fig:roc-auc-curve">4.3</a>, we see that all classifiers performed rather weak. In the case of imbalanced data, the majority class dominates this metric. The false positive rate is <span class="math inline">\(FPR = \frac{FP}{TN}\)</span>. This means that as the false positives (FP) decrease, FPR does not change a lot.</p>
+<p>The four classifiers that were evaluated can be compared in terms of their receiver operating characteristic (ROC), which indicates overall model performance through an area under the curve value (ROC-AUC), precision-recall (PR) curves, or by their individual performance expressed through confusion matrices and the scores for several different metrics.</p>
+
+<p><img src="learning/confusion_matrix_model_RF_refit_f1.png" width="49%" style="display: block; margin: auto;" /><img src="learning/confusion_matrix_model_GBM_refit_f1.png" width="49%" style="display: block; margin: auto;" /><img src="learning/confusion_matrix_model_GLMnet_refit_f1.png" width="49%" style="display: block; margin: auto;" /><img src="learning/confusion_matrix_model_NNet_refit_f1.png" width="49%" style="display: block; margin: auto;" /><img src="learning/confusion_matrix_model_SVM_refit_f1.png" width="49%" style="display: block; margin: auto;" /></p>
+<p>The ROC-AUC curve is constructed by evaluating the false positive rate (FPR) against the true positive rate (TPR) at various thresholds for the predicted class probabilities of examples in the training data. The closer the curve is to the top-left corner, the better a model performs (we have a large TPR and at the same time a low FPR). Looking at the ROC-AUC curves shown in Figure <a href="classifiers.html#fig:roc-auc-curve">4.3</a>, we see that all classifiers performed rather weak. In the case of imbalanced data, the majority class dominates this metric. The false positive rate is <span class="math inline">\(FPR = \frac{FP}{TN}\)</span>. This means that as the false positives (FP) decrease, FPR does not change a lot.</p>
 
 <div class="figure" style="text-align: center"><span id="fig:roc-auc-curve"></span>
-<img src="figures/learning/roc_auc_compared_refit_recall.png" alt="Comparison of ROC-AUC for the evaluated classifiers." width="60%" />
+<img src="figures/learning/roc_auc_compared_refit_f1.png" alt="Comparison of ROC-AUC for the evaluated classifiers." width="60%" />
 <p class="caption">
 Figure 4.3: Comparison of ROC-AUC for the evaluated classifiers.
 </p>
 </div>
-<p>The PR curve with precision <span class="math inline">\(P = \frac{TP}{TP+FP}\)</span> is sensitive to false positives and, since TN is not directly involved, better suited for our imbalanced data. Figure <a href="classifiers.html#fig:p-r-curve">4.4</a> shows the models in direct comparison.</p>
+<p>The PR curve with precision <span class="math inline">\(P = \frac{TP}{TP+FP}\)</span> “how many of the predicted positive cases are true positives?” plotted against recall <span class="math inline">\(R = \frac{TP}{{TP+FP}}\)</span> “how many of the true positive values can we predict correctly?” at different threshold values, is sensitive to false positives and, since TN is not involved, better suited for the imbalanced data at hand. Figure <a href="classifiers.html#fig:p-r-curve">4.4</a> shows the models in direct comparison. Here, the more the curve is towards the top right corner, the better. In that case, a high precision can be maintained at high recall levels.</p>
 
 <div class="figure" style="text-align: center"><span id="fig:p-r-curve"></span>
-<img src="figures/learning/prec_rec_compared_refit_recall.png" alt="Comparison of ROC-AUC for the evaluated classifiers." width="60%" />
+<img src="figures/learning/prec_rec_compared_refit_f1.png" alt="Comparison of ROC-AUC for the evaluated classifiers." width="60%" />
 <p class="caption">
 Figure 4.4: Comparison of ROC-AUC for the evaluated classifiers.
 </p>
 </div>
+<p>Evidently, all learned algorithms perform rather weak.</p>
+<p>The three performance metrics for all classifiers are summarized in <a href="classifiers.html#tab:clf-result-table">4.1</a>. By F1, the best classifier is the neural network. That estimator is used for the final prediction.</p>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<caption>
+<span id="tab:clf-result-table">Table 4.1: </span>Comparison of classifiers. Three metrics were evaluated for each classifier.
+</caption>
+<tbody>
+<tr>
+</tr>
+</tbody>
+</table>
 </div>
             </section>
 
@@ -160,7 +174,7 @@ Figure 4.4: Comparison of ROC-AUC for the evaluated classifiers.
         </div>
       </div>
 <a href="feature-selection.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="regressors-1.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="regressors.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="assets/gitbook-2.6.7/js/app.min.js"></script>

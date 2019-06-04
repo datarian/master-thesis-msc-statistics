@@ -47,5 +47,32 @@
 
 \usepackage{algorithm2e}
 
+\newcommand\abstractname{Abstract}  %%% here
+\makeatletter
+\if@titlepage
+  \newenvironment{abstract}{%
+      \titlepage
+      \null\vfil
+      \@beginparpenalty\@lowpenalty
+      \begin{center}%
+        \bfseries \abstractname
+        \@endparpenalty\@M
+      \end{center}}%
+     {\par\vfil\null\endtitlepage}
+\else
+  \newenvironment{abstract}{%
+      \if@twocolumn
+        \addchap*{\abstractname}%
+      \else
+        \small
+        \begin{center}%
+          \addchap*{\abstractname}%
+        \end{center}%
+        \quotation
+      \fi}
+      {\if@twocolumn\else\endquotation\fi}
+\fi
+\makeatother
+
 \let\oldmaketitle\maketitle
 \AtBeginDocument{\let\maketitle\relax}

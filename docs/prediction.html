@@ -24,14 +24,14 @@
 <meta name="author" content="Florian Hochstrasser" />
 
 
-<meta name="date" content="2019-05-31" />
+<meta name="date" content="2019-06-04" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="regressors-1.html">
+<link rel="prev" href="regressors.html">
 <link rel="next" href="conclusions.html">
 <script src="assets/jquery-2.2.3/jquery.min.js"></script>
 <link href="assets/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -67,16 +67,16 @@
 <li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a><ul>
 <li class="chapter" data-level="1.1" data-path="task-background.html"><a href="task-background.html"><i class="fa fa-check"></i><b>1.1</b> Task Background</a></li>
 <li class="chapter" data-level="1.2" data-path="goal.html"><a href="goal.html"><i class="fa fa-check"></i><b>1.2</b> Goal</a></li>
-<li class="chapter" data-level="1.3" data-path="conventions.html"><a href="conventions.html"><i class="fa fa-check"></i><b>1.3</b> Conventions</a></li>
+<li class="chapter" data-level="1.3" data-path="conventions-and-notes.html"><a href="conventions-and-notes.html"><i class="fa fa-check"></i><b>1.3</b> Conventions and Notes</a></li>
 </ul></li>
 <li class="chapter" data-level="2" data-path="data.html"><a href="data.html"><i class="fa fa-check"></i><b>2</b> Data</a><ul>
 <li class="chapter" data-level="2.1" data-path="general-structure.html"><a href="general-structure.html"><i class="fa fa-check"></i><b>2.1</b> General Structure</a></li>
 <li class="chapter" data-level="2.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html"><i class="fa fa-check"></i><b>2.2</b> Exploratory Data Analysis</a><ul>
-<li class="chapter" data-level="2.2.1" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#data-types"><i class="fa fa-check"></i><b>2.2.1</b> Data types</a></li>
+<li class="chapter" data-level="2.2.1" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#data-types"><i class="fa fa-check"></i><b>2.2.1</b> Data Types</a></li>
 <li class="chapter" data-level="2.2.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#targets"><i class="fa fa-check"></i><b>2.2.2</b> Targets</a></li>
 <li class="chapter" data-level="2.2.3" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#skewness"><i class="fa fa-check"></i><b>2.2.3</b> Skewness</a></li>
 <li class="chapter" data-level="2.2.4" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#correlations"><i class="fa fa-check"></i><b>2.2.4</b> Correlations</a></li>
-<li class="chapter" data-level="2.2.5" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#donation-patterns"><i class="fa fa-check"></i><b>2.2.5</b> Donation patterns</a></li>
+<li class="chapter" data-level="2.2.5" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#donation-patterns"><i class="fa fa-check"></i><b>2.2.5</b> Donation Patterns</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="experimental-setup-and-methods.html"><a href="experimental-setup-and-methods.html"><i class="fa fa-check"></i><b>3</b> Experimental Setup and Methods</a><ul>
@@ -88,11 +88,13 @@
 <li class="chapter" data-level="3.3.3" data-path="data-preprocessing.html"><a href="data-preprocessing.html#imputation"><i class="fa fa-check"></i><b>3.3.3</b> Imputation</a></li>
 <li class="chapter" data-level="3.3.4" data-path="data-preprocessing.html"><a href="data-preprocessing.html#methods-feature-selection"><i class="fa fa-check"></i><b>3.3.4</b> Feature Selection</a></li>
 </ul></li>
-<li class="chapter" data-level="3.4" data-path="methods-prediction.html"><a href="methods-prediction.html"><i class="fa fa-check"></i><b>3.4</b> Prediction</a></li>
-<li class="chapter" data-level="3.5" data-path="eval-and-select.html"><a href="eval-and-select.html"><i class="fa fa-check"></i><b>3.5</b> Model Evaluation And -Selection</a><ul>
-<li class="chapter" data-level="3.5.1" data-path="eval-and-select.html"><a href="eval-and-select.html#algorithms-considered"><i class="fa fa-check"></i><b>3.5.1</b> Algorithms Considered</a></li>
-<li class="chapter" data-level="3.5.2" data-path="eval-and-select.html"><a href="eval-and-select.html#regressors"><i class="fa fa-check"></i><b>3.5.2</b> Regressors</a></li>
-<li class="chapter" data-level="3.5.3" data-path="eval-and-select.html"><a href="eval-and-select.html#performance-metrics"><i class="fa fa-check"></i><b>3.5.3</b> Performance Metrics</a></li>
+<li class="chapter" data-level="3.4" data-path="methods-prediction.html"><a href="methods-prediction.html"><i class="fa fa-check"></i><b>3.4</b> Prediction</a><ul>
+<li class="chapter" data-level="3.4.1" data-path="methods-prediction.html"><a href="methods-prediction.html#optimization-of-alpha"><i class="fa fa-check"></i><b>3.4.1</b> Optimization of <span class="math inline">\(\alpha^*\)</span></a></li>
+</ul></li>
+<li class="chapter" data-level="3.5" data-path="eval-and-select.html"><a href="eval-and-select.html"><i class="fa fa-check"></i><b>3.5</b> Model Evaluation and -Selection</a><ul>
+<li class="chapter" data-level="3.5.1" data-path="eval-and-select.html"><a href="eval-and-select.html#evaluation"><i class="fa fa-check"></i><b>3.5.1</b> Evaluation</a></li>
+<li class="chapter" data-level="3.5.2" data-path="eval-and-select.html"><a href="eval-and-select.html#dealing-with-imbalanced-data"><i class="fa fa-check"></i><b>3.5.2</b> Dealing With Imbalanced Data</a></li>
+<li class="chapter" data-level="3.5.3" data-path="eval-and-select.html"><a href="eval-and-select.html#algorithms"><i class="fa fa-check"></i><b>3.5.3</b> Algorithms</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="4" data-path="results-and-discussion.html"><a href="results-and-discussion.html"><i class="fa fa-check"></i><b>4</b> Results and Discussion</a><ul>
@@ -100,21 +102,21 @@
 <li class="chapter" data-level="4.2" data-path="imputation-1.html"><a href="imputation-1.html"><i class="fa fa-check"></i><b>4.2</b> Imputation</a></li>
 <li class="chapter" data-level="4.3" data-path="feature-selection.html"><a href="feature-selection.html"><i class="fa fa-check"></i><b>4.3</b> Feature Selection</a></li>
 <li class="chapter" data-level="4.4" data-path="classifiers.html"><a href="classifiers.html"><i class="fa fa-check"></i><b>4.4</b> Classifiers</a></li>
-<li class="chapter" data-level="4.5" data-path="regressors-1.html"><a href="regressors-1.html"><i class="fa fa-check"></i><b>4.5</b> Regressors</a></li>
+<li class="chapter" data-level="4.5" data-path="regressors.html"><a href="regressors.html"><i class="fa fa-check"></i><b>4.5</b> Regressors</a></li>
 <li class="chapter" data-level="4.6" data-path="prediction.html"><a href="prediction.html"><i class="fa fa-check"></i><b>4.6</b> Prediction</a><ul>
-<li class="chapter" data-level="4.6.1" data-path="prediction.html"><a href="prediction.html#conditional-prediction-of-the-donation-amount"><i class="fa fa-check"></i><b>4.6.1</b> Conditional prediction of the donation amount</a></li>
-<li class="chapter" data-level="4.6.2" data-path="prediction.html"><a href="prediction.html#profit-optimization"><i class="fa fa-check"></i><b>4.6.2</b> Profit optimization</a></li>
-<li class="chapter" data-level="4.6.3" data-path="prediction.html"><a href="prediction.html#final-prediction"><i class="fa fa-check"></i><b>4.6.3</b> Final prediction</a></li>
+<li class="chapter" data-level="4.6.1" data-path="prediction.html"><a href="prediction.html#conditional-prediction-of-the-donation-amount"><i class="fa fa-check"></i><b>4.6.1</b> Conditional Prediction of the Donation Amount</a></li>
+<li class="chapter" data-level="4.6.2" data-path="prediction.html"><a href="prediction.html#profit-optimization"><i class="fa fa-check"></i><b>4.6.2</b> Profit Optimization</a></li>
+<li class="chapter" data-level="4.6.3" data-path="prediction.html"><a href="prediction.html#final-prediction"><i class="fa fa-check"></i><b>4.6.3</b> Final Prediction</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="5" data-path="conclusions.html"><a href="conclusions.html"><i class="fa fa-check"></i><b>5</b> Conclusions</a><ul>
-<li class="chapter" data-level="5.1" data-path="comparison-with-cup-winners.html"><a href="comparison-with-cup-winners.html"><i class="fa fa-check"></i><b>5.1</b> Comparison with Cup winners</a></li>
-<li class="chapter" data-level="5.2" data-path="biggest-problems-remaining.html"><a href="biggest-problems-remaining.html"><i class="fa fa-check"></i><b>5.2</b> Biggest problems remaining</a></li>
+<li class="chapter" data-level="5.1" data-path="comparison-with-cup-winners.html"><a href="comparison-with-cup-winners.html"><i class="fa fa-check"></i><b>5.1</b> Comparison With Cup Winners</a></li>
+<li class="chapter" data-level="5.2" data-path="biggest-problems-remaining.html"><a href="biggest-problems-remaining.html"><i class="fa fa-check"></i><b>5.2</b> Biggest Problems Remaining</a></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
-<li class="chapter" data-level="6" data-path="appendix.html"><a href="appendix.html"><i class="fa fa-check"></i><b>6</b> Appendix</a><ul>
-<li class="chapter" data-level="6.1" data-path="python-environment.html"><a href="python-environment.html"><i class="fa fa-check"></i><b>6.1</b> Python Environment</a></li>
-<li class="chapter" data-level="6.2" data-path="data-set-dictionary.html"><a href="data-set-dictionary.html"><i class="fa fa-check"></i><b>6.2</b> Data Set Dictionary</a></li>
+<li class="chapter" data-level="" data-path="appendix-appendix.html"><a href="appendix-appendix.html"><i class="fa fa-check"></i>(APPENDIX) Appendix</a><ul>
+<li class="chapter" data-level="5.3" data-path="python-environment.html"><a href="python-environment.html"><i class="fa fa-check"></i><b>5.3</b> Python Environment</a></li>
+<li class="chapter" data-level="5.4" data-path="data-set-dictionary.html"><a href="data-set-dictionary.html"><i class="fa fa-check"></i><b>5.4</b> Data Set Dictionary</a></li>
 </ul></li>
 </ul>
 
@@ -137,8 +139,8 @@
 <h2><span class="header-section-number">4.6</span> Prediction</h2>
 <p>The intermediate steps for arriving at the final prediction will be examined in this section.</p>
 <div id="conditional-prediction-of-the-donation-amount" class="section level3">
-<h3><span class="header-section-number">4.6.1</span> Conditional prediction of the donation amount</h3>
-<p>Using the regression model selected in section <a href="eval-and-select.html#regressors">3.5.2</a>, the predicted donation amount for the learning data is strictly positive because the model was learned conditionally on the examples that made a donation (see Figure <a href="prediction.html#fig:y-d-predict">4.8</a>). Compared to the original distribution in Figure <a href="regressors-1.html#fig:reg-targ-transform">4.5</a>, we see a similar distribution, with the mode at approximately 13 $ and the largest donations in excess of 175 $.</p>
+<h3><span class="header-section-number">4.6.1</span> Conditional Prediction of the Donation Amount</h3>
+<p>Using the regression model selected in section <a href="regressors.html#regressors">4.5</a>, the predicted donation amount for the learning data is strictly positive because the model was learned conditionally on the examples that made a donation (see Figure <a href="prediction.html#fig:y-d-predict">4.8</a>). Compared to the original distribution in Figure <a href="regressors.html#fig:reg-targ-transform">4.5</a>, we see a similar distribution, with the mode at approximately 13 $ and the largest donations in excess of 175 $.</p>
 
 <div class="figure" style="text-align: center"><span id="fig:y-d-predict"></span>
 <img src="figures/predictions/y_d_predicted-inverse-transform.png" alt="Conditionally predicted donation amounts, transformed back to the original scale (the model was trained on the Box-Cox transformed target)." width="60%" />
@@ -148,8 +150,8 @@ Figure 4.8: Conditionally predicted donation amounts, transformed back to the or
 </div>
 </div>
 <div id="profit-optimization" class="section level3">
-<h3><span class="header-section-number">4.6.2</span> Profit optimization</h3>
-<p>The correction factor <span class="math inline">\(\alpha\)</span>, used to account for the bias introduced by learning the regression models on a non-random sample, was found as described in section <a href="methods-prediction.html#methods-prediction">3.4</a>. First, expected profit <span class="math inline">\(E(Z)\)</span> was calculated using equation <a href="methods-prediction.html#eq:pi-alpha">(3.2)</a> for a grid of <span class="math inline">\(\alpha\)</span> values. Then, a polynomial model and a cubic spline were fitted to the data and <span class="math inline">\(\alpha\)</span> optimized subsequently.</p>
+<h3><span class="header-section-number">4.6.2</span> Profit Optimization</h3>
+<p>The correction factor <span class="math inline">\(\alpha\)</span>, used to account for the bias introduced by learning the regression models on a non-random sample, was found as described in section <a href="methods-prediction.html#methods-prediction">3.4</a>. First, expected profit <span class="math inline">\(E(Z)\)</span> was calculated using equation <a href="methods-prediction.html#eq:pi-alpha">(3.3)</a> for a grid of <span class="math inline">\(\alpha\)</span> values. Then, a polynomial model and a cubic spline were fitted to the data and <span class="math inline">\(\alpha\)</span> optimized subsequently.</p>
 <p>As can be seen in Figure <a href="prediction.html#fig:alpha-grid">4.9</a>, profit is very sensitive to <span class="math inline">\(\alpha\)</span>. This is not surprising given the distribution in Figure <a href="prediction.html#fig:y-d-predict">4.8</a> which is narrowly concentrated around 13 $. Furthermore, the curve is constant over much of the domain, meaning that all examples were selected from approximately <span class="math inline">\(\alpha=0.15\)</span>. The sharp spike combined with the large proportion of constant expected profit makes fitting a polynomial difficult. The cubic spline was therefore used to find the optimal value <span class="math inline">\(\alpha^*\)</span>.</p>
 
 <div class="figure" style="text-align: center"><span id="fig:alpha-grid"></span>
@@ -160,12 +162,12 @@ Figure 4.9: Expected profit for a range of <span class="math inline">\(\alpha\)<
 </div>
 </div>
 <div id="final-prediction" class="section level3">
-<h3><span class="header-section-number">4.6.3</span> Final prediction</h3>
+<h3><span class="header-section-number">4.6.3</span> Final Prediction</h3>
 <p>For final predictions, the complete learning data set was used to train the best performing classifier and regressor and find <span class="math inline">\(\alpha^*\)</span>.</p>
-<p>The learned estimators were then applied on the test data set. The results are shown in <a href="#tab:prediction-results"><strong>??</strong></a>. The theoretical maximum was calculated with: <span class="math inline">\(\sum_{i=1}^n \mathbb{1}_{\{\text{TARGET}_{D,i} &gt; 0.0\}}*(\text{TARGET}_{D,i} - u)\)</span> with <span class="math inline">\(u\)</span> the unit cost of 0.68 $ per mailing.</p>
+<p>The learned estimators were then applied on the test data set. The results are shown in <a href="prediction.html#tab:prediction-results">4.2</a>. The theoretical maximum was calculated with: <span class="math inline">\(\sum_{i=1}^n \mathbb{1}_{\{\text{TARGET}_{D,i} &gt; 0.0\}}*(\text{TARGET}_{D,i} - u)\)</span> with <span class="math inline">\(u\)</span> the unit cost of 0.68 $ per mailing.</p>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
-<span id="tab:prediciton-results">Table 4.1: </span>Prediction results for the learning and test data set.
+<span id="tab:prediction-results">Table 4.2: </span>Prediction results for the learning and test data set.
 </caption>
 <thead>
 <tr>
@@ -222,7 +224,7 @@ Test
           </div>
         </div>
       </div>
-<a href="regressors-1.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="regressors.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
 <a href="conclusions.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>

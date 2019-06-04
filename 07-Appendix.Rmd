@@ -1,14 +1,21 @@
-# Appendix
+# (APPENDIX) Appendix {-} 
 
 ## Python Environment
 
-Python was installed through the Anaconda distribution
+Python was installed through the Anaconda distribution^[Available from [https://www.anaconda.com](https://www.anaconda.com)].
 
-Most of the programming was done interactively in jupyter notebooks.
+The analysis documented should be reproduced using the same environment, thereby ensuring that the packages produce the same results and expose the API's used in the code.
 
-A python package for handling the loading of datasets was developed separately and the called from the notebooks.
+The environment can be created using the file `environment.yml` in the main repository directory at `r make_github_link()`.
 
-## Data Set Dictionary
+Once conda is installed the following two commands first set up the environment with all the analysis' required packages, then activates that environment. Only after running these commands should the package `kdd98` be installed and the notebooks evaluated.
+
+```
+> conda env create -f environment.yml
+> source activate ma-thesis-fh
+```
+
+## Data Set Dictionary {#data-set-dictionary}
 
 Below, the content of the file *cup98DIC.txt are given verbatim.
 

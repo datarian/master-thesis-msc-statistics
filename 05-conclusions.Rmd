@@ -30,4 +30,9 @@ knitr::kable(cup_winners,
 
 * Choice of Models
 
+* Poor prediction performance: Non-gaussian distribution of $\hat{y}_b$, which violates assumptions for Heckman-correction., bias-variance tradeoff
+
+Prediction Error $PE(z) = \sigma_{\epsilon}^2+\text{Bias}^2(\hat{f}(z))+\text{Var}(\hat{f}(z))$. When model more complex, local structure picked up, coefficient estimates suffer from high Var as more terms included in model -> more bias can lead to decrease in variance, decreasing PE.
+
+
 * Will be easy to work on these specific areas given the infrastructure created in this thesis

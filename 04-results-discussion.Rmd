@@ -4,7 +4,7 @@ Below, the results from data preprocessing, model evaluation, -selection and pre
 
 ## Preprocessing With Package kdd98
 
-The self-written package `kdd98` ensures consistent data provision. It handles downloading and preprocessing of the data set for both the learning and validation set. The complete preprocessing pipeline is first learned on the training data set. The transforming models are persisted on disk and are then applied to the validation data when it is requested through the package's API.
+The self-written package `kdd98` ensures consistent data provisioning. It handles downloading and preprocessing of the data set for both the learning and validation set. All preprocessing steps are trained on the learning data set. The individual trained transformations are persisted on disk. After training, the transformations can be applied on the validation data. This process is transparent to the user. It is enough to instantiate the data provider for either learning or validation data set and request the data. Examples for usage can be found in the Jupyter notebooks.
 
 The data sets can be obtained at the following intermediate steps from `kdd98.data_handler.KDD98DataProvider`:
 
@@ -14,13 +14,19 @@ The data sets can be obtained at the following intermediate steps from `kdd98.da
 * **imputed**, with missing values imputed
 * **all-relevant**, filtered down to a set of relevant features
 
+For some transformers, behavior can be controlled by specifying parameters. The package's architecture furthermore makes it easy to implement additional transformation steps.
+
+The source code, along with a short introduction, is available online^[see `r make_github_link("kdd98")`].
+
+
+
 ## Imputation
 
-(ref:jupyter-4-imputation) `r make_github_link("notebooks", "4_Imputation.ipynb")`
+The evaluation of several imputation strategies led to a straightforward approach: Categorical features had a *missing* level added during encoding (Section \@ref(methods-feature-engineering)). All other features were imputed by their median value to account for the skewed distributions. The notebook `4_Imputation.ipynb`^[see `r make_github_link("notebooks", "4_Imputation.ipynb")`] contains details on the other approaches studied.
 
-Several techniques were explored to impute missing values. In the end, a simple approach was chosen: Categorical features had a *missing* level added during encoding. All other features were imputed by their median value to account for the skewed distributions. See the corresponding Jupyter notebook^[(ref:jupyter-4-imputation)] for details.
+In concordance with the cup documentation's requirements, *sparse* features were dropped from the data set before imputation. A balance had to be found so as to not exclude too much information on the donation patterns. As a consequence, the threshold was set to $\geq 90$ % missing values.
 
-Missing data before categorical encoding and median-imputation of numeric features is shown in Figure \@ref(fig:before-impute). The matrix displays the complete data set, with missing values indicated by white cells.
+Missing data after removing sparse features is shown in Figure \@ref(fig:before-impute). The matrix displays the complete data set, with missing values indicated by white cells.
 
 (ref:before-impute-legend) Data before imputation of numeric features. The big complete block at the center is the US census data.
 
@@ -28,9 +34,11 @@ Missing data before categorical encoding and median-imputation of numeric featur
 include_graphics("figures/imputation/missing-matrix.png")
 ```
 
-The features with most and fewest missing values are shown in (Figure \@ref(fig:most-fewest-missing)). It is not surprising to find the *MONTHS_TO_DONATION* features among those with most missing because few examples respond to the promotions and hence, don't donate.
+The features with most and least missing values are shown in Figure \@ref(fig:most-fewest-missing). It is not surprising to find the *MONTHS_TO_DONATION_\** features among those with most missing because few examples respond to the promotions with a donation.
 
-(ref:m-f-missing-legend) Features with most (left) and fewest (right) missing features.
+Among the incomplete features with least missing values, we find several of the US census features. The *RFA_\** features give the status in reference to promotion $i$. All examples who did donate at some point before have an RFA status. Thus, we can see when new members were added from the missing values in these features because newly added members do not have an RFA status yet.
+
+(ref:m-f-missing-legend) Features with most (left) and fewest (right) missing values.
 
 ```{r most-fewest-missing, fig.cap="(ref:m-f-missing-legend)", out.width="49%", fig.show="hold", echo=F}
 include_graphics(c("figures/imputation/most-missing.png", "figures/imputation/fewest-missing.png"))
@@ -38,43 +46,105 @@ include_graphics(c("figures/imputation/most-missing.png", "figures/imputation/fe
 
 ## Feature Selection
 
-After preprocessing and feature engineering, `r ncol(py$numeric$data)` features were present in the data. Using boruta, `r ncol(py$all_relevant$data)` features were chosen as important. These were:
+After preprocessing and feature engineering, `r ncol(py$numeric$data)` features were present in the data. Using boruta, `r ncol(py$all_relevant$data)` features were identified as important, resulting in a `r round(1 - ncol(py$all_relevant$data) / ncol(py$numeric$data),2)*100` % reduction of the number of features. For details, refer to^[see make_github_link("notebooks", "5_Feature Extraction.ipynb")].
 
-`r colnames(py$all_relevant$data)`.
+Three groups of features were selected.
 
-Among them are several of the *RFA* features recorded for previous promotions. These correspond to the RFM features mentioned in literature [REFERENCE] which are usually employed to model customer response. It is therefore reassuring to find them among the all-relevant features. Additionally, there are several features from the US census data:
+Features from the **giving history** broadly correspond to those used in classical RFM models mentioned in literature (Section \@ref(intro)). It is reassuring to find them among the all-relevant features:
+
+* Donation amount for promotion 14
+* Summary features: All-time donation amount, all-time number of donations, smallest, average and largest donation, donation amount of most recent donation
+* 24 Features on frequency and amount of donations as per the date of past donations
+* Time since first donation, Time since largest donation, time since last donation
+* Number of donations in response to card promotions
+* Number of months between first and second donation
+* An indicator for *star* donors
+
+The **promotion history** features can be interpreted as a measure of the importance of the examples to the organization. Those who receive many promotions are deemed valuable:
+
+* Number of promotions received
+* Number promotions in last 12 months before the current promotion
+* Number of card promotions received
+* Number of card promotions in last 12 months before the current promotion
+
+Features from the **US census** data seem to be concerned with the social status and wealth of the neighborhood of donors and by intuition make sense to be deemed relevant.
+
+* Median and average home value
+* Percentage of home values above some threshold (5 features)
+* Percentage of renters paying more than 500 $
+* DMA (designated market area, a geographical grouping)
+* Median / average family / house income
+* Per capita income
+* Percentage of households with interest, rental or dividend income
+* Percentage of adults with a Bachelor's degree
+* Percentage of people born in state of residence
 
 
 
 ## Classifiers
 
-The four classifiers that were evaluated can be compared in terms of their receiver operating characteristic , which indicates overall model performance through an area under the curve value (ROC-AUC), precision-recall (PR) curves, or by their individual performance expressed through confusion matrices.
+The four classifiers that were evaluated can be compared in terms of their receiver operating characteristic (ROC), which indicates overall model performance through an area under the curve value (ROC-AUC), precision-recall (PR) curves, or by their individual performance expressed through confusion matrices and the scores for several different metrics.
 
-The ROC-AUC curve is constructed by evaluating the false positive rate (FPR) against the true positive rate (TPR) at various thresholds for the predicted class probabilities of examples in the training data. The closer the curve is to the top-left corner, the better a model performs (we have a large TPR and at the same time a low FPR).
+(ref:conf-mat-legend) Confusion matrices for the 5 classifiers evaluated.
 
-Looking at the ROC-AUC curves shown in Figure \@ref(fig:roc-auc-curve), we see that all classifiers performed rather weak. In the case of imbalanced data, the majority class dominates this metric. The false positive rate is $FPR = \frac{FP}{TN}$. This means that as the false positives (FP) decrease, FPR does not change a lot.
+```{r conf-matrices, fig.show="hold", out.width="49%", echo=F}
+knitr::include_graphics(c(
+	"figures/learning/confusion_matrix_model_RF_refit_f1.png",
+	"figures/learning/confusion_matrix_model_GBM_refit_f1.png",
+	"figures/learning/confusion_matrix_model_GLMnet_refit_f1.png",
+	"figures/learning/confusion_matrix_model_NNet_refit_f1.png",
+	"figures/learning/confusion_matrix_model_SVM_refit_f1.png"
+	))
+```
+
+The ROC-AUC curve is constructed by evaluating the false positive rate (FPR) against the true positive rate (TPR) at various thresholds for the predicted class probabilities of examples in the training data. The closer the curve is to the top-left corner, the better a model performs (we have a large TPR and at the same time a low FPR). Looking at the ROC-AUC curves shown in Figure \@ref(fig:roc-auc-curve), we see that all classifiers performed rather weak. In the case of imbalanced data, the majority class dominates this metric. The false positive rate is $FPR = \frac{FP}{TN}$. This means that as the false positives (FP) decrease, FPR does not change a lot.
 
 (ref:roc-auc-legend) Comparison of ROC-AUC for the evaluated classifiers.
 
 ```{r roc-auc-curve, fig.cap="(ref:roc-auc-legend)", echo=F}
 
-knitr::include_graphics("figures/learning/roc_auc_compared_refit_recall.png")
+knitr::include_graphics("figures/learning/roc_auc_compared_refit_f1.png")
 ```
 
-The PR curve with precision $P = \frac{TP}{TP+FP}$ is sensitive to false positives and, since TN is not directly involved, better suited for our imbalanced data. Figure \@ref(fig:p-r-curve) shows the models in direct comparison.
+The PR curve with precision $P = \frac{TP}{TP+FP}$ "how many of the predicted positive cases are true positives?" plotted against recall $R = \frac{TP}{{TP+FP}}$ "how many of the true positive values can we predict correctly?" at different threshold values, is sensitive to false positives and, since TN is not  involved, better suited for the imbalanced data at hand. Figure \@ref(fig:p-r-curve) shows the models in direct comparison. Here, the more the curve is towards the top right corner, the better. In that case, a high precision can be maintained at high recall levels.
 
-(ref:p-r-legend) Comparison of precision-recall curves for the classifiers.
+(ref:p-r-legend) Comparison of PR curves for the classifiers. Recall is plotted against precision for various threshold values of the predicted class probabilities. For good models, the curve is close to the top-right corner.
 
 ```{r p-r-curve, fig.cap="(ref:roc-auc-legend)", echo=F}
 
-knitr::include_graphics("figures/learning/prec_rec_compared_refit_recall.png")
+knitr::include_graphics("figures/learning/prec_rec_compared_refit_f1.png")
 ```
+
+Evidently, all learned algorithms perform rather weak.
+
+```{python clfs-result, include=F}
+import pickle
+with open(pathlib.Path(Config.get("data_store"), "classifier_performance_compared.pkl"), "rb") as f:
+    clf_scores = pickle.load(f)
+```
+
+The three performance metrics for all classifiers are summarized in \@ref(tab:clf-result-table). By F1, the best classifier is the neural network. That estimator is used for the final prediction.
+
+````{r clf-result-table, echo=F, results="asis"}
+kable(py$clf_scores,
+      booktabs = T,
+      caption="Comparison of classifiers. Three metrics were evaluated for each classifier.") %>%
+    kable_styling(latex_options=c("hold_position", "scale_down", full_width=T, position="Center"))
+```
+
 
 ## Regressors
 
+```{python regressor-stuff, include=F, cache=F}
+import pickle
+with open("models/target_d_transformer.pkl", "rb") as f:
+    target_d_transformer = pickle.load(f)
+box_cox_lambda = target_d_transformer.lambdas_[0]
+```
+
 Regressors were learned on the learning data set with *TARGET_D* as 
 
-For the regression models, the target was transformed using a Box-Cox transformation with parameter $\lambda=0.024$. The goal was to linearize the target to improve regression model's performance. The transformed data somewhat resembles a normal distribution, although there are several modes to be made out.
+For the regression models, the target was transformed using a Box-Cox transformation with parameter $\lambda=`r py$box_cox_lambda`$. The goal was to linearize the target to improve regression model's performance. The transformed data somewhat resembles a normal distribution, although there are several modes to be made out.
 
 ```{r reg-targ-transform, fig.cap="Target before transformation (left) and after a Box-Cox transformation (right).", fig.show="hold", out.width="49%", echo=F}
 
@@ -134,7 +204,7 @@ For final predictions, the complete learning data set was used to train the best
 The learned estimators were then applied on the test data set. The results are shown in \@ref(tab:prediction-results). The theoretical maximum was calculated with: $\sum_{i=1}^n \mathbb{1}_{\{\text{TARGET}_{D,i} > 0.0\}}*(\text{TARGET}_{D,i} - u)$ with $u$ the unit cost of 0.68 $ per mailing.
 
 
-```{r prediciton-results, echo=F}
+```{r prediction-results, echo=F}
 predictions <- t(data.frame(Learning = c(31530, 28951, 72375),
                             Test = c(31880, 3047, 72775)))
 colnames(predictions) <- c('Members mailed, #','Net Profit, $ US', 'Theoretical maximum profit, $ US')

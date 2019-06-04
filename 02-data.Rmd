@@ -1,11 +1,26 @@
 # Data
-
-```{python prep-eda, echo=F, include=F, cache=F}
+```{python data-specs, echo=F, results='hide', cache=F}
+date_features = dh.DATE_FEATURES
+binary_features = dh.BINARY_FEATURES
+data_provider = dh.KDD98DataProvider("cup98LRN.txt")
+raw_data = data_provider.raw_data
 cleaned = data_provider.cleaned_data
 numeric = data_provider.numeric_data
 all_relevant = data_provider.all_relevant_data
-```
 
+int_features = raw_data["data"].select_dtypes(include="integer").columns.values.tolist()
+float_features = raw_data["data"].select_dtypes(include="float").columns.values.tolist()
+category_features = raw_data["data"].select_dtypes(include="category").columns.values.tolist()
+object_features = raw_data["data"].select_dtypes(include="object").columns.values.tolist()
+
+stats = pd.DataFrame({"Integer": ["Discrete features, no missing values", len(int_features)],
+                      "Float": ["Continuous features and discrete features with missing values", len(float_features)],
+                      "Categorical": ["Nominal and ordinal features", len(category_features)],
+                      "Object": ["Features with alphanumeric values", len(object_features)],
+                      "Total": [" ", raw_data["data"].shape[1]]}).transpose()
+stats.columns = ["Data content", "Number of features"]
+stats.index.name = "Data type"
+```
 
 The data set, which is freely available online^[See [https://archive.ics.uci.edu/ml/datasets/KDD+Cup+1998+Data](https://archive.ics.uci.edu/ml/datasets/KDD+Cup+1998+Data)], contains data on all members of the organization with a *lapsed* donation status (last donation 13 -- 24 months ago) relative to the promotion sent out in June 1997.
 
@@ -35,11 +50,11 @@ Below, the data is characterized with some key insights.
 
 (ref:jupyter-3-eda) `r make_github_link("notebooks", "3_EDA.ipynb")`
 
-The detailed analysis can be studied online in the corresponding Jupyter notebook^[(ref:jupyter-3-eda)].
+The detailed analysis can be studied online in the corresponding Jupyter notebook `3_EDA.ipynb`^[see (ref:jupyter-3-eda)].
 
 ### Data Types
 
-An analysis of the data set dictionary (see section \@ref(data-set-dictionary)) reveals the following data types. 
+An analysis of the data set dictionary (Section \@ref(data-set-dictionary)) reveals the following data types. 
 
 - Index: CONTROLN, unique record identifier
 - Dates: 48 features in yymm format.
