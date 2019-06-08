@@ -11,47 +11,35 @@ import pickle
 
 import numpy as np
 import pandas as pd
+from boruta import BorutaPy
+from category_encoders import HashingEncoder, OrdinalEncoder
 from dateutil import relativedelta
 from dateutil.rrule import MONTHLY, YEARLY, rrule
 from fancyimpute import KNN, IterativeImputer
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import maxabs_scale, PowerTransformer, FunctionTransformer
-from sklearn.impute import SimpleImputer
-from sklearn.ensemble import RandomForestClassifier
-from boruta import BorutaPy
-
-from category_encoders import HashingEncoder, OrdinalEncoder
 from geopy.exc import GeocoderTimedOut
 from geopy.extra.rate_limiter import RateLimiter
 from geopy.geocoders import Here
 from kdd98.config import Config
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import (FunctionTransformer, PowerTransformer,
+                                   StandardScaler, maxabs_scale)
 
 # Set up the logger
 logging.basicConfig(filename=__name__ + '.log', level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
-
-__all__ = ['BinaryFeatureRecode',
-           'MultiByteExtract',
-           'RecodeUrbanSocioEconomic',
-           'DateFormatter',
-           'ZipFormatter',
-           'NOEXCHFormatter',
-           'MDMAUDFormatter',
-           'DeltaTime',
-           'MonthsToDonation',
-           'Hasher',
-           'CategoricalImputer',
-           "RAMNTFixer",
-           "ZeroVarianceSparseDropper",
-           "MedianImputer",
-           "AllRelevantFeatureFilter",
-           "Rescaler"]
+__all__ = [
+    'BinaryFeatureRecode', 'MultiByteExtract', 'RecodeUrbanSocioEconomic',
+    'DateFormatter', 'ZipFormatter', 'NOEXCHFormatter', 'MDMAUDFormatter',
+    'DeltaTime', 'MonthsToDonation', 'Hasher', 'CategoricalImputer',
+    "RAMNTFixer", "ZeroVarianceSparseDropper", "MedianImputer",
+    "AllRelevantFeatureFilter", "Rescaler"
+]
 
 
 class NamedFeatureTransformer(BaseEstimator, TransformerMixin):
-
     def __init__(self):
         self.feature_names = None
 
@@ -59,8 +47,9 @@ class NamedFeatureTransformer(BaseEstimator, TransformerMixin):
         if isinstance(self.feature_names, list):
             return self.feature_names
         else:
-            raise(ValueError("Transformer {} has to be transformed first, cannot return feature names.".format(
-                self.__class__.__name__)))
+            raise (ValueError(
+                "Transformer {} has to be transformed first, cannot return feature names."
+                .format(self.__class__.__name__)))
 
 
 class MultiByteExtract(NamedFeatureTransformer):
@@ -112,8 +101,8 @@ class MultiByteExtract(NamedFeatureTransformer):
                     # handle missing values
                     spread_field[row[0]] = self._fill_missing()
         except Exception as e:
-            logger.error(
-                "Failed to spread feature '{}' for reason {}".format(feature, e))
+            logger.error("Failed to spread feature '{}' for reason {}".format(
+                feature, e))
             raise e
 
         # Create the dataframe, orient=index means
@@ -150,11 +139,14 @@ class RecodeUrbanSocioEconomic(NamedFeatureTransformer):
 
     def transform(self, X, y=None):
         urb_dict = {'1': '1', '2': '2', '3': '2', '4': '3'}
-        X_trans = pd.DataFrame(
-            X, columns=self.feature_names).astype('category')
-        X_trans.loc[X_trans.DOMAINUrbanicity == 'U',
-                    'DOMAINSocioEconomic'] = X_trans.loc[X_trans.DOMAINUrbanicity == 'U', 'DOMAINSocioEconomic'].map(urb_dict)
-        X_trans.DOMAINSocioEconomic = X_trans.DOMAINSocioEconomic.cat.remove_unused_categories()
+        X_trans = pd.DataFrame(X,
+                               columns=self.feature_names).astype('category')
+        X_trans.loc[X_trans.DOMAINUrbanicity ==
+                    'U', 'DOMAINSocioEconomic'] = X_trans.loc[
+                        X_trans.DOMAINUrbanicity ==
+                        'U', 'DOMAINSocioEconomic'].map(urb_dict)
+        X_trans.DOMAINSocioEconomic = X_trans.DOMAINSocioEconomic.cat.remove_unused_categories(
+        )
         return X_trans
 
 
@@ -248,10 +240,10 @@ class ZipFormatter(NamedFeatureTransformer):
         return self
 
     def transform(self, X, y=None):
-        assert(isinstance(X, pd.DataFrame))
+        assert (isinstance(X, pd.DataFrame))
         for f in self.feature_names:
-            X[f] = X[f].str.replace(
-                "-", "").replace([" ", "."], np.nan).astype("int64")
+            X[f] = X[f].str.replace("-", "").replace([" ", "."],
+                                                     np.nan).astype("int64")
         return X
 
 
@@ -263,6 +255,7 @@ class RAMNTFixer(NamedFeatureTransformer):
         evidence that the example actually has not donated and we can set
         the amount to zero.
     """
+
     def __init__(self):
         super().__init__()
 
@@ -270,14 +263,15 @@ class RAMNTFixer(NamedFeatureTransformer):
         return self
 
     def transform(self, X, y=None):
-        assert(isinstance(X, pd.DataFrame))
+        assert (isinstance(X, pd.DataFrame))
         self.feature_names = X.filter(regex="RAMNT_*").columns.values.tolist()
         X_trans = pd.DataFrame(index=X.index)
 
         def really_missing(example):
             ramnt = None
             if pd.isna(example[0]):
-                ramnt = 0 if pd.isna(example[1]) or example[1] == 'nan' else np.nan
+                ramnt = 0 if pd.isna(
+                    example[1]) or example[1] == 'nan' else np.nan
             else:
                 ramnt = example[0]
             return ramnt
@@ -293,6 +287,7 @@ class RFAFixer(NamedFeatureTransformer):
     """ Sets invalid RFA features to NaN.
         This occurs if strings are not of length 3.
     """
+
     def __init__(self):
         super().__init__()
 
@@ -307,7 +302,7 @@ class RFAFixer(NamedFeatureTransformer):
         return self
 
     def transform(self, X, y=None):
-        assert(isinstance(X, pd.DataFrame))
+        assert (isinstance(X, pd.DataFrame))
         X_trans = X.applymap(self.validate_value)
         return X_trans
 
@@ -324,7 +319,7 @@ class NOEXCHFormatter(NamedFeatureTransformer):
         return self
 
     def transform(self, X, y=None):
-        assert(isinstance(X, pd.DataFrame))
+        assert (isinstance(X, pd.DataFrame))
         for f in self.feature_names:
             X[f] = X[f].str.replace("X", "1")
         return X
@@ -343,14 +338,13 @@ class MDMAUDFormatter(NamedFeatureTransformer):
         return self
 
     def transform(self, X, y=None):
-        assert(isinstance(X, pd.DataFrame))
+        assert (isinstance(X, pd.DataFrame))
 
         X = X.replace("X", np.nan)
         return X
 
 
 class DateHandler:
-
     def __init__(self, reference_date):
         self.ref_date = reference_date
         self.ref_year = self.ref_date.year
@@ -362,7 +356,8 @@ class DateHandler:
                     d = d.replace(year=(d.year - 100))
             except Exception as err:
                 logger.warning(
-                    "Failed to fix century for date {}, reason: {}".format(d, err))
+                    "Failed to fix century for date {}, reason: {}".format(
+                        d, err))
                 d = pd.NaT
         else:
             d = pd.NaT
@@ -375,8 +370,10 @@ class DateHandler:
         and aligns datetime64 dates with a reference date
         """
         try:
-            date_feature = pd.to_datetime(
-                date_feature, format="%y%m", errors="coerce").map(self.fix_century)
+            date_feature = pd.to_datetime(date_feature,
+                                          format="%y%m",
+                                          errors="coerce").map(
+                                              self.fix_century)
         except Exception as e:
             message = "Failed to parse date array {}.\nReason: {}".format(
                 date_feature, e)
@@ -403,15 +400,15 @@ class DeltaTime(DateHandler, NamedFeatureTransformer):
 
     def get_duration(self, target):
         if not pd.isna(target):
-            delta = relativedelta.relativedelta(
-                self.reference_date, target)
+            delta = relativedelta.relativedelta(self.reference_date, target)
             if self.unit.lower() == 'months':
                 duration = (delta.years * 12) + delta.months
             elif self.unit.lower() == 'years':
                 duration = delta.years + 1
         else:
-            logger.info("Failed to calculate time delta. Dates: {} and {}."
-                        .format(target, self.reference_date))
+            logger.info(
+                "Failed to calculate time delta. Dates: {} and {}.".format(
+                    target, self.reference_date))
             duration = np.nan
         return duration
 
@@ -435,8 +432,9 @@ class DeltaTime(DateHandler, NamedFeatureTransformer):
                     raise e
                 X_trans[feature_name] = target.map(self.get_duration)
             except Exception as e:
-                logger.error("Failed to transform '{}' on feature {} for reason {}".format(
-                    self.__class__.__name__, f, e))
+                logger.error(
+                    "Failed to transform '{}' on feature {} for reason {}".
+                    format(self.__class__.__name__, f, e))
                 raise e
         self.feature_names = X_trans.columns.values.tolist()
         return X_trans
@@ -471,15 +469,15 @@ class MonthsToDonation(DateHandler, NamedFeatureTransformer):
             try:
                 duration = relativedelta.relativedelta(target, ref).years * 12
                 duration += relativedelta.relativedelta(target, ref).months
-                if duration < 0.0: # most likely, the target year was off
+                if duration < 0.0:  # most likely, the target year was off
                     logger.warning("Calculated negative time difference {}"\
                         " with reference {} and target {},\n"\
                         "Adding one year to the target.".format(duration, ref, target))
                     duration = 12. + duration
             except Exception as e:
                 logger.error("Failed to calculate time delta. "
-                             "Dates: {} and {}\nMessage: {}"
-                             .format(row[0], row[1], e))
+                             "Dates: {} and {}\nMessage: {}".format(
+                                 row[0], row[1], e))
                 duration = np.nan
         elif pd.isna(target):
             duration = np.nan
@@ -497,7 +495,8 @@ class MonthsToDonation(DateHandler, NamedFeatureTransformer):
                 recv_date = X.loc[:, ["RDATE_" + str(i)]]
             except KeyError as e:
                 # One of the features is not there, can't compute the delta
-                logger.info("Missing feature for MONTHS_TO_DONATION_{}.".format(i))
+                logger.info(
+                    "Missing feature for MONTHS_TO_DONATION_{}.".format(i))
                 continue
 
             try:
@@ -511,22 +510,28 @@ class MonthsToDonation(DateHandler, NamedFeatureTransformer):
                     recv_date = self.parse_date(recv_date.squeeze())
                 except RuntimeError as e:
                     raise e
-                diffs = pd.concat([send_date, recv_date], axis=1).agg(self.calc_diff, axis=1)
-                X_trans = X_trans.join(pd.DataFrame(
-                    diffs, columns=[feat_name], index=X_trans.index), how="inner")
+                diffs = pd.concat([send_date, recv_date],
+                                  axis=1).agg(self.calc_diff, axis=1)
+                X_trans = X_trans.join(pd.DataFrame(diffs,
+                                                    columns=[feat_name],
+                                                    index=X_trans.index),
+                                       how="inner")
                 self.feature_names.extend([feat_name])
             except Exception as e:
                 logger.error("Failed to transform '{}' "
-                             "on feature {} for reason {}"
-                             .format(feat_name,
-                                     self.__class__.__name__, e))
+                             "on feature {} for reason {}".format(
+                                 feat_name, self.__class__.__name__, e))
                 raise e
         return X_trans
 
 
 class Hasher(NamedFeatureTransformer):
-
-    def __init__(self, verbose=0, n_components=8, cols=None, drop_invariant=False, hash_method='md5'):
+    def __init__(self,
+                 verbose=0,
+                 n_components=8,
+                 cols=None,
+                 drop_invariant=False,
+                 hash_method='md5'):
         super().__init__()
         self.verbose = verbose
         self.n_components = n_components
@@ -545,18 +550,18 @@ class Hasher(NamedFeatureTransformer):
         return self
 
     def transform(self, X, y=None):
-        assert(isinstance(X, pd.DataFrame))
+        assert (isinstance(X, pd.DataFrame))
         features = X.columns.values.tolist()
         X_trans = self.he.transform(X, y)
         generated_features = self.he.get_feature_names()
         self.feature_names = [
-            f + "_" + g for f in features for g in generated_features]
+            f + "_" + g for f in features for g in generated_features
+        ]
         X_trans.columns = self.feature_names
         return X_trans
 
 
 class CategoricalImputer(NamedFeatureTransformer):
-
     def __init__(self):
         super().__init__()
 
@@ -564,29 +569,33 @@ class CategoricalImputer(NamedFeatureTransformer):
         return self
 
     def transform(self, X, y=None):
-        assert(isinstance(X, pd.DataFrame))
+        assert (isinstance(X, pd.DataFrame))
         X_trans = X.fillna(X.mode().iloc[0])
         self.feature_names = X_trans.columns.values.tolist()
         return X_trans
 
 
 class ZipToCoords(NamedFeatureTransformer):
-
     def __init__(self):
         super().__init__()
         self.app_id = "ZJBxigwxa1QPHlWrtWH6"
         self.app_code = "OJBun02aepkFbuHmYn1bOg"
         try:
-            with open(pathlib.Path(Config.get("data_dir"), "zip_db.pkl"), "rb") as zdb:
+            with open(pathlib.Path(Config.get("data_dir"), "zip_db.pkl"),
+                      "rb") as zdb:
                 self.locations = pickle.load(zdb)
         except Exception:
-            zip_db = pd.read_csv(pathlib.Path(Config.get("data_dir"), "zipcodes2018.txt"))
+            zip_db = pd.read_csv(
+                pathlib.Path(Config.get("data_dir"), "zipcodes2018.txt"))
             zip_db.columns = ["zip", "ZIP_latitude", "ZIP_longitude"]
             self.locations = zip_db.set_index("zip").to_dict('index')
 
     def _do_geo_query(self, q):
-        geolocator = Here(app_id="ZJBxigwxa1QPHlWrtWH6", app_code="OJBun02aepkFbuHmYn1bOg")
-        geocode = RateLimiter(geolocator.geocode, min_delay_seconds=0.01, max_retries=4)
+        geolocator = Here(app_id="ZJBxigwxa1QPHlWrtWH6",
+                          app_code="OJBun02aepkFbuHmYn1bOg")
+        geocode = RateLimiter(geolocator.geocode,
+                              min_delay_seconds=0.01,
+                              max_retries=4)
         try:
             return geolocator.geocode(query=q, exactly_one=True)
         except GeocoderTimedOut:
@@ -598,14 +607,19 @@ class ZipToCoords(NamedFeatureTransformer):
             q = {'postalcode': zip, 'state': example.STATE}
             location = self._do_geo_query(q)
             if location:
-                loc = {'ZIP_latitude': location.latitude, 'ZIP_longitude': location.longitude}
-            else: 
-                logger.info("Transformer {}: No location found for zip {} in state {}. Setting to 0, 0"
-                            .format(self.__class__.__str__, zip, example.STATE))
+                loc = {
+                    'ZIP_latitude': location.latitude,
+                    'ZIP_longitude': location.longitude
+                }
+            else:
+                logger.info(
+                    "Transformer {}: No location found for zip {} in state {}. Setting to 0, 0"
+                    .format(self.__class__.__str__, zip, example.STATE))
                 loc = {'ZIP_latitude': 0, 'ZIP_longitude': 0}
         else:
-            print("Transformer {}: ZIP is NaN, setting location to NaN as well."
-                  .format(self.__class__.__str__))
+            print(
+                "Transformer {}: ZIP is NaN, setting location to NaN as well.".
+                format(self.__class__.__str__))
             loc = {'ZIP_latitude': np.nan, 'ZIP_longitude': np.nan}
         return loc
 
@@ -613,19 +627,24 @@ class ZipToCoords(NamedFeatureTransformer):
         try:
             return self.locations[example.ZIP]
         except KeyError:
-            if example.STATE in ["AA", "AE", "AP"]:  # military zip, no coords available
-                self.locations[example.ZIP] = {'ZIP_latitude': 38.8719, 'ZIP_longitude': 77.0563}
+            if example.STATE in ["AA", "AE",
+                                 "AP"]:  # military zip, no coords available
+                self.locations[example.ZIP] = {
+                    'ZIP_latitude': 38.8719,
+                    'ZIP_longitude': 77.0563
+                }
             else:
                 try:
                     loc = self._get_location(example)
                     self.locations[example.ZIP] = loc
                 except Exception as e:
-                    logger.info("Transformer {}: Failed to retrieve missing zip. Reason: {}"
-                                .format(self.__class__.__str__, e))
+                    logger.info(
+                        "Transformer {}: Failed to retrieve missing zip. Reason: {}"
+                        .format(self.__class__.__str__, e))
             return self.locations[example.ZIP]
 
     def fit(self, X, y=None):
-        assert(isinstance(X, pd.DataFrame))
+        assert (isinstance(X, pd.DataFrame))
         self.feature_names = ["ZIP_latitude", "ZIP_longitude"]
         return self
 
@@ -633,7 +652,8 @@ class ZipToCoords(NamedFeatureTransformer):
         X_trans = pd.DataFrame(index=X.index)
         X_trans = X.apply(self._extract_coords, axis=1, result_type="expand")
         try:
-            with open(pathlib.Path(Config.get("data_dir"), "zip_db.pkl"), "wb") as zdb:
+            with open(pathlib.Path(Config.get("data_dir"), "zip_db.pkl"),
+                      "wb") as zdb:
                 pickle.dump(self.locations, zdb)
         except Exception as e:
             logger.warning("Failed to store updated zipcode database.")
@@ -655,7 +675,9 @@ class ZeroVarianceSparseDropper(NamedFeatureTransformer):
                     to second most frequent
     - unique_cut    cutoff for percentage unique values
     """
-    def __init__(self, near_zero=True,
+
+    def __init__(self,
+                 near_zero=True,
                  freq_cut=95 / 5,
                  unique_cut=0.1,
                  sparse_cut=0.1,
@@ -674,8 +696,9 @@ class ZeroVarianceSparseDropper(NamedFeatureTransformer):
     def fit(self, X, y=None):
         n_obs = X.shape[0]
 
-        sparse_cols = [c for c in X.columns
-                       if X[c].count() / n_obs <= self.sparse_cut]
+        sparse_cols = [
+            c for c in X.columns if X[c].count() / n_obs <= self.sparse_cut
+        ]
 
         for feat, series in X.iteritems():
             val_count = series.value_counts(normalize=True)
@@ -685,9 +708,11 @@ class ZeroVarianceSparseDropper(NamedFeatureTransformer):
                 continue
             freq_ratio = val_count.values[0] / val_count.values[1]
             unq_percent = len(val_count) / n_obs
-            if (unq_percent < self.unique_cut) and (freq_ratio > self.freq_cut):
+            if (unq_percent < self.unique_cut) and (freq_ratio >
+                                                    self.freq_cut):
                 self._near_zero_var.append(feat)
-        self._near_zero_var = set(self._near_zero_var + sparse_cols) - self.override
+        self._near_zero_var = set(self._near_zero_var +
+                                  sparse_cols) - self.override
         self._zero_var = set(self._zero_var + sparse_cols) - self.override
         self._dropped = self._near_zero_var if self.near_zero else self._zero_var
 
@@ -698,62 +723,58 @@ class ZeroVarianceSparseDropper(NamedFeatureTransformer):
         self.feature_names = X_trans.columns.values.tolist()
         return X_trans
 
-class MedianImputer(NamedFeatureTransformer):
 
+class MedianImputer(NamedFeatureTransformer):
     def __init__(self, missing_values=np.nan, strategy='median'):
         super().__init__()
         self.missing_values = missing_values
         self.strategy = strategy
-        self.imputer = SimpleImputer(missing_values = self.missing_values, strategy=self.strategy)
+        self.imputer = SimpleImputer(missing_values=self.missing_values,
+                                     strategy=self.strategy)
 
     def fit(self, X, y=None):
-        assert(isinstance(X, pd.DataFrame))
+        assert (isinstance(X, pd.DataFrame))
         self.imputer.fit(X.values)
         self.feature_names = X.columns.values.tolist()
         return self
 
     def transform(self, X, y=None):
-        assert(isinstance(X,pd.DataFrame))
+        assert (isinstance(X, pd.DataFrame))
         X_trans = self.imputer.transform(X.values)
-        X_trans = pd.DataFrame(data=X_trans,
-                               index = X.index,
-                               columns=X.columns)
+        X_trans = pd.DataFrame(data=X_trans, index=X.index, columns=X.columns)
         return X_trans
 
 
 class AllRelevantFeatureFilter(NamedFeatureTransformer):
-
     def __init__(self, max_iter=120, perc=100, n_estimators="auto"):
         super().__init__()
-        self.max_iter=max_iter
-        self.n_estimators=n_estimators
+        self.max_iter = max_iter
+        self.n_estimators = n_estimators
         self.perc = perc
-        self.estimator = BorutaPy(
-            RandomForestClassifier(n_jobs=-1, max_depth=6, class_weight="balanced"),
-            n_estimators = self.n_estimators,
-            perc=self.perc,
-            max_iter = self.max_iter,
-            verbose=0,
-            random_state=Config.get("random_seed")
-        )
+        self.estimator = BorutaPy(RandomForestClassifier(
+            n_jobs=-1, max_depth=6, class_weight="balanced"),
+                                  n_estimators=self.n_estimators,
+                                  perc=self.perc,
+                                  max_iter=self.max_iter,
+                                  verbose=0,
+                                  random_state=Config.get("random_seed"))
 
     def fit(self, X, y):
-        assert(isinstance(X, pd.DataFrame))
-        assert(isinstance(y, pd.DataFrame))
+        assert (isinstance(X, pd.DataFrame))
+        assert (isinstance(y, pd.DataFrame))
         y_b = y.TARGET_B
         self.estimator.fit(X.values, y_b.values)
         self.feature_names = X.columns.values[self.estimator.support_].tolist()
         return self
 
     def transform(self, X, y=None):
-        assert(isinstance(X, pd.DataFrame))
+        assert (isinstance(X, pd.DataFrame))
         X_trans = self.estimator.transform(X.values)
-        return pd.DataFrame(
-            data=X_trans,
-            columns = self.feature_names,
-            index = X.index)
+        return pd.DataFrame(data=X_trans,
+                            columns=self.feature_names,
+                            index=X.index)
 
-    
+
 class Rescaler(BaseEstimator, TransformerMixin):
     """
         Provides different rescalers:
@@ -765,20 +786,24 @@ class Rescaler(BaseEstimator, TransformerMixin):
 
         transformer:    ['ftrans', 'ptrans]
     """
-    def __init__(self, transformer = "ptrans"):
+
+    def __init__(self, transformer="ptrans"):
         self.transformer = transformer
 
     def _log_trans(self, X):
-        X = np.apply_along_axis(lambda x: np.sign(x) * np.log(abs(x)+1), axis=1, arr=X)
-        return maxabs_scale(X,axis=0)
+        X = np.apply_along_axis(lambda x: np.sign(x) * np.log(abs(x) + 1),
+                                axis=1,
+                                arr=X)
+        return maxabs_scale(X, axis=0)
 
     def fit(self, X, y=None, *args, **kwargs):
         if self.transformer == "ftrans":
             self.scaler = FunctionTransformer(self._log_trans, validate=False)
         elif self.transformer == "ptrans":
-            self.scaler = PowerTransformer(method="yeo-johnson", standardize=True)
+            self.scaler = PowerTransformer(method="yeo-johnson",
+                                           standardize=True)
         self.scaler.fit(X, y, *args, **kwargs)
         return self
-    
+
     def transform(self, X, y=None, *args, **kwargs):
         return self.scaler.transform(X, *args, **kwargs)

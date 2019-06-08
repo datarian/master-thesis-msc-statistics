@@ -1,13 +1,16 @@
+import inspect
+
 import numpy as np
 import pandas as pd
 from scipy.interpolate import CubicSpline
 from sklearn.base import BaseEstimator
 from sklearn.preprocessing import PowerTransformer
+from sklearn.utils.validation import NotFittedError, check_is_fitted
 
 
 class Kdd98ProfitEstimator(BaseEstimator):
     """
-    Estimates expected profit E(P) = \sum_{i=1}^n \hat{y}_{b,i} * \hat{y}_{d,i} * \alpha^*
+    Estimates expected profit E(P) = \sum_{i=1}^n 1_\{\hat{y}_{b,i} * exp(\hat{y}_{d,i}) * \alpha^* > exp(u)\}(\hat{y}_{d,i}) * (y_d,i-u)
 
     \hat{y}_{b,i} is the predicted probability of donating
     \hat{y}_{d,i} is the predicted donation amount (Box-Cox transformed)
@@ -21,8 +24,9 @@ class Kdd98ProfitEstimator(BaseEstimator):
     def __init__(self, classifier, regressor):
         self.classifier = classifier
         self.regressor = regressor
-        self.target_transformer = PowerTransformer(
-            method="box-cox", standardize=True)
+        self.target_transformer = PowerTransformer(method="box-cox",
+                                                   standardize=True)
+        self.u = 0.68  # unit cost
 
     def _make_2d_array(self, y):
         y = np.array(y).reshape(-1, 1)
@@ -44,10 +48,11 @@ class Kdd98ProfitEstimator(BaseEstimator):
         at these candidate locations and the candidate leading to highest
         profit is chosen as \alpha*.
         """
-        profit_data = self._generate_profit_for_alphas(
-            y_b_predict, y_d_predict, y_true)
+        profit_data = self._generate_profit_for_alphas(y_b_predict,
+                                                       y_d_predict, y_true)
 
-        s = CubicSpline(profit_data.alpha.values, profit_data.prediction.values)
+        s = CubicSpline(profit_data.alpha.values,
+                        profit_data.prediction.values)
         ds = s.derivative()
 
         roots = ds.roots()
@@ -57,17 +62,36 @@ class Kdd98ProfitEstimator(BaseEstimator):
 
         return alpha_star
 
-    def _generate_profit_for_alphas(self, y_b_predict, y_d_predict, y_true, u=0.68):
+    def _generate_profit_for_alphas(self,
+                                    y_b_predict,
+                                    y_d_predict,
+                                    y_true,
+                                    u=0.68):
         """
         Generates profit estimates for a grid of alpha values.
         """
         alpha_grid = np.linspace(0.0, 1., 10000)
 
-        data = [{"alpha": a,
-                 "prediction": self._pi_alpha(y_b_predict, y_d_predict, y_true, alpha=a)}
-                for a in alpha_grid]
-        
+        data = [{
+            "alpha":
+            a,
+            "prediction":
+            self._pi_alpha(y_b_predict, y_d_predict, y_true, alpha=a)[1]
+        } for a in alpha_grid]
+
         return pd.DataFrame(data)
+
+    def _donor_indicator(self, y_b_predict, y_d_predict, alpha, u):
+        # we transform the unit cost with the same
+        # power transformer used for the target transformation.
+        u_trans = self.target_transformer.transform(
+            self._make_2d_array(u)).ravel()[0]
+
+        # The indicator function used to determine if an example is predicted to yield a profit.
+        indicator = (y_b_predict * np.exp(y_d_predict) * alpha >
+                     np.exp(u_trans)).ravel()
+
+        return indicator
 
     def _pi_alpha(self, y_b_predict, y_d_predict, y_true, alpha=1.0, u=0.68):
         """
@@ -87,51 +111,67 @@ class Kdd98ProfitEstimator(BaseEstimator):
         profit A list with the predicted profits
         """
 
-        # we transform the unit cost with the same
-        # power transformer used for the target transformation.
-        u_trans = self.target_transformer.transform(
-            np.array(u).reshape(-1, 1)).ravel()[0]
-
-        # The indicator function used to determine if an example is predicted to yield a profit.
-        indicator = (y_b_predict * np.exp(y_d_predict) * alpha > np.exp(u_trans)).ravel()
+        indicator = self._donor_indicator(y_b_predict, y_d_predict, alpha, u)
 
         # We subtract the unit cost from
         # true donation amounts to get true profit per example.
         true_profit = y_true - u
 
         # We filter the true profit and return the sum
-        return np.sum(true_profit[indicator])
+        return (indicator, np.dot(indicator, true_profit))
 
     def fit(self, X, y):
 
-        assert(isinstance(X, pd.DataFrame))
+        assert (isinstance(X, pd.DataFrame))
 
-        # Fit classifier and predict donation probability
-        self.classifier.fit(X, y.TARGET_B.values.astype("int"))
-        # Predictions are returned as tuples (p_class_0, p_class_1)
-        # We are only interested in p_class_1
-        y_b_predict = self.classifier.predict_proba(X)[:,1]
+        def is_fitted(model):
+            """Checks if model object has any attributes ending with an underscore"""
+            return 0 < len([
+                k for k, v in inspect.getmembers(model)
+                if k.endswith('_') and not k.startswith('__')
+            ])
+
+        # Fit classifier if necessary
+        if not is_fitted(self.classifier):
+            self.classifier.fit(X, y.TARGET_B.values.astype("int"))
 
         X_d, y_d = self._filter_data_for_donations(X, y)
-
         # Transform y_d before model training, also training the target transformer
         y_d_trans = self.target_transformer.fit_transform(
             self._make_2d_array(y_d)).ravel()
-
         # Fit regressor to predict donation amounts on the transformed data.
         self.regressor.fit(X_d, y_d_trans)
 
-        y_d_predict = self.regressor.predict(X)
-
-        self.alpha_star = self._optimize_alpha(
-            y_b_predict, y_d_predict, y.TARGET_D.values)
+        y_b_predict = self.classifier.predict_proba(X.values)[:, 1]
+        y_d_predict = self.regressor.predict(X.values)
+        self.alpha_star = self._optimize_alpha(y_b_predict, y_d_predict,
+                                               y.TARGET_D.values)
+        return self
 
     def predict(self, X, y=None):
+        """
+        Returns the indicator as well as the predicted net profit
+        """
+
         if isinstance(X, pd.DataFrame):
             X = X.values
-        y_b_predict = self.classifier.predict_proba(X)[:,1]
-        y_d_predict_transformed = self.regressor.predict(X)
-        y_d_predict = self.target_transformer.inverse_transform(self._make_2d_array(y_d_predict_transformed))
-        expected_profit = np.dot(y_b_predict, (y_d_predict * self.alpha_star))[0]
 
-        return expected_profit
+        # Predictions are returned as tuples (p_class_0, p_class_1)
+        # We are only interested in p_class_1
+        y_b_predict = self.classifier.predict_proba(X)[:, 1]
+        y_d_predict_transformed = self.regressor.predict(X)
+
+        # If y is not passed, we predict for new data. y_true is then
+        # y_d_predict, the inverse transformed y_d_predcit_transformed
+        if isinstance(y, pd.DataFrame):
+            y_d_true = y.TARGET_D.values
+        else:
+            y_d_true = self.target_transformer.inverse_transform(
+                y_d_predict_transformed)
+
+        #expected_profit = np.dot(y_b_predict, (y_d_predict * self.alpha_star))[0]
+        indicator, expected_profit = self._pi_alpha(y_b_predict,
+                                                    y_d_predict_transformed,
+                                                    y_d_true, self.alpha_star)
+
+        return (indicator, expected_profit)

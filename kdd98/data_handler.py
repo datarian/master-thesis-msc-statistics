@@ -18,11 +18,11 @@ from category_encoders import BinaryEncoder, OneHotEncoder
 from kdd98.config import Config
 from kdd98.transformers import (AllRelevantFeatureFilter, BinaryFeatureRecode,
                                 CategoricalImputer, DateFormatter, DeltaTime,
-                                MDMAUDFormatter, MonthsToDonation,
-                                MultiByteExtract, NOEXCHFormatter,
-                                MedianImputer, OrdinalEncoder, RAMNTFixer,
-                                RFAFixer, ZeroVarianceSparseDropper, ZipFormatter,
-                                ZipToCoords)
+                                MDMAUDFormatter, MedianImputer,
+                                MonthsToDonation, MultiByteExtract,
+                                NOEXCHFormatter, OrdinalEncoder, RAMNTFixer,
+                                RFAFixer, ZeroVarianceSparseDropper,
+                                ZipFormatter, ZipToCoords)
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 
