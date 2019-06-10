@@ -31,16 +31,20 @@ In this section, the *learning* data set will be characterized.
 
 ## General Structure
 
-The input data with $n = `r nrow(py$raw_data$data)`$ rows and $m= `r ncol(py$raw_data$data)+1`$ columns is structured as follows: $\mathbf{D} = \{\{\mathbf{x}_i,\mathbf{y}_i\}\}, i = 1 ... n, \mathbf{x} \in \mathbb{R}^{m-3}, \mathbf{y} \in \mathbb{R}^2$.
+The input data with $n = `r nrow(py$raw_data$data)`$ rows and $p= `r ncol(py$raw_data$data)+1`$ columns is structured as follows: $\mathbf{D} = \{\{\mathbf{x}_i,\mathbf{y}_i\}\}, i = 1 ... n, \mathbf{x} \in \mathbb{R}^{p-3}, \mathbf{y} \in \mathbb{R}^2$.
 
-Each $i$ represents one example. We have $m-3 = `r ncol(py$raw_data$data)-2`$ explanatory features, two targets and one unique identifier for each example.
+Each $i$ represents one example. We have $m = p-3 = `r ncol(py$raw_data$data)-2`$ explanatory features, two targets and one unique identifier for each example.
 
-The features are grouped into four blocks of information:
+The $m$ features are grouped into four blocks of information:
 
-* Member database with personal particulars, interests and organization-internal information on examples: 79 features
+* Member database with personal particulars, interests and organization-internal information on examples: 81 features
 * Characteristics of example's neighborhood from the US census 1990: 286 features
-* Promotion history: History of past promotions sent to an example and the examples responses, per promotion and summary statistics: 54 features
-* Giving history of an example's past donations, per promotion and summary statistics: 57 features
+* Promotion history: 54 features
+	* Summary of promotions sent to an example in the 12 months prior to the current promotion
+	* Sending dates and RFA status of promotions 13-36 months prior to current promotion
+* Giving history: 57 features
+	* Summary statistics
+	* Responses to promotions 13-36 months prior to current promotion
 
 
 
@@ -57,12 +61,12 @@ The detailed analysis can be studied online in the corresponding Jupyter noteboo
 An analysis of the data set dictionary (Section \@ref(data-set-dictionary)) reveals the following data types. 
 
 - Index: CONTROLN, unique record identifier
-- Dates: 48 features in yymm format.
-- Binary: 30 features
-- Categorical: 90 features
-- Numeric: 286
+- Dates: 73 features in yymm format.
+- Binary: 48 features
+- Categorical: 46 features
+- Numeric: 309
 
-Data was imported through `pandas.read_csv()`. The data types present after import are shown in Table \@ref(tab:data-desc). It is evident that several transformations are necessary to encode the features in their correct types.
+Data was imported through `pandas.read_csv()`. The data types present after import are shown in Table \@ref(tab:data-desc). Two things are worth noting: There are many integer features, meaning that most numeric data is discrete. Few categorical features and no date features were identified. These are most likely in the group of `Object` features, which is `pandas`' catch-all type, and will have to be transformed during preprocessing.
 
 ```{r data-desc, results="asis", echo=F}
 kable(py$stats,
@@ -116,9 +120,9 @@ knitr::include_graphics("figures/eda/most-skewed.png")
 
 ### Correlations
 
-As for the assessment of skewness, the high dimensionality makes it hard to assess correlations in the data. A heatmap (see \@ref(fig:heatmap-all)) was nevertheless produced to gain a high-level insight on correlations present in the data. From left to right, three regions can be distinguished: First, there are member database features, followed by a large center region comprised of the U.S. census features, and rightmost, there are promotion and giving history features. Between these blocks, only few features are correlated. Within each block however, we can see some quite strongly correlated data.
+The high dimensionality makes it hard to assess correlations in the data between individual features. A heatmap (see Figure \@ref(fig:heatmap-all)) provides high-level insight in correlations present. From left to right, three regions can be distinguished: First, there are member database features, followed by a large center region comprised of the U.S. census features, and rightmost, there are promotion and giving history features. Between these blocks, only few features are correlated. Within each block however, we can see some quite strongly correlated data.
 
-(ref:heatmap-legend) A heatmap showing correlations between all features in the data. Green means negative correlation, pink means positive correlation. Perfect correlation occurs at -1.0 and 1.0. Not all features are labelled due to display problems.
+(ref:heatmap-legend) A heatmap showing correlations between all features in the data. Green means positive correlation, magenta means negative correlation. Perfect correlation occurs at 1.0 and -1.0. Feature names are omitted.
 
 ```{r heatmap-all, fig.cap="(ref:heatmap-legend)", echo=F}
 include_graphics("figures/eda/correlations-all.png")
@@ -126,7 +130,15 @@ include_graphics("figures/eda/correlations-all.png")
 
 ### Donation Patterns
 
-The data set documentation states that donation amounts are positively correlated with the time since the last donation. This means that the longer an example goes without donating, the higher the donation amount if it can be enticed into donating again. Figure (\@ref(fig:donations-vs-time)) confirms this assumption. We see that starting from 15 months, the number of donations above 50 $ increases.
+When looking at the all-time recency-frequency-amount (RFA) fetures for donors (Figure \@ref(fig:rfa-alltime)), no clear trend is visible to discern current donors from non-donors. Current donors are found across the whole range of recency values. A slight correlation between frequency and current donation status is discernible: Current donors tend to "float" on top of the "sedimented" non-donors. Those examples with the highest yearly donation amount did not donate in the current promotion.
+
+(ref:rfa-alltime-legend) Analysis of all-time RFA values. *Recency* is the time in months since the last donation, *Frequency* the average number of donations per year and *Amount* the average yearly donation amount.
+
+```{r rfa-alltime, fig.cap="(ref:rfa-alltime-legend)", echo=F}
+include_graphics("figures/eda/rfa-alltime-current-donors.png")
+```
+
+The data set documentation states that donation amounts are positively correlated with recency, the time since the last donation. This means that the longer an example goes without donating, the higher the donation amount if it can be enticed into donating again. Figure (\@ref(fig:donations-vs-time)) gives some evidence for this assumption. We see that starting from 15 months, the number of donations above 50 $ increases.
 
 There is another insight gained when considering the number of donations an example has made, indicated by the point size, and donation amount: Frequent donors give relatively small sums, while the largest donations come from examples who rarely donate.
 
@@ -136,16 +148,12 @@ There is another insight gained when considering the number of donations an exam
 include_graphics("figures/eda/donations-vs-time-since-last-size-nbr-donations.png")
 ```
 
-When looking at the recency-frequency-amount (RFA) features for the current promotion (which are typically used to model customer response in direct marketing), we can support the insights above. Since the data set contains only lapsed donors, the recency feature is constant and not of interest. Regarding the frequency of donations (number of donations 13 - 24 months prior to the promotion), shown in Figure \@ref(fig:rfa-f), we see a clear trend. With increasing donation frequency, donation amounts decrease.
+What is surprising to see in both Figures \@ref(fig:rfa-alltime) and \@ref(fig:donations-vs-time) is that there are many examples who donated within the last 12 months prior to the current promotion. The data set should contain *lapsed* donors only, so there should be no donations recorded for that period. An explanation could be that the recency status is considered strictly for direct responses to promotions. Examples who donate regularly (i.e. monthly, yearly), irrespective of the promotions mailed out, would not be evaluated in terms of RFA under that assumption.
+
+Considering the RFA features for the current promotion, we can support the insights above. Since the data set contains only lapsed donors, the recency feature is constant and not of interest. Regarding the frequency of donations (number of donations 13 - 24 months prior to the promotion), shown in Figure \@ref(fig:rfa-f), we see a clear trend. With increasing donation frequency, donation amounts decrease.
 
 ```{r rfa-f, fig.cap="Frequency of donations in the 13-24 months prior to current promotion against amount donated. Frequent donors give smaller amounts.", echo=F}
 include_graphics("figures/eda/frequency-past-donatios-vs-donations.png")
-```
-
-From the amount classes of the last donation, we can see that most examples follow their habits and usually donate the same amounts across promotions (Figure \@ref(fig:rfa-a)).
-
-```{r rfa-a, fig.cap="Amount of last donation prior to promotion against donation amount. Donors largely give equal donations across promotions.", echo=F}
-include_graphics("figures/eda/amount-past-donatios-vs-donations.png")
 ```
 
 Figure \@ref(fig:donations-geo) shows the geographical distribution of donations. The large urban centers like San Francisco, Los Angeles, Miami, Chicago and Detroit are clearly visible. To a lesser extent, cities like Houston, Dallas, Minneapolis, Atlanta, Tampa, Seattle and Phoenix can be made out. Examples living there give small amounts. Big donors (large total donations with a high average) can be made out in rural areas in the Midwest and Texas. Interestingly, only very few donations come from the north-eastern states.
@@ -156,10 +164,20 @@ Figure \@ref(fig:donations-geo) shows the geographical distribution of donations
 include_graphics("figures/eda/donations-geographical.png")
 ```
 
-We can also see that examples living in rural areas tend to donate larger sums when looking at Figure \@ref(fig:donations-le). Shown are the living environments in progressively more rural settings against the donation amount in the current promotion.
+We can also see that examples living in rural areas tend to donate larger sums when looking at Figure \@ref(fig:donations-le). Shown are the living environments in progressively more rural settings against the average all-time donation amount per capita.
 
 (ref:donations-by-le) Average cumulative donation amount per capita by living environment (C = city, U = urban, S = suburban, T = town, R = rural). The more rural, the higher the average donations.
 
 ```{r donations-le, fig.cap="(ref:donations-by-le)", echo=F}
 include_graphics("figures/eda/avg-donations-per-capita-by-living-environment.png")
 ```
+
+Socio-economic status by living environment reveals that examples with the highest status are rarely among the low-dollar donors. The median donation amount for the highest status is always higher than other status groups, but examples in the lowest status donate more than those in the medium level (Figure \@ref(fig:donations-le-socioec)). The highest donations come from the medium status group.
+
+(ref:donations-le-socioec-legend) Donation amount for current promotion by living environment and socio-economic status of examples. The violin plot shows the distribution of values similar to a kernel density estimation. Median values are indicated by white dots, the bold regions give the inner quartile range.
+
+```{r donations-le-socioec, fig.cap="(ref:donations-le-socioec-legend)", echo=F}
+include_graphics("figures/eda/donations-vs-living-environment-hue-socioecon.png")
+```
+
+

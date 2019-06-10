@@ -4,7 +4,6 @@ date: "`r Sys.Date()`"
 title: Profit maximization for direct marketing campaigns
 description: Master Thesis submitted in partial fulfillment of the requirements for the degree of Master of Science in Statistics
 site: bookdown::bookdown_site
-link-citations: yes
 papersize: a4
 fontsize: 11pt
 mainfont: Times New Roman
@@ -12,7 +11,8 @@ sansfont: Lato
 monofont: Source Code Pro
 toc-depth: 2
 bibliography: thesis.bib
-biblio-style: apalike
+biblio-style: "apalike"
+link-citations: true
 documentclass: scrbook
 classoption: DIV=12,captions=tableheading,oneside,titlepage
 always_allow_html: yes
@@ -32,12 +32,13 @@ library(DiagrammeR)
 library(DiagrammeRsvg)
 library(rsvg)
 library(stringr)
-options(digits=2)
+library(readtext)
+options(scipen=999)
 ```
 
 ```{r global-helpers, include=FALSE,results='hide'}
 
-github_base_url = "https://github.com/datarian/master-thesis-code/tree/master"
+github_base_url = "https://github.com/datarian/master-thesis-msc-statistics/tree/master"
 
 make_github_link <- function(..., text = ""){
   subdirs <- list(...)
@@ -80,8 +81,7 @@ knitr::opts_chunk$set(error=TRUE,
                       tidy=TRUE)
 
 knitr::opts_knit$set(eval.after='fig.cap',
-                     verbose=TRUE,
-                     digits=2)
+                     verbose=TRUE)
 
 # Setup reticulate as the python enginge
 knitr::knit_engines$set(python = reticulate::eng_python)
@@ -100,8 +100,8 @@ hook_inline = knitr::knit_hooks$get('inline')
 inline_hook <- function (x) {
   if (is.numeric(x)) {
     res <- ifelse(x == round(x),
-      sprintf("%d", x),
-      sprintf("%.3f", x)
+      prettyNum(x, big.mark="'"),
+      prettyNum(x, big.mark="'", digits=3)
     )
     paste(res, collapse = ", ")
   } else {
@@ -168,6 +168,27 @@ plt.rcParams['lines.linewidth'] = 2
 plt.rcParams['legend.numpoints'] = 1
 plt.rcParams['legend.fancybox'] = True
 plt.rcParams['legend.framealpha'] = 0.4
+
+sns.set_palette(Config.get("qual_palette"))
+sns.set_context("talk")
+
+IMAGES_PATH = pathlib.Path(pathlib.Path.cwd()/'figures')
+
+pathlib.Path(IMAGES_PATH).mkdir(parents=True, exist_ok=True)
+pathlib.Path(IMAGES_PATH,'methods').mkdir(parents=True, exist_ok=True)
+
+
+def save_fig(fig_id, tight_layout=True, fig_extension=["pdf", "png"], resolution=300):
+    if tight_layout:
+        plt.tight_layout()
+    [
+        plt.savefig(pathlib.Path(IMAGES_PATH, fig_id + "." + f),
+                    format=f,
+                    dpi=resolution,
+                    transparent=True,
+                    bbox_inches='tight') for f in fig_extension
+    ]
+
 ```
 
 Customer segmentation techniques are used in marketing to identify certain groups of customers in order to produce offers tailored to these groups. The ultimate goal is to maximize profit, which is achieved also through customer retention. In the case of direct marketing, especially when unit costs (the cost associated with addressing a customer) are significant, employing some customer segmentation technique is highly beneficial in terms of profit.
@@ -176,9 +197,9 @@ Historically, the RFM (Recency, Frequency, Monetization) model has been employed
 
 The RFM model proposed by @hughes-rfm-boost-response is often used: Customers are binned into 5 segments for each of the RFM features individually and labeled ordinal, resulting in 125 cells that can then be used to identify customers most likely to respond. The best customers have a high score for each of the 3 features. The drawback of this approach is that generally, marketing efforts go towards the best customer segment.
 
-Over time, different approaches, such as Chi-squared automatic interaction detection and logistic regression were proposed. While in some situations, these alternatives outperformed RFA (see @MCCARTY2007656), RFA remained popular because of it's intuitive interpretation.
+Over time, different approaches, such as Na¨ıve Bayes, Random Forests (see @stubseid2018), Chi-squared automatic interaction detection and logistic regression were proposed. While in some situations, these alternatives outperformed RFA (see @MCCARTY2007656), RFA remained popular because of it's intuitive interpretation.
 
-In this work, a radically data-driven approach was chosen. General machine learning algorithms were employed to predict potential donors and the net profit generated instead of building on previously developed, specialized models.
+In this work, a radically data-driven approach was chosen. Several machine learning algorithms were employed and compared to predict potential donors and the net profit generated instead of building on previously developed, specialized models.
 
 
 
@@ -205,8 +226,10 @@ Furthermore, the thesis should support future work on the data set by providing 
 
 ## Conventions and Notes
 
-A member of the organization will be referred to as an *example*. Each example is described by a set of *features* (explanatory variables) and has two *targets* (dependent variables) associated.
+* A member of the organization will be referred to as an *example*. Each example is described by a set of *features* (explanatory variables) and has two *targets* (dependent variables) associated.
 
-Software packages are denoted as `package` with specific modules contained in packages written as `package.module.Class`. Where available, software used is cited with the article in which it was published. Less established packages are cited by giving their public source code repositories.
+* The *current* promotion refers to the most recent promotion made, *current* donors are those examples who donated in response to the promotion.
 
-All self-written code, including the reproducible analysis process, is published online at [https://github.com/datarian/master-thesis-msc-statistics](https://github.com/datarian/master-thesis-msc-statistics). These resources, especially the folder `notebooks`, form an integral part of this thesis.
+* Software packages are denoted as `package` with specific modules contained in packages written as `package.module.Class`. Where available, software used is cited with the article in which it was published. Less established packages are cited by giving their public source code repositories.
+
+* All self-written code, including the reproducible analysis process, is published online at [https://github.com/datarian/master-thesis-msc-statistics](https://github.com/datarian/master-thesis-msc-statistics). These resources, especially the folder `notebooks`, form an integral part of this thesis.
