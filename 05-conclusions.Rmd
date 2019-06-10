@@ -1,0 +1,44 @@
+# Conclusions
+
+## Comparison With Cup Winners
+
+The KDD-CUP committee evaluated the results based on the net revenue generated on the validation sample. 
+The measure used was the sum (the actual donation amount - \$0.68) over all records for which the expected revenue (or predicted value of the donation) is over \$0.68. 
+This measure is simple, objective and a direct measure of profit. Table 2 depicts the results. The participants are listed based on the last column.
+
+
+
+## Achieved
+
+* A solid preprocessing package, albeit data set specific, extensible and easy to use
+
+## Shortcomings
+
+* Poor prediction performance: Non-gaussian distribution of $\hat{y}_b$, which violates assumptions for Heckman-correctio., bias-variance tradeoff
+
+* Problems with lax implementation of two-stage Heckman: @bushway2007magic
+
+Prediction Error $PE(z) = \sigma_{\epsilon}^2+\text{Bias}^2(\hat{f}(z))+\text{Var}(\hat{f}(z))$. When model more complex, local structure picked up, coefficient estimates suffer from high Var as more terms included in model -> more bias can lead to decrease in variance, decreasing PE.
+
+## Outlook
+
+* Next iteration:
+	* Try other imputation strategies:
+        * Median perhaps too simple, introducing bias
+        * Iterative imputer struggles with non-normal data due to linear models
+        * CART imputation could be interesting
+        * kNN problematic because of high dimensionality -> distances small, but maybe worth a try on powerful hardware
+
+    * Revise outliers:
+        * Relied on Yeo-Johnson transformation to normalize
+        * Other possibilities: 
+
+	* Feature Extraction
+		* Based on domain knowledge, create new features from promotion / giving history
+
+	* Feature Selection
+		* Tune boruta to select less features
+
+	* Choice of Models
+
+* Will be easy to work on these specific areas given the infrastructure created in this thesis

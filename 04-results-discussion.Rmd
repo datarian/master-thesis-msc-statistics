@@ -1,0 +1,249 @@
+# Results and Discussion
+
+Below, the results from data preprocessing, model evaluation, -selection and predictions are shown.
+
+## Preprocessing With Package kdd98
+
+The self-written package `kdd98` ensures consistent data provisioning. It handles downloading and preprocessing of the data set for both the learning and validation set. All preprocessing steps are trained on the learning data set. The individual trained transformations are persisted on disk. After training, the transformations can be applied on the validation data. This process is transparent to the user. It is enough to instantiate the data provider for either learning or validation data set and request the data. Examples for usage can be found in the Jupyter notebooks.
+
+The data sets can be obtained at the following intermediate steps from `kdd98.data_handler.KDD98DataProvider`:
+
+* **raw**, as imported through `pandas.read_csv()`
+* **preprocessed**, input errors removed, correct data types for all features, missing at random (MAR) imputations applied
+* **numeric**, after feature engineering (encoded categories, date and zip code transformations)
+* **imputed**, with missing values imputed
+* **all-relevant**, filtered down to a set of relevant features
+
+For some transformers, behavior can be controlled by specifying parameters. The package's architecture furthermore makes it easy to implement additional transformation steps.
+
+The source code, along with a short introduction, is available online^[`r make_github_link("kdd98")`].
+
+
+
+## Imputation
+
+The evaluation of several imputation strategies led to a straightforward approach: Categorical features had a *missing* level added during encoding (Section \@ref(methods-feature-engineering)). All other features were imputed by their median value to account for the skewed distributions. The notebook `4_Imputation.ipynb`^[`r make_github_link("notebooks", "4_Imputation.ipynb")`] contains details on the other approaches studied.
+
+In concordance with the cup documentation's requirements, constant and *sparse* features were dropped from the data set before imputation. The approach used in the R-package `caret` was implemented in a scikit-learn transformer for this purpose. Work from a blog post by Philip Goddard^[see [http://philipmgoddard.com/modeling/sklearn_pipelines](http://philipmgoddard.com/modeling/sklearn_pipelines), accessed on 4.6.2019] was adapted. The beauty of the method that is used in `caret` is that it is data type agnostic. It works on the number of unique values per feature and the frequency ratio between the top and second values by count.
+
+Missing data after removing sparse features is shown in Figure \@ref(fig:before-impute). The matrix displays the complete data set, with missing values indicated by white cells.
+
+(ref:before-impute-legend) Data before imputation of numeric features. The big complete block at the center is the US census data.
+
+```{r before-impute, fig.cap="(ref:before-impute-legend) ", echo=F}
+include_graphics("figures/imputation/missing-matrix.png")
+```
+
+The features with most and least missing values are shown in Figure \@ref(fig:most-fewest-missing). It is not surprising to find the *MONTHS_TO_DONATION_\** features among those with most missing because few examples respond to the promotions with a donation.
+
+Among the incomplete features with least missing values, we find several of the US census features. The *RFA_\** features give the status in reference to promotion $i$. All examples who did donate at some point before have an RFA status. Thus, we can see when new members were added from the missing values in these features because newly added members do not have an RFA status yet.
+
+(ref:m-f-missing-legend) Features with most (left) and fewest (right) missing values.
+
+```{r most-fewest-missing, fig.cap="(ref:m-f-missing-legend)", out.width="49%", fig.show="hold", echo=F}
+include_graphics(c("figures/imputation/most-missing.png", "figures/imputation/fewest-missing.png"))
+```
+
+## Feature Selection
+
+After preprocessing and feature engineering, `r ncol(py$numeric$data)` features were present in the data. Using boruta, `r ncol(py$all_relevant$data)` features were identified as important, resulting in a `r round(1 - ncol(py$all_relevant$data) / ncol(py$numeric$data),2)*100` % reduction of the number of features. For details, refer to notebook `5_Feature_Extraction.ipynb`^[`r make_github_link("notebooks", "5_Feature Extraction.ipynb")`].
+
+Three groups of features were selected.
+
+Features from the **giving history** broadly correspond to those used in classical RFM models mentioned in literature (Section \@ref(intro)). It is reassuring to find them among the all-relevant features:
+
+* Donation amount for promotion 14
+* Summary features: All-time donation amount, all-time number of donations, smallest, average and largest donation, donation amount of most recent donation
+* 24 Features on frequency and amount of donations as per the date of past donations
+* Time since first donation, Time since largest donation, time since last donation
+* Number of donations in response to card promotions
+* Number of months between first and second donation
+* An indicator for *star* donors
+
+The **promotion history** features can be interpreted as a measure of the importance of the examples to the organization. Those who receive many promotions are deemed valuable:
+
+* Number of promotions received
+* Number promotions in last 12 months before the current promotion
+* Number of card promotions received
+* Number of card promotions in last 12 months before the current promotion
+
+Features from the **US census** data seem to be concerned with the social status and wealth of the neighborhood of donors and by intuition make sense to be deemed relevant.
+
+* Median and average home value
+* Percentage of home values above some threshold (5 features)
+* Percentage of renters paying more than 500 $
+* DMA (designated market area, a geographical grouping)
+* Median / average family / house income
+* Per capita income
+* Percentage of households with interest, rental or dividend income
+* Percentage of adults with a Bachelor's degree
+* Percentage of people born in state of residence
+
+## Model Evaluation and Selection {#results-models}
+
+Model evaluation and -selection may be studied in detail in notebook `6_Model_Evaluation_Selection.ipynb`^[`r make_github_link("notebooks", "6_Model_Evaluation_Selection.ipynb")`]. As will be explained below, all classifiers performed rather weak and were highly influenced by the imbalance in the data. The best results were achieved by using SMOTE resampling. Random over-/undersampling and specifying class weights however did not have a significant impact on the models' performance.
+
+Among the classifiers evaluated, GLMnet consistently showed the best performance and was thus chosen.
+
+For the regression models, RF outperformed the other models, although the differences were less pronounced compared to the classifier results.
+
+### Classifiers
+
+During grid search, models were trained individually for best *F1* and *recall*. The models trained for high recall had only slightly worse precision than those trained for high F1, but at the same time better recall scores (see Jupyter notebook `6_Model_Evaluation_Selection.ipynb`). Therefore, the recall-trained models were considered for selection of the classifier.
+
+Evaluation was based on the recall scores, confusion matrices, receiver operating characteristic (ROC) indicating model performance through an area under the curve score (ROC-AUC) and  precision-recall (PR) curves.
+
+If we were to simply decide by recall score, the decision would be obvious, as shown in Figure \@ref(fig:recall-scores). SVM has ~74 % recall, with the next-best scores at 54 % and 53 %. However, it is important to also consider the false positives as those cost money and decrease net profit.
+
+(ref:recall-scores-legend) Comparison of recall scores for all classifiers evaluated.
+
+```{r recall-scores, fig.cap="(ref:recall-scores-legend)", echo=F}
+
+knitr::include_graphics("figures/learning/recall-scores.png")
+```
+
+The confusion matrices are shown in Figure \@ref(fig:conf-matrices). We aim for a classifier that has a high recall, predicting many donors correctly, and at the same time a low False Positive Rate (FPR). 
+
+We now see that for SVM, the trade off for high recall is also a high FPR. The false positives can be directly translated to cost: the 12'985 false positives in this case would amount to 8'830 $ at a unit cost of 0.68 $, while the 715 true positives generate an expected profit of only 8'808 $ (with a mean net profit of 12.32 $).
+
+Evidently, GLMnet an NNet have a relatively good balance of recall and FPR. GBM performs well for FPR, which means less money lost due to unit costs, but has a very low recall.
+
+GLMnet and NNet were also combined into a voting classifier. This classifier creates an ensemble that predicts through a majority vote, therefore compensating for the individual classifier's weaknesses. It exhibits a slightly lower recall for a slight decrease in FPR. Since *recall* was seen as being more important, it was not investigated further.
+
+(ref:conf-mat-legend) Confusion matrices for the 5 classifiers evaluated.
+
+```{r conf-matrices, fig.cap="(ref:conf-mat-legend)", fig.show="hold", out.width="33%", echo=F}
+knitr::include_graphics(c(
+	"figures/learning/confusion_matrix_model_RF_refit_recall.png",
+	"figures/learning/confusion_matrix_model_GBM_refit_recall.png",
+	"figures/learning/confusion_matrix_model_GLMnet_refit_recall.png",
+	"figures/learning/confusion_matrix_model_NNet_refit_recall.png",
+	"figures/learning/confusion_matrix_model_SVM_refit_recall.png",
+	"figures/learning/confusion_matrix_voting_classifier.png"
+	))
+```
+
+The ROC-AUC curve is constructed by evaluating the false positive rate (FPR) against the true positive rate (TPR) at various thresholds for the predicted class probabilities of examples in the training data. The closer the curve is to the top-left corner, the better a model performs (we have a large TPR and at the same time a low FPR for a wide range of thresholds). Looking at the ROC-AUC curves shown in Figure \@ref(fig:roc-auc-curve), we see that all classifiers performed rather weak. In the case of imbalanced data, the majority class dominates this metric. The false positive rate is $FPR = \frac{FP}{FP+TN}$. This means that as the false positives (FP) decrease due to an increasing threshold, FPR does not change a lot.
+
+(ref:roc-auc-legend) Comparison of ROC-AUC for the evaluated classifiers.
+
+```{r roc-auc-curve, fig.cap="(ref:roc-auc-legend)", echo=F}
+
+knitr::include_graphics("figures/learning/roc_auc_compared_refit_recall.png")
+```
+
+The PR curve with precision $P = \frac{TP}{TP+FP}$ plotted against recall $R = \frac{TP}{{TP+FN}}$ at different threshold values is sensitive to false positives and, since TN is not  involved, better suited for the imbalanced data at hand. Figure \@ref(fig:p-r-curve) shows the models in direct comparison. All of them suffer from low precision except for the highest threshold values. Again, this is caused by the high imbalance in the data.
+
+(ref:p-r-legend) Comparison of PR curves for the classifiers. Recall is plotted against precision for various threshold values of the predicted class probabilities. For good models, the curve is close to the top-right corner.
+
+```{r p-r-curve, fig.cap="(ref:p-r-legend)", echo=F}
+
+knitr::include_graphics("figures/learning/prec_rec_compared_refit_recall.png")
+```
+
+Using RF, the important features can be identified. The measure implemented in scikit-learn is the *Gini importance* as described in @breiman1984classification. It represents the total decrease in impurity (see Section \@ref(methods-rf)) due to nodes split on feature $f$, averaged over all trees in the forest. The most important features are all from the giving history, followed by the promotion history. US census features are not important (see Figure \@ref(fig:importances)).
+
+```{r importances, fig.cap="Feature importances determined with the RF classifier. Impurity is measured by Gini importance / mean decrease impurity. Error bars give bootstrap error on 50 repetitions.", echo=F, out.width="100%"}
+
+knitr::include_graphics("figures/learning/feature-importance-rf-classification.png")
+```
+
+### Regressors
+
+```{python regressor-stuff, include=F, cache=F}
+import pickle
+with open("models/target_d_transformer.pkl", "rb") as f:
+    target_d_transformer = pickle.load(f)
+box_cox_lambda = target_d_transformer.lambdas_[0]
+```
+
+Regressors were learned on a subset of the training data comprised of all donors: $\{\{x_i, y_i\}|y_{b,i} = 1\}$.
+
+The target was transformed using a Box-Cox transformation with parameter $\lambda=`r py$box_cox_lambda`$. The goal was to linearize the target to improve regression models' performance. The transformed data somewhat resembles a normal distribution, although there are several modes to be made out.
+
+```{r reg-targ-transform, fig.cap="Target before transformation (left) and after a Box-Cox transformation (right).", echo=F}
+
+knitr::include_graphics(c("figures/learning/target_d-distributions-before-after-transformation.png"))
+```
+
+The resulting distribution of predicted donation amounts on the training data is shown in Figure \@ref(fig:reg-distrib). Except for SVR, the models produce very similar results. We again find the multi-modal distribution (refer to Figure \@ref(fig:reg-targ-transform)). RF and SVR are relatively symmetric, while BR and ElasticNet produce right-skewed distributions that predict very large donation amounts for some examples.
+
+(ref:reg-distrib-legend) Distribution of (Box-Cox transformed) donation amounts for the four regressors evaluated.
+
+ ```{r reg-distrib, fig.cap="(ref:reg-distrib-legend)", echo=F}
+
+knitr::include_graphics("figures/learning/regressor-predictions-comparison.png")
+```
+The regressor for further use was selected by $R^2$ score on a test set (20% of the learning data was used). RF was the best performing model with $R^2 = 0.72$ (see Figure \@ref(fig:reg-eval)).
+
+(ref:reg-eval-legend) Evaluation metric $R^2$ for all regression models evaluated. The domain for $R^2$ is $(-\inf, 1]$.)
+
+```{r reg-eval, fig.cap="(ref:reg-eval-legend)", echo=F}
+
+knitr::include_graphics("figures/learning/regressor-score-comparison.png")
+```
+
+Again, RF enables to interpret the importance of features. The results (Figure \@ref(fig:importance-regression)) confirm an observation during EDA (Section \@ref())
+
+(ref:reg-importance-legend) Feature importances for the RF regressor. The amount of the last donation prior to the current promotion (LASTGIFT) is by far the most important feature for predicting the donation amount. It is followed by the average donation amount (AVGGIT) and the donation amounts for the three promotions prior to the current one. Intuitively, this makes sense.
+
+```{r reg-importance, fig.cap="(ref:reg-importance-legend)", echo=F}
+
+knitr::include_graphics("figures/learning/feature-importance-rf-regression.png")
+```
+
+## Prediction
+
+The intermediate steps for arriving at the final prediction will be examined in this section. For details on the steps, see `7_Predictions.ipynb^[`r make_github_link("notebooks", "7_Predictions.ipynb")`]
+
+### Conditional Prediction of the Donation Amount
+
+Compared to the true distribution of $y_d$ (Figure \@ref(fig:reg-targ-transform)), we see a similar distribution for $\hat{y}_d$, predicted on the learning data. The distribution is again multi-modal, with approximately the same median value. The predicted donation amounts are however strictly positive with a minimum of 3.2 $. The reason is that the predictions are biased due to the non-random sample of donors used to learn the regressor. Unfortunately, the high-dollar donations are missing. The highest prediction is 82.1 $.
+
+(ref:y-d-predict-legend) Conditionally predicted donation amounts, Box-Cox transformed (left) and on the original scale (right).
+
+```{r y-d-predict, fig.cap="(ref:y-d-predict-legend)", echo=F}
+
+knitr::include_graphics("figures/predictions/hat_y_d-distributions-before-after-transformation.png")
+```
+
+### Profit Optimization
+
+The correction factor $\alpha$, used to account for bias introduced by learning the regression models on a non-random sample, was found as described in section \@ref(methods-prediction). First, estimated net profit $\hat{\Pi}$ was calculated using equation \@ref(eq:pi-alpha) for a grid of $\alpha$ values in $[0,1]$. Then, a polynomial model and a cubic spline were fitted to the data and $\alpha$ optimized subsequently.
+
+As can be observed in Figure \@ref(fig:alpha-grid), the region of $\alpha$ for high profit is narrow. This is not surprising given the distribution of $\hat{y}_d$ (Figure \@ref(fig:y-d-predict)), which is narrowly concentrated around ~15 $. Furthermore, the curve is constant over much of the domain, meaning that all examples were selected from approximately $\alpha=0.15$. The shape of this function makes fitting a polynomial difficult. The cubic spline was therefore used to find the optimal value $\alpha^*=0.02$.
+
+(ref:alpha-grid-legend) Expected profit for a range of $\alpha$ values in $[0,1]$ with overlayed cubic spline and polynomial function of order 12. Shown are the results for the training data set. $\alpha^*$ was found by considering the roots of the derivate of the cubic spline, choosing the root where expected profit was highest.
+
+```{r alpha-grid, fig.cap="(ref:alpha-grid-legend)", echo=F}
+knitr::include_graphics("figures/predictions/comparison-alpha-profit-models.png")
+```
+
+### Final Prediction
+
+For final predictions, the classifier and regressor were first fitted on the complete learning data set. Then, $\alpha^*$ was calculated ($\alpha^* = 0.023$) and finally, the test data set was used for prediction. The process is documented in notebook `7_Prediction.ipynb`^[`r make_github_link("notebooks", "7_Prediction.ipynb")`].
+
+The learned estimators were then applied on the test data set. The results are shown in Table \@ref(tab:prediction-results) together with the winners of the cup. The model trained here selects less donors compared to the top-ranked participants and has a higher mean donation amount. Nevertheless, net profit is lower and thus the model is placed on the 4th rank.
+
+The theoretical maximum is `r 72776` $: $\sum_{i=1}^n \mathbb{1}_{\{\text{TARGET}_{D,i} > 0.0\}}*(\text{TARGET}_{D,i} - u)$ with $u$ the unit cost of 0.68 $ per mailing.
+
+
+(ref:prediction-results-legend) Prediction results for the test data set (in color) and the results of the cup-winners. $N^*$ denotes number of examples selected.
+
+
+```{r prediction-results, echo=F}
+
+predictions <- t(data.frame(GainSmarts = c(56330, -0.68, 0.26, 5.57, 499.32, 14712, 14712/72776),
+                            SAS = c(55838, -0.68, 0.26, 5.64, 499.32, 14662, 14662/72776),
+                            Quadstone = c(57836, -0.68, 0.24, 5.66, 499.32, 13954, 13954/72776),
+                            Own = c(40984, -0.68, 0.338, 6.28, 499.32, 13877, 13877/72776),
+                            CARRL = c(55650, -0.68, 0.25, 5.61, 499.32, 13825, 13825/72776)))
+colnames(predictions) <- c('N*','Min','Mean','Std', 'Max','Net Profit' ,'Percent of Maximum')
+
+knitr::kable(predictions,
+             booktabs = T,
+             caption = "(ref:prediction-results-legend)") %>%
+    kableExtra::kable_styling(latex_options=c("hold_position", position="Center")) %>%
+    kableExtra::add_header_above(c(" "=1," "=1,"Amount, $"=5, " "=1)) %>%
+    kableExtra::row_spec(4, bold=TRUE, color="#39a8d1")
+```

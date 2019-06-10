@@ -1,10 +1,9 @@
 ---
 author: "Florian Hochstrasser"
 date: "`r Sys.Date()`"
-description: Thesis for the programme Master in Statistics at the University of Neuchâtel,
-  Switzerland.
+title: Profit maximization for direct marketing campaigns
+description: Master Thesis submitted in partial fulfillment of the requirements for the degree of Master of Science in Statistics
 site: bookdown::bookdown_site
-link-citations: yes
 papersize: a4
 fontsize: 11pt
 mainfont: Times New Roman
@@ -12,12 +11,17 @@ sansfont: Lato
 monofont: Source Code Pro
 toc-depth: 2
 bibliography: thesis.bib
-biblio-style: apalike
+biblio-style: "apalike"
+link-citations: true
 documentclass: scrbook
-classoption: DIV=12,captions=tableheading,oneside
+classoption: DIV=12,captions=tableheading,oneside,titlepage
 always_allow_html: yes
+output: 
+  html_document: 
+    df_print: kable
 ---
 
+# Introduction {#intro}
 ```{r load_libraries, include=FALSE,results='hide'}
 library(tidyverse)
 library(reticulate)
@@ -28,11 +32,13 @@ library(DiagrammeR)
 library(DiagrammeRsvg)
 library(rsvg)
 library(stringr)
+library(readtext)
+options(scipen=999)
 ```
 
 ```{r global-helpers, include=FALSE,results='hide'}
 
-github_base_url = "https://github.com/datarian/master-thesis-code/tree/master"
+github_base_url = "https://github.com/datarian/master-thesis-msc-statistics/tree/master"
 
 make_github_link <- function(..., text = ""){
   subdirs <- list(...)
@@ -70,17 +76,38 @@ knitr::opts_chunk$set(error=TRUE,
                       fig.asp=0.618,
                       fig.align="center",
                       fig.path = "./figures/",
-                      out.width = "70%",
+                      out.width = "60%",
                       crop = TRUE,
                       tidy=TRUE)
 
 knitr::opts_knit$set(eval.after='fig.cap',
-                     verbose=TRUE,
-                     digits=2)
+                     verbose=TRUE)
 
 # Setup reticulate as the python enginge
 knitr::knit_engines$set(python = reticulate::eng_python)
 
+source_hook = function(x, options) {
+    paste("\\begin{lstlisting}[language=Python,stepnumber=2,basicstyle=\\footnotesize]\n", x, 
+        "\\end{lstlisting}\n", sep = "")
+}
+
+output_hook = function(x, options) {
+    paste("\\begin{lstlisting}[basicstyle={\\ttfamily},basicstyle=\\footnotesize]\n", x, 
+        "\\end{lstlisting}\n", sep = "")
+}
+
+hook_inline = knitr::knit_hooks$get('inline')
+inline_hook <- function (x) {
+  if (is.numeric(x)) {
+    res <- ifelse(x == round(x),
+      prettyNum(x, big.mark="'"),
+      prettyNum(x, big.mark="'", digits=3)
+    )
+    paste(res, collapse = ", ")
+  } else {
+    hook_inline(x)
+  } 
+}
 
 ## a common hook for messages, warnings and errors
 hook_lst_bf = function(x, options) {
@@ -88,61 +115,53 @@ hook_lst_bf = function(x, options) {
         "\\end{lstlisting}\n", sep = "")
 }
 
-knitr::knit_hooks$set(source = function(x, options) {
-    paste("\\begin{lstlisting}[language=Python,stepnumber=2,basicstyle=\\footnotesize]\n", x, 
-        "\\end{lstlisting}\n", sep = "")
-}, output = function(x, options) {
-    paste("\\begin{lstlisting}[basicstyle={\\ttfamily},basicstyle=\\footnotesize]\n", x, 
-        "\\end{lstlisting}\n", sep = "")
-}, warning = hook_lst_bf, message = hook_lst_bf, error = hook_lst_bf)
 
-
-inline_hook <- function (x) {
-  if (is.numeric(x)) {
-    res <- ifelse(x == round(x),
-      sprintf("%d", x),
-      sprintf("%.3f", x)
-    )
-    paste(res, collapse = ", ")
-  }
-}
-
-
-knitr::knit_hooks$set(inline = inline_hook,
-                      rgl = rgl::hook_rgl,
-                      crop = knitr::hook_pdfcrop,
-                      optipng = knitr::hook_optipng)
-
+knit_hooks$set(inline = inline_hook,
+               rgl = rgl::hook_rgl,
+               crop = knitr::hook_pdfcrop,
+               optipng = knitr::hook_optipng,
+               source = source_hook,
+               output = output_hook,
+               warning = hook_lst_bf,
+               message = hook_lst_bf,
+               error = hook_lst_bf)
 ```
 
 
 ```{python python-init, results="hide", echo=F, cache=F}
 import os
 os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = 'C:/Users/flori/Anaconda3/Library/plugins/platforms'
-
-import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
+import seaborn as sns
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import glmnet_python as glmnet
+
+# Load custom code
 import kdd98.data_handler as dh
 from kdd98.config import Config
-import numpy as np
+import pathlib
+import pickle
+import pathlib
 
-import mglearn
-import seaborn as sns
-from cycler import cycler
+Config.set("model_store", pathlib.Path("models"))
 
 plt.rc('font',**{'family':'sans-serif','sans-serif':['Lato']})
 plt.rc('font',**{'family':'serif','serif':['Times']})
 #plt.rc('text', usetex=True)
 
-sns.set_context("paper")
+sns.set_palette(Config.get("qual_palette"))
+sns.set(color_codes=True)
+sns.set_style('ticks')
+sns.axes_style({'spines.right': False,
+                'axes.spines.top': False})
 
-#set_matplotlib_formats('pdf', 'png')
-plt.rcParams['axes.labelsize'] = 14
-plt.rcParams['xtick.labelsize'] = 12
-plt.rcParams['ytick.labelsize'] = 12
-plt.rcParams['figure.figsize'] = (14, 10)
+plt.rcParams['axes.labelsize'] = 20
+plt.rcParams['xtick.labelsize'] = 18
+plt.rcParams['ytick.labelsize'] = 18
+plt.rcParams['figure.figsize'] = (7*1.618, 7)
 plt.rcParams['figure.dpi'] = 300
-plt.rcParams['image.cmap'] = "viridis"
 plt.rcParams['image.interpolation'] = "none"
 plt.rcParams['savefig.bbox'] = "tight"
 plt.rcParams['lines.linewidth'] = 2
@@ -150,42 +169,67 @@ plt.rcParams['legend.numpoints'] = 1
 plt.rcParams['legend.fancybox'] = True
 plt.rcParams['legend.framealpha'] = 0.4
 
-sns.set(color_codes=True)
-sns.set_style('ticks')
-sns.axes_style({'spines.right': False,
-                'axes.spines.top': False})
-sns.set_palette(Config.get("color_palette"))
+sns.set_palette(Config.get("qual_palette"))
+sns.set_context("talk")
+
+IMAGES_PATH = pathlib.Path(pathlib.Path.cwd()/'figures')
+
+pathlib.Path(IMAGES_PATH).mkdir(parents=True, exist_ok=True)
+pathlib.Path(IMAGES_PATH,'methods').mkdir(parents=True, exist_ok=True)
+
+
+def save_fig(fig_id, tight_layout=True, fig_extension=["pdf", "png"], resolution=300):
+    if tight_layout:
+        plt.tight_layout()
+    [
+        plt.savefig(pathlib.Path(IMAGES_PATH, fig_id + "." + f),
+                    format=f,
+                    dpi=resolution,
+                    transparent=True,
+                    bbox_inches='tight') for f in fig_extension
+    ]
+
 ```
 
-```{python data-specs, echo=F, results='hide', cache=F}
-import kdd98.data_handler as dh
-import pandas as pd
-date_features = dh.DATE_FEATURES
-binary_features = dh.BINARY_FEATURES
-data_provider = dh.KDD98DataProvider("cup98LRN.txt")
-raw_data = data_provider.raw_data
-int_features = raw_data.select_dtypes(include="integer").columns.values.tolist()
-float_features = raw_data.select_dtypes(include="float").columns.values.tolist()
-category_features = raw_data.select_dtypes(include="category").columns.values.tolist()
-object_features = raw_data.select_dtypes(include="object").columns.values.tolist()
+Customer segmentation techniques are used in marketing to identify certain groups of customers in order to produce offers tailored to these groups. The ultimate goal is to maximize profit, which is achieved also through customer retention. In the case of direct marketing, especially when unit costs (the cost associated with addressing a customer) are significant, employing some customer segmentation technique is highly beneficial in terms of profit.
 
-stats = pd.DataFrame({"Integer": ["Discrete features, no missing values", len(int_features)],
-                      "Float": ["Continuous features and discrete features with missing values", len(float_features)],
-                      "Categorical": ["Nominal and ordinal features", len(category_features)],
-                      "Object": ["Features with alphanumeric values", len(object_features)],
-                      "Total": [" ", raw_data.shape[1]]}).transpose()
-stats.columns = ["Data content", "Number of features"]
-stats.index.name = "Data type"
-```
+Historically, the RFM (Recency, Frequency, Monetization) model has been employed with success in designing direct marketing campaigns @kohavi2004visualizing. While definitions vary, generally recency refers to when the last purchase was made. Frequency denotes number of purchases in a certain time period. Monetization can represent the amount of the last purchase, cumulative spending or the average amount spent per purchase.
 
-# Abstract {-}
+The RFM model proposed by @hughes-rfm-boost-response is often used: Customers are binned into 5 segments for each of the RFM features individually and labeled ordinal, resulting in 125 cells that can then be used to identify customers most likely to respond. The best customers have a high score for each of the 3 features. The drawback of this approach is that generally, marketing efforts go towards the best customer segment.
 
-It is known that....
+Over time, different approaches, such as Na¨ıve Bayes, Random Forests (see @stubseid2018), Chi-squared automatic interaction detection and logistic regression were proposed. While in some situations, these alternatives outperformed RFA (see @MCCARTY2007656), RFA remained popular because of it's intuitive interpretation.
 
-This work addressed the problem from the perspective of...
-
-It could be shown that...
-
-Henceforth, it should be considered that...
+In this work, a radically data-driven approach was chosen. Several machine learning algorithms were employed and compared to predict potential donors and the net profit generated instead of building on previously developed, specialized models.
 
 
+
+## Task Background
+
+A U.S. American veterans organization regularly conducts direct marketing campaigns, asking their members for donations (called gifts in the documentation) for the treatment of veterans with spinal injuries. The goal for the organization is to maximize net profit from their campaigns.
+
+Only a small proportion of the members donate in reply to a campaign, while each letter sent out has a unit cost of 0.68 $US. In order to maximize profit, it is therefore desirable to only mail members who are likely to donate.
+
+The members are grouped, among other criteria, by the recency of their last gift. Of these groups, the so-called *lapsed* donors are of particular interest. These are members who made their last gift to the organization 13 to 24 months prior to a given campaign.
+This group is important for two reasons: Firstly, the probability of a member donating decreases with the time the member has not donated. Enticing these lapsed donors to give again therefore maintains an active member base. Secondly, the organization has found that there is a negative correlation between the dollar amount donated and the probability to respond to a campaign. This means it is important to include the most unlikely donors in future mailings because if they donate, the net revenue is particularly large. If these unlikely donors would be suppressed from future campaigns, the gains from additional *small dollar* lapsed donors would not offset the losses from the potential *high dollar* donors.
+
+The data at hand was distributed for the purpose of the KDD-CUP of the year 1998^[For an archive of past cups, see [SIGKDD - KDD Cup](http://www.kdd.org/kdd-cup)]. The cup was until recently held yearly under the aegis of the special interest group on Knowledge Discovery and Data Mining (SIGKDD), which itself is part of the Association for Computing Machinery^[https://acm.org](ACM).
+
+
+
+## Goal
+
+The ultimate goal is to beat the winner of the original cup in terms of the predicted net profit for the promotion. For this, a complete data analysis including data preprocessing, model evaluation and -selection and final prediction was to be performed. A requirement set by the supervisor of this thesis was that the solution be demonstrated using Python as a programming environment.
+
+Furthermore, the thesis should support future work on the data set by providing a solid basis especially on the preprocessing of the data.
+
+
+
+## Conventions and Notes
+
+* A member of the organization will be referred to as an *example*. Each example is described by a set of *features* (explanatory variables) and has two *targets* (dependent variables) associated.
+
+* The *current* promotion refers to the most recent promotion made, *current* donors are those examples who donated in response to the promotion.
+
+* Software packages are denoted as `package` with specific modules contained in packages written as `package.module.Class`. Where available, software used is cited with the article in which it was published. Less established packages are cited by giving their public source code repositories.
+
+* All self-written code, including the reproducible analysis process, is published online at [https://github.com/datarian/master-thesis-msc-statistics](https://github.com/datarian/master-thesis-msc-statistics). These resources, especially the folder `notebooks`, form an integral part of this thesis.
