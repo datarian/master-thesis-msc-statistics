@@ -1,4 +1,4 @@
-name: ma-thesis-fh
+name: msc-thesis-fh
 channels:
   - brittainhard
   - file:///data/anaconda/envs/py36/conda-bld
@@ -6,27 +6,28 @@ channels:
   - defaults
   - conda-forge
 dependencies:
-  - anaconda=custom=py36hbbc8b67_0
+  - anaconda
   - boruta=0.1.5
   - cartopy=0.17.0
   - category_encoders=2.0.0
   - conda
   - conda-build
-  - cycler=0.10.0
-  - geographiclib=1.49
+  - cycler
+  - geographiclib
   - glmnet=2.1.1
   - imbalanced-learn=0.4.3
-  - jupyter=1.0.0
+  - jupyter
   - jupyter_contrib_core
   - jupyter_contrib_nbextensions
   - jupyter_core
   - jupyter_nbextensions_configurator
   - knnimpute=0.1.0
   - missingno=0.4.1
-  - nbconvert=5.5.0
-  - nbformat=4.4.0
-  - notebook=5.7.8
+  - nbconvert
+  - nbformat
+  - notebook
   - numpy=1.16.3
+  - pandas=0.23.4
   - pip
   - py-xgboost=0.80
   - python=3.6.7
