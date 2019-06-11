@@ -1,11 +1,11 @@
 # Conclusions
 
-## Comparison With Cup Winners
+## Comparison With Cup Winner
 
-The KDD-CUP committee evaluated the results based on the net revenue generated on the validation sample. 
-The measure used was the sum (the actual donation amount - \$0.68) over all records for which the expected revenue (or predicted value of the donation) is over \$0.68. 
-This measure is simple, objective and a direct measure of profit. Table 2 depicts the results. The participants are listed based on the last column.
+The winner, Urban Science Applications with their proprietary software Gainsmarts, chose a two-step approach as well. In the first step, a logistic regression was used. The second step consisted of linear regression.
+Their software automated feature-engineering (by trying several different transformations for each feature) and feature selection through an expert system^[see [https://www.kdnuggets.com/meetings-past/kdd98/gain-kddcup98-release.html](https://www.kdnuggets.com/meetings-past/kdd98/gain-kddcup98-release.html)]. They selected a distinct subset of features for each step.
 
+No information is available on SAS's apprach. Decisionhouse's Quadstone on 3rd rank also invested heavily in feature engineering. The proprietary software was specially designed for customer behaviour modeling. They used decision trees and scorecard models in combination.
 
 
 ## Achieved

@@ -17,7 +17,7 @@ bookdown::pdf_book:
         in_header: preamble.tex
         before_body: title.tex
     latex_engine: xelatex
-    keep_tex: no
+    keep_tex: yes
     highlight: pygments
     pandoc_args: [
         "--top-level-division=chapter",

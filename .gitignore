@@ -5,6 +5,7 @@
 MA_Report.Rproj
 *.RData
 _bookdown_files/Master_Thesis_Florian_Hochstrasser_cache/*
+_bookdown_files/**
 data/**
 *.log
 ma-thesis.sublime-project

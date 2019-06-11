@@ -6,7 +6,7 @@ Below, the results from data preprocessing, model evaluation, -selection and pre
 
 The self-written package `kdd98` ensures consistent data provisioning. It handles downloading and preprocessing of the data set for both the learning and validation set. All preprocessing steps are trained on the learning data set. The individual trained transformations are persisted on disk. After training, the transformations can be applied on the validation data. This process is transparent to the user. It is enough to instantiate the data provider for either learning or validation data set and request the data. Examples for usage can be found in the Jupyter notebooks.
 
-The data sets can be obtained at the following intermediate steps from `kdd98.data_handler.KDD98DataProvider`:
+The data sets can be obtained at the following intermediate steps from \\ `kdd98.data_handler.KDD98DataProvider`:
 
 * **raw**, as imported through `pandas.read_csv()`
 * **preprocessed**, input errors removed, correct data types for all features, missing at random (MAR) imputations applied
@@ -14,7 +14,7 @@ The data sets can be obtained at the following intermediate steps from `kdd98.da
 * **imputed**, with missing values imputed
 * **all-relevant**, filtered down to a set of relevant features
 
-For some transformers, behavior can be controlled by specifying parameters. The package's architecture furthermore makes it easy to implement additional transformation steps.
+For some transformers, behavior can be controlled by specifying parameters (which has to be done in the code). The package's architecture makes it easy to implement additional transformation steps.
 
 The source code, along with a short introduction, is available online^[`r make_github_link("kdd98")`].
 
@@ -22,9 +22,9 @@ The source code, along with a short introduction, is available online^[`r make_g
 
 ## Imputation
 
-The evaluation of several imputation strategies led to a straightforward approach: Categorical features had a *missing* level added during encoding (Section \@ref(methods-feature-engineering)). All other features were imputed by their median value to account for the skewed distributions. The notebook `4_Imputation.ipynb`^[`r make_github_link("notebooks", "4_Imputation.ipynb")`] contains details on the other approaches studied.
+The evaluation of several imputation strategies led to a straightforward approach: Categorical features had a *missing* level added during encoding (Section \@ref(methods-feature-engineering)). All other features were imputed by their median value to account for the skewed distributions. The notebook *4_Imputation.ipynb*^[`r make_github_link("notebooks", "4_Imputation.ipynb")`] contains details on the other approaches studied.
 
-In concordance with the cup documentation's requirements, constant and *sparse* features were dropped from the data set before imputation. The approach used in the R-package `caret` was implemented in a scikit-learn transformer for this purpose. Work from a blog post by Philip Goddard^[see [http://philipmgoddard.com/modeling/sklearn_pipelines](http://philipmgoddard.com/modeling/sklearn_pipelines), accessed on 4.6.2019] was adapted. The beauty of the method that is used in `caret` is that it is data type agnostic. It works on the number of unique values per feature and the frequency ratio between the top and second values by count.
+In concordance with the cup documentation's requirements (Appendix \@ref(data-set-documentation)), constant and *sparse* features were dropped from the data set before imputation. The approach used in the R-package `caret` was implemented in a scikit-learn transformer for this purpose. Work from a blog post (@goddard2017variance) was adapted. The beauty of the method used in `caret` is that it is data type agnostic. It works on the number of unique values per feature and the frequency ratio between the top and second values by count.
 
 Missing data after removing sparse features is shown in Figure \@ref(fig:before-impute). The matrix displays the complete data set, with missing values indicated by white cells.
 
@@ -183,7 +183,7 @@ The regressor for further use was selected by $R^2$ score on a test set (20% of 
 knitr::include_graphics("figures/learning/regressor-score-comparison.png")
 ```
 
-Again, RF enables to interpret the importance of features. The results (Figure \@ref(fig:importance-regression)) confirm an observation during EDA (Section \@ref())
+Again, RF enables to interpret the importance of features. The results (Figure \@ref(fig:reg-importance)) confirm an observation during EDA (Section \@ref())
 
 (ref:reg-importance-legend) Feature importances for the RF regressor. The amount of the last donation prior to the current promotion (LASTGIFT) is by far the most important feature for predicting the donation amount. It is followed by the average donation amount (AVGGIT) and the donation amounts for the three promotions prior to the current one. Intuitively, this makes sense.
 

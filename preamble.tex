@@ -9,47 +9,52 @@
 \usepackage{wrapfig}
 \usepackage{float}
 \usepackage{colortbl}
-\usepackage{pdflscape}
 \usepackage{tabu}
 \usepackage{threeparttable}
 \usepackage{threeparttablex}
 \usepackage[normalem]{ulem}
 \usepackage{makecell}
 \usepackage{unicode-math}
-\usepackage{mathptmx}
+%\usepackage{mathptmx}
 
+\usepackage{microtype} % Slightly tweak font spacing for aesthetics
 \usepackage[font=small]{caption}
-\usepackage{subfig}
 \usepackage[scaled=0.8]{sourcecodepro}
 
-%\usepackage{mathpazo}
-%\usepackage[T1,small,euler-digits]{eulervm}
-
 \usepackage{listings}
-\usepackage{subfig}
+
 
 %% Typography defaults
-\usepackage{dsfont}
 \usepackage[english]{babel}
-\usepackage{microtype} % better management of overfulls
-
-\usepackage[bottom]{footmisc}
 
 % Compact tables
 \renewcommand{\arraystretch}{0.9}
 
 % Place figures in current section
-\usepackage[section]{placeins}
+\usepackage{placeins}
 
-\providecommand{\tightlist}{%
-  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{enumitem}
+\setlist[itemize]{noitemsep}
+
+%\providecommand{\tightlist}{%
+%  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 
 \usepackage{graphicx}
 \graphicspath{ {./figures/} }
 
 \usepackage{float}
 
-\usepackage{algorithm2e}
+% make placeins work for subsections as well
+\makeatletter
+\AtBeginDocument{%
+  \expandafter\renewcommand\expandafter\subsection\expandafter
+    {\expandafter\@fb@secFB\subsection}%
+  \newcommand\@fb@secFB{\FloatBarrier
+    \gdef\@fb@afterHHook{\@fb@topbarrier \gdef\@fb@afterHHook{}}}%
+  \g@addto@macro\@afterheading{\@fb@afterHHook}%
+  \gdef\@fb@afterHHook{}%
+}
+\makeatother
 
 \newcommand\abstractname{Abstract}  %%% here
 \makeatletter

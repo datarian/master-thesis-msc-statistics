@@ -2,42 +2,38 @@
 
 ## Tools Used
 
-The problem itself was solved using the python language, making use of established packages. From the scipy ecosystem: `numpy`, a library for multidimensional arrays and vectorized operations on them [@oliphant2006guide]; `scipy`, the scipy library for scientific computing [@mckinney-proc-scipy-2010]; `pandas`, python library for data analysis [@mckinney2011pandas]; `matplotlib`, for high-quality plots [@hunter2007matplotlib]. Fruthermore: the machine learning library`scikit-learn` [@scikit-learn] and the high-level data visualization library `seaborn` [ @waskom2014seaborn].
+The problem itself was solved using the python language, making use of established packages. From the scipy ecosystem: `numpy`, a library for multidimensional arrays and vectorized operations on them [@oliphant2006guide]; `scipy`, a library for scientific computing [@mckinney-proc-scipy-2010]; `pandas`, a library for data analysis [@mckinney2011pandas]; `matplotlib`, for high-quality plots [@hunter2007matplotlib]. Furthermore: the machine learning library`scikit-learn` [@scikit-learn] and the high-level data visualization library `seaborn` [ @waskom2014seaborn].
 
 Calculations were run in the cloud on a linux virtual machine^[For details, refer to: [https://docs.microsoft.com/en-us/azure/machine-learning/data-science-virtual-machine/overview](https://docs.microsoft.com/en-us/azure/machine-learning/data-science-virtual-machine/overview), accessed on 5.6.2019].
 
 Except for the development of a helper packge, most programming was performed in interactive Jupyter notebooks [@Kluyver:2016aa].
 
-The report was written in `rmarkdown` [@allaire2016rmarkdown] using `knitr` [@xie2015] and `bookdown` [@xie2016bookdown] to render the document into several output formats.
+The report was written in rmarkdown [@allaire2016rmarkdown] using `knitr` [@xie2015] and `bookdown` [@xie2016bookdown] to render the document into several output formats.
 
 All work was tracked in version control.
 
 
 ## Data Handling
 
-The complete data is distributed pre-split into a learning and validation data set.
+The learning data set was used to establish the complete analysis pipeline, i.e. preprocessing, imputation and feature selection, model evaluation and -selection and prediction method. The test data was not touched until making the final prediction, subjecting it to the complete pipeline determined on the learning data.
 
-The learning data set was used to establish the complete analysis pipeline, i.e. determining necessary preprocessing, exploratory data analysis, model evaluation and -selection and establishing the  prediction method. Only then was the test data set used to make the final prediction.
-
-In accordance with recommendations in @friedman2001elements, the learning data set was split 80/20 into training and validation sets (see Figure \@ref(fig:data-splitting)). The training set was used to train different models while the validation set served to tune hyperparameters. The split was performed using a stratified sampling algorithm to preserve target class frequencies.
-
-The validation data set (named *test* data set hereafter) was treated as unseen data. Once the analysis pipeline was established, the validation data was used to make the final prediction, subjecting the data to the pipeline trained on the learning data set.
+In accordance with recommendations in @friedman2001elements, the learning data set was further split 80/20 into training and validation sets (see Figure \@ref(fig:data-splitting)). The training set was used to train different models while the validation set served to tune hyperparameters. The split was performed using a stratified sampling algorithm to preserve target class frequencies based on the response indicator.
 
 ```{r data-splitting, fig.cap="Data set use for training and predictions.", echo=F, results='asis', out.width="50%"}
 data_graph <- grViz(
   "
   digraph d_split {
   
-    graph [overlap=false, fonsize=18, layout=dot, nodesep=1.4]
+    graph [overlap=false, fonsize=18, fontname=Lato, layout=dot, nodesep=1.4]
     
-    node [fontname=Lato, fillcolor=white, shape=circle]
-    C [label='Complete Data Set\n191779 examples', width=3.0]
-    L [label='Learning\n95412 examples', width=2.0]
-    T [label='Test\n96367 examples', width=2.0]
-    LT [label='Training', width=1.5]
-    LV [label='Validation', width=0.5]
+    node [fillcolor=white, shape=circle]
+    C [label=<<b>Complete Data Set</b><br />191'779 examples>, width=3.0]
+    L [label=<<b>Learning</b><br />95'412 examples>, width=2.0]
+    T [label=<<b>Test</b><br />n96'367 examples>, width=2.0]
+    LT [label=<<b>Training</b>>, width=1.5]
+    LV [label=<<b>Validation</b>>, width=0.5]
     
-    edge [color = black, penwidth=0.95, fontname=Lato]
+    edge [color = black, penwidth=0.95]
     C -> L [label='used for\npreprocessing,\n training models']
     C -> T [label='kept back\n for final predicitons']
     L -> LT [label='  80 % of data']
@@ -81,17 +77,15 @@ MAR values in the sense of @rubin1976inference are missing conditionally on othe
 
 ### Feature Engineering {#methods-feature-engineering}
 
-During feature engineering, all non-numeric (i.e. categorical) features were encoded into numeric values. Also, several features were transformed to better usable representations (converting dates to time deltas, converting zip codes to coordinates). Care was taken to keep the dimensionality of the data set as low as possible. The result of this transformation step was an all-numeric data set usable for downstream learning. The transformations applied in feature engineering are described in detail in the Jupyter notebook *2_Feature_Engineering.ipynb*^[`r make_github_link("notebooks", "2_Feature_Engineering.ipynb")`].
+The transformations applied during feature engineering are described in detail in the Jupyter notebook *2_Feature_Engineering.ipynb*^[`r make_github_link("notebooks", "2_Feature_Engineering.ipynb")`]. The result of this step was an all-numeric data set usable for downstream learning.
 
-For ordinal features, manual mappings from alphanumeric levels to integer numbers were specified.
-
-For nominal features, two encoding techniques were employed, depending on the number of levels:
+All non-numeric (i.e. categorical) features were encoded as numeric representations. For ordinal features, manual mappings from alphanumeric levels to integer numbers were specified. For nominal features, two encoding techniques provided in package `categorical-encoding`^[Availabe at: [https://github.com/scikit-learn-contrib/categorical-encoding/](https://github.com/scikit-learn-contrib/categorical-encoding/), accessed on 5.6.2019] were employed, depending on the number of levels:
 
 * One-hot encoding for $\leq 10$ levels: For each level of a categorical feature, a new feature is created. An additional feature may be added to indicate missing values. Exactly one of these new features is set to $1$, indicating the original level.
 
 * Binary encoding, $> 10$ levels: The levels of the categorical are first transformed ordinally (i.e. to a sequence of integer numbers). Then, these numbers are taken to the base of 2. (A $5$, for example, becomes `101`). According to the number of levels, new features for the binary digits are created. As an example: To represent 60 levels, 6 features are required ($2^6=64$).
 
-The package `categorical-encoding`^[Availabe at: [https://github.com/scikit-learn-contrib/categorical-encoding/](https://github.com/scikit-learn-contrib/categorical-encoding/), accessed on 5.6.2019] was used for encoding.
+Also, several features were transformed to better usable formats (i.e. converting dates to time deltas, converting zip codes to coordinates). Care was taken to keep the dimensionality of the data set as low as possible. 
 
 
 ### Imputation
@@ -100,7 +94,7 @@ Three different approaches were evaluated. The details are shown in Jupyter note
 
 #### K-Nearest Neighbors
 
-In short, the kNN algorithm by @troyanskaya2001missing works as follows:
+kNN imputation uses those examples that are "near" an example with a missing value in feature $f$ to impute the value. In short, the kNN algorithm by @troyanskaya2001missing implemented in `missingpy`^[Available at: [https://github.com/epsilon-machine/missingpy](https://github.com/epsilon-machine/missingpy), accessed on 11.6.2019] works as follows:
 
 1. Construct the distance matrix $D$ with distances between examples.
 2. Order all features descending by number of missing values.
@@ -108,11 +102,11 @@ In short, the kNN algorithm by @troyanskaya2001missing works as follows:
 
 The algorithm runs until all values are imputed.
 
-While very attractive because of the intuitive approach and because it preserves data types in the features, the distance matrix is very memory-intensive for large data sets. Also, it is required to remove features with > 80 % missing values first.
+While very attractive because of the intuitive approach and because it preserves data characteristics (continuous / discrete, categoricals) in the features, the distance matrix is very memory-intensive for large data sets. Also, it is required to remove features with > 80 % missing values first.
 
 #### Iterative imputation
 
-Iterative imputation, implemented in package `fancyimpute`^[Available at: [https://pypi.org/project/fancyimpute/](https://pypi.org/project/fancyimpute/), accessed on 30.06.2019], works similar to the R-package `mice` (see @buuren2011mice). Before imputation, all features have to be transformed to numerical data types and transformed to normal distributions.
+Iterative imputation, implemented in package `fancyimpute`^[Available at: [https://pypi.org/project/fancyimpute/](https://pypi.org/project/fancyimpute/), accessed on 30.06.2019], works similar to the R-package `mice` (see @buuren2011mice). Before imputation, all features have to be transformed to numerical data types and normalized because the underlying model is a linear regresssion.
 
 In short, the algorithm works as follows:
 
@@ -123,23 +117,22 @@ In short, the algorithm works as follows:
 
 #### Simple Imputation and Categorical Indicator
 
-This approach is straightforward: Numeric features are imputed by their median value to make the imputation robust to skewed distributions. The `sklearn.impute.SimpleImputer` was used for this.
+This approach is straightforward: Numeric features are imputed by their median value to make the imputation robust to skewed distributions.
 
-As this implementation only supports numerical data types, categorical features were treated separately during feature engineering (Section \@ref(methods-feature-engineering)): The one-hot or binary encoded categoricals had one more feature added, indicating missing values.
+As the algorithm used (`sklearn.impute.SimpleImputer`) only supports numerical data types, categorical features were treated separately during feature engineering (Section \@ref(methods-feature-engineering)): The one-hot or binary encoded categoricals had one more feature added, indicating missing values.
 
 
 
 ### Feature Selection {#methods-feature-selection}
 
-One of the biggest caveats in dealing with high-dimensional data is the infamous "Curse of Dimensionality" coined by @bellman1966dynamic. The curse comes from the fact that with an increasing number of dimensions of the feature space, the number of possible combinations grows exponentially. In order to cover all possible combinations with several examples (at least 5), a huge amount of examples would be required as a result. In the area of machine learning, high dimensionality frequently manifests in the form of overfitting, which leads to an unacceptably big generalization error @goodfellow2016deep. @hughes1968mean showed that for a fixed number of examples, model performance first increases with increasing number of dimensions but then decreases again. 
+One of the biggest caveats in dealing with high-dimensional data is the infamous "Curse of Dimensionality" coined by @bellman1966dynamic. The curse comes from the fact that with an increasing number of dimensions of the feature space, the number of possible combinations grows exponentially. In order to cover all possible combinations with several examples, a huge amount of data would be required as a result. In the area of machine learning, high dimensionality frequently manifests in the form of overfitting, which leads to an unacceptably large generalization error @goodfellow2016deep. @hughes1968mean showed that for a fixed number of examples, model performance first increases with increasing number of dimensions but then decreases again. 
 
-It is therefore beneficial to reduce the data set dimensionality while preserving as much relevant information as possible. A method to deal with the problem is called boruta, introduced by @kursa2010boruta. The algorithm was found to perform very well regarding selection of relevant features in @kursa2011boruta. It works sequentially and removes features found to be less relevant at each iteration. By doing so, it solves the so-called all-relevant feature problem.
-The algorithm is actually a wrapper function around a random forest classifier. A random forest classifier is fast, can usually be run without parameters and returns an importance measure for each feature.
+Boruta, introduced by @kursa2010boruta in the form of an R package, performs feature selection by solving the so-called all-relevant feature problem. The algorithm was found to perform very well regarding selection of relevant features in @kursa2011boruta.
 
 In short, the algorithm works as follows:
 
 1. The input matrix $\mathbf{X}$ of dimension $n \times p$ is extended with $p$ so-called *shadow features*. The shadow features are permuted copies of the features in $\mathbf{X}$. They are therefore decorrelated with the target.
-2. On the resulting matrix $\mathbf{X^*}$, a random forest classifier is trained and  the Z-scores ($\frac{\bar{loss}}{sd}$) for each of the $2p$ features calculated.
+2. On the resulting matrix $\mathbf{X^*}$, a random forest classifier is trained and the Z-scores $\frac{\bar{\text{loss}}}{sd}$ for each of the $2p$ features calculated.
 3. The highest Z-score among the shadow features $MZSA$ is determined.
 4. All original features are compared against $MZSA$ and those features with a higher score selected as important.
 5. With the remaining features, a two-sided test for equality of the Z-scores with $MZSA$ is performed and all features with significantly lower score are deemed unimportant.
@@ -147,35 +140,36 @@ In short, the algorithm works as follows:
 
 The algorithm terminates when all attributes are marked as either important or not important or when the maximum number of iterations is reached.
 
-For this thesis, a python implementation^[Available from [https://github.com/scikit-learn-contrib/boruta_py](https://github.com/scikit-learn-contrib/boruta_py), accessed on 5.6.2019] was used. In effect, it is a port of the original R package by @kursa2010boruta which conveniently implements `scikit-learn`'s API.
+For this thesis, a python implementation^[Available from [https://github.com/scikit-learn-contrib/boruta_py](https://github.com/scikit-learn-contrib/boruta_py), accessed on 5.6.2019] was used.
 
+The models were all learned on the same data set resulting from the boruta selection.
 
 
 ## Prediction {#methods-prediction}
 
-The desired quantity to predict is net profit. In order to predict this quantity, a two-step prediction procedure is applied, utilizing the binary target *TARGET_B* and the continuous target *TARGET_D*, respectively. For each step, a model is trained. One is a classifier, predicting $\hat{y}_b$, the probability of donating. The other is a regressor, predicting the donation amount $\hat{y}_d$. The classifier is trained on the complete learning data set, while the regressor is trained conditionally on $\mathbf{X}_d = \{x_i|y_{b,i} = 1, i=1...n\}$ and $y_d = \{y_{d,i}|y_{b,i} = 1, i=1...n\}$. The sample $\mathbf{X}_d, y_d$ is obviously non-random, thereby introducing bias which has to be corrected. This approach resembles @heckman1976common's two-stage procedure which is widely used in econometrics. Heckman's procedure was presented for the question of wage offerings for women. Data on wages was only available for working women, thereby introducing bias if wage offerings were only predicted on this sample. The question of whether an example works or not is seen as an unobserved feature. Originally, a probit model is used for this first *selection* stage. The inverse Mills ratio of the probit, $\frac{-\phi(\hat{y_i}-\mathbf{X}\beta)}{\Phi(\hat{y_i}-\mathbf{X}\beta}$, is calculated and included in the data for predictions in the second *observation* stage using OLS linear regression.
+The desired quantity to estimate is net profit $\hat{\Pi}$. In order to predict this quantity, a two-step procedure was implemented, utilizing the response indicator *TARGET_B* and the continuous target *TARGET_D*, respectively. For each step, a model was trained. One is a classifier, predicting $\hat{y}_b$, the probability of donating. The other is a regressor, predicting the donation amount $\hat{y}_d$. The classifier was trained on the complete learning data set, while the regressor was trained on $\mathbf{X}_d = \{x_i|y_{b,i} = 1, i=1 \ldots n\}$ and $y_d = \{y_{d,i}|y_{b,i} = 1, i=1 \ldots n\}$. The non-random sample leads to a conditionally predicted donation amount, thereby introducing bias. A correction for the bias is necessary as a consequence. This approach resembles @heckman1976common's two-stage procedure which is widely used in econometrics. Heckman's procedure was presented for the question of wage offerings for women. Data on wages was only available for working women, thereby introducing bias if wage offerings were only predicted on this sample. The question of whether an example works or not is seen as an unobserved feature. In @heckman1976common, a probit model is used for this first *selection* stage. The inverse Mills ratio of the probit, $\frac{-\phi(\hat{y_i}-\mathbf{X}\beta)}{\Phi(\hat{y_i}-\mathbf{X}\beta}$, is calculated and included in the data for predictions in the second *observation* stage with OLS regression.
 
 ### Setup of the Two-Stage Prediction
 
 For the first stage some classifier is used, predicting the probability for example $x_i$ to donate. This is not a probit ($P(Y=1|X) = \Phi(X^T\beta)$), of course. Instead, the resulting distribution depends on the classifier.
 
 \begin{equation}
-\mathbf{\hat{y}_b} = f(\mathbf{X})
+\hat{y}_b = f(\mathbf{X})
 (\#eq:y-b)
 \end{equation}
 
-where $\hat{y}_{b}$ is the vector of predicted probabilities of donating and $f$ is the classifier.
+where $\hat{y}_b$ is the vector of predicted probabilities of donating and $f$ is the classifier.
 
 The second stage is performed on $\mathbf{X}_d$ and consists in predicting the donation amount using a regression model:
 
  \begin{equation}
-\mathbf{\hat{y}_{dt}} = g(\mathbf{X_d})
+\hat{y}_{dt} = g(\mathbf{X_d})
 (\#eq:y-d)
 \end{equation}
 
 where $\mathbf{\hat{y}_{dt}}$ is the vector of predicted donation amounts and $g$ is the conditionally learned regression model. $g$ is learned with Box-Cox transformed target $\mathbf{y_d}$, so $\hat{y}_{dt}$ is also Box-Cox transformed with parameter $\lambda$.
 
-Here, the decision of whether to include example $i$ in the promotion is governed by the following indicator function. In it, $\alpha^*$ accounts for the introduced bias. Every example that has a predicted donation amount of more than the unit cost is included.
+The decision of whether to include example $i$ in the promotion is governed by the following indicator function. In it, $\alpha^*$ accounts for the introduced bias. Every example that has a predicted donation amount of more than the unit cost is included.
 
 \begin{equation}
  \mathbb{1}_{\hat{y}_{i,b} * \exp(\hat{y}_{i,dt}) * \alpha^* > \exp(u_t)}(\hat{y}_{i,dt})
@@ -184,10 +178,10 @@ Here, the decision of whether to include example $i$ in the promotion is governe
 
 where $\alpha^* \in [0,1]$ is a factor to correct for bias introduced due to the non-randomness of $\mathbf{X}_d$, $\hat{y}_{i,dt}$ is the predicted donation amount, transformed so as to normalize the distribution learned beforehand and $u_t$ is the unit cost, Box-Cox transformed with parameter $\lambda$. The exponential is used to deal with negative values resulting from the Box-Cox transformation.
 
-Finally, the quantity estimated is net profit $\hat{\Pi}$. It is calculated by summing over the product of the indicator function \@ref(eq:indicator) and the estimated net profit for examples $1...n$:
+Finally, the quantity estimated is net profit $\hat{\Pi}$. It is calculated by summing over the product of the indicator function \@ref(eq:indicator) and the net profit for examples $1 \ldots n$. For unseen data, \@eq:pi-alpha is altered by using the estimated net profit $\hat{y}_{d,i}$ in the product.
 
 \begin{equation}
-\hat{\Pi}_\alpha = \sum_{i=1}^n  \mathbb{1}_{\hat{y}_{i,b} * \exp(\hat{y}_{i,dt}) * \alpha^* > \exp(u_t)}(\hat{y}_{i,dt})*(\hat{y}_{i,d} - u)
+\hat{\Pi}_\alpha = \sum_{i=1}^n  \mathbb{1}_{\hat{y}_{i,b} * \exp(\hat{y}_{i,dt}) * \alpha^* > \exp(u_t)}(\hat{y}_{i,dt})*(y_{i,d} - u)
 (\#eq:pi-alpha)
 \end{equation}
 
@@ -195,9 +189,9 @@ Finally, the quantity estimated is net profit $\hat{\Pi}$. It is calculated by s
 
 ### Optimization of $\alpha^*$
 
-With equation \@ref(eq:pi-alpha), the estimated profit $\Pi$ is calculated for a grid of $\alpha$ values, $\alpha \in [0,1]$. Instead of the predicted profit $\hat{y}_{i,d} - u$, the true profit $y_{i,d} - u$ is used. The optimal value is then $\alpha^{*} = \underset{\alpha}{\operatorname{argmax}} f(\alpha)$ where $f$ is a function that is fit to $\Pi$.
+With equation \@ref(eq:pi-alpha), the estimated profit $\Pi$ was calculated on the learning data for a grid of $\alpha$ values, $\alpha \in [0,1]$. The optimal value was then $\alpha^{*} = \underset{\alpha}{\operatorname{argmax}} f(\alpha)$ where $f$ is a function that was fit to $\Pi$.
 
-For $f$, a cubic spline $s$ was used. $\alpha^*$ is then calculated as follows:
+For $f$, a cubic spline $s$ was used. $\alpha^*$ was determined as follows:
 
 1. Fit $s(\Pi)$, the cubic spline on the estimated profits for the grid of $\alpha$ values
 2. Derive $ds = \frac{\delta}{\delta \alpha} s$
@@ -207,9 +201,9 @@ For $f$, a cubic spline $s$ was used. $\alpha^*$ is then calculated as follows:
 
 ## Model Evaluation and -Selection {#eval-and-select}
 
-Several algorithms were trained in parallel. After good hyperparameters were found using randomized grid search, performance was compared using a common metric in order to select the best estimator (see Figure \@ref(fig:evaluation-selection) for a schematic process overview). This was done independently for classifiers (predicting the binary target) and regressors (predicting the continuous target). The process is documented in notebook `6_Model_Evaluation_Selection.ipynb`^[`r make_github_link("notebooks", "6_Model_Evaluation_Selection.ipynb")`].
+Several algorithms (estimators) were trained in parallel. Once good hyperparameters were found using randomized grid search, performance of the estimators was compared using a common metric in order to select the best (see Figure \@ref(fig:evaluation-selection) for a schematic process overview). This was done independently for classifiers (predicting the binary target) and regressors (predicting the continuous target). The process is documented in notebook *6_Model_Evaluation_Selection.ipynb*^[`r make_github_link("notebooks", "6_Model_Evaluation_Selection.ipynb")`].
 
-The pipeline functionality of `scikit-learn` was used to combine preliminary data transformations, i.e. scaling of features (where necessary) and resampling with the estimator-algorithm. This allows to tune hyperparameters for transformations and the actual estimator together.
+The pipeline functionality of `scikit-learn` was used to combine preliminary data transformations, i.e. scaling of features (where necessary) and resampling with the estimator-algorithm. This allows to jointly tune hyperparameters for transformations and the estimator.
 
 ```{r evaluation-selection, fig.cap="Learning process schematic.", echo=F, out.width="80%"}
 
@@ -221,15 +215,15 @@ workflow_graph <- grViz(
 
       graph [overlap=false,
              fontname=Lato,
-             fonsize=24,
+             fonsize=30,
              layout=dot,
              nodesep=1.1,
              rankdir=LR]
 
       node[fontname=Lato, fillcolor=white, shape=circle, width=1.3]
       
-      scale[group='a', label='Scaler'];
-      samp[group='a', label='Resampler'];
+      scale[group='a', label='Scaler', style='dashed'];
+      samp[group='a', label='Resampler', style='dashed'];
       estim[group='a', label='Estimator'];
 
       pip[group='a', label='Pipeline']
@@ -239,7 +233,8 @@ workflow_graph <- grViz(
       select[group='a', label='Select best model'];
 
       edge[style=solid, color=black, fontname=Lato];
-      {scale;samp;estim}->pip;
+      {scale;samp}->pip [style='dashed'];
+      estim -> pip;
       pip -> param;
       param -> gs;
       gs -> eval;
@@ -259,21 +254,24 @@ A common random seed was used for all algorithms and random number generators.
 
 ### Evaluation
 
-Randomized grid search with 10-fold cross-validation (CV) was used for model evaluation. The best-performing pipeline for each algorithm was stored in a python dictionary during evaluation. The dictionary was persisted to disk and only updated when an algorithm's metric improved. This ensured that the best hyperparameter settings were always retained during the extensive model evaluation phase.
+Randomized grid search was run with 10-fold cross-validation (CV). The best-performing pipeline for each algorithm was stored in a python dictionary during evaluation. The dictionary was persisted to disk and only updated when an algorithm's metric improved. This ensured that the best hyperparameter settings were always retained during the extensive model evaluation phase.
 
 #### Randomized Grid Search
-In randomized grid search, introduced in @bergstra2012random, probability distributions for hyperparameter values are specified. The algorithm then runs a defined number (10 were used) of random combinations by sampling from the distributions. Compared to the usual grid search, this can greatly speed up the learning process because good hyperparameter settings are generally identified with less iterations.
+In randomized grid search, [@bergstra2012random], probability distributions for hyperparameter values are specified. The algorithm then runs a defined number (10 were used) of random combinations by sampling from the distributions. Compared to the usual grid search, this can greatly speed up the learning process because good hyperparameter settings are generally identified with less iterations.
 
-After one round of learning, the hyperparameter distributions were adjusted before the next iteration as follows: When the best value was found near the limits of the domain, the distribution was shifted in this direction. For values falling inside the domain of the distribution, the distribution was narrowed down towards the found value. This procedure was repeated until the hyperparameters converge.
+After one round of learning, the hyperparameter distributions were adjusted before the next iteration as follows: When the best value was found near the limits of the domain, the distribution was shifted in this direction. For values falling inside the domain, the distribution was narrowed down towards the found value. This procedure was repeated until the hyperparameters converged.
+
+The implementation of randomized grid search in `scikit-learn` returns a summary table with the CV results for each hyperparameter combination. By comparing the mean test score for the chosen metric, the best hyperparameters can be determined.
 
 #### Cross-Validation
-CV splits the training data into several *folds* of equal size. The algorithm is trained as many times as there are folds, holding back one of the folds at each training step for validation using some specified performance metric and training with the rest of the data. This procedure enables quantification of the generalization error and the calculation of statistics that indicate the variance of the model. Following guidance in @kohavi1995study, 10-fold CV was used, which trades off bias for better variance. CV results were used to update hyperparameter distributions by selecting the best CV iteration's hyperparameters as the basis for the update.
+CV splits the training data into several *folds* of equal size. The algorithm is trained as many times as there are folds, holding back one of the folds at each training step for validation using some specified performance metric and training with the rest of the data. This procedure enables quantification of the generalization error and the calculation of statistics that indicate the variance of the model. Following guidance in @kohavi1995study, 10-fold CV was used, which trades higher bias for lower variance compared to fewer folds.
+
 
 ### Selection
 
 #### Classifiers
 
-Both recall and F1 were chosen for model evaluation. In the end, recall was used to select the best classifier. Reasoning for the choice of these metrics is given below.
+Both recall and F1 were initially selected and calculated during model evaluation. In the end, recall was used to select the best classifier as it produced better estimators for the task. Reasoning for the choice of these metrics is given below.
 
 For classification problems, the confusion matrix (see Figure \@ref(fig:conf-mat-plot)) can be used to construct various performance metrics. A true positive (TP) indicates a correctly predicted 1, a false negative (FN) is a falsely predicted 0, a false positive is a falsely predicted 1 and finally a true negative (TN) is a correctly predicted 0.
 
@@ -325,13 +323,13 @@ The definitions of some often-used metrics are given below^[taken from [https://
 \text{F1 score} &= \frac{2TP}{2TP+FP+FN}
 \end{align*}
 
-The goal, as mentioned earlier, is to maximize net profit. To achieve this, a balance between predicting as many TP's as possible while keeping the number of FP's low has to be found. One FP costs `r 0.68` $ (sending a letter to a non-donor). Keeping in mind the distribution of TARGET_D (Section \@ref(targets)), one FN means loosing at least `r 0.32` $ of possible profit (not sending a promotion to a donor, smallest donation amount is 1 $). The expected loss in profit for one FN is even `r 15` $ (corresponding to the mean donation amount), which means that with each TP, we can balance `r floor(15/0.68)` FP's on average.
+The goal, as mentioned earlier, is to maximize net profit. To achieve this, a balance between predicting as many TP's as possible while keeping the number of FP's low has to be found. One FP costs `r 0.68` $ (sending a letter to a non-donor). Keeping in mind the distribution of TARGET_D (Section \@ref(targets)), one FN means loosing at least `r 0.32` $ of possible profit (not sending a promotion to a donor, smallest donation amount is 1 $). The expected loss in profit for one FN is even `r 15` $ (corresponding to the mean donation amount), which means that with each TP, the cost of  `r floor(15/0.68)` FP's can be covered on average.
 
-Accuracy is often used, but in the case of imbalanced targets, as is the case here, it is not a desirable metric because it is dominated by the majority class (TN is present both in the nominator and denominator). The metrics that could be used beneficially because they involve TP an not TN are F1, recall and precision. Since more weight should be put on predicting many TP, precision was discarded from the candidate list.
+The default metric for classification is accuracy, but in the case of imbalanced targets, it is not a desirable metric (TN is present both in the nominator and denominator, dominating the score). The metrics that could be used beneficially because they involve TP an not TN are F1, recall and precision. Since in precision, the FP of the majority class have the highest influence from among the three, it was discarded from the candidate list.
 
 #### Regressors
 
-For regression, $R^2(y, \hat{y}) = 1- \frac{\sum_{i=1}^n(y_i-\hat{y}_i)^2}{\sum_{i=1}^n(y_i-\bar{y})^2}$ was used, mainly because it is the default metric for regression algorithms in `scikit-learn`. $R^2$ has the drawback of depending on the variance of the data used to fit the model and therefore is different for other data. It was however assumed that because learning and test data have the same generating function, $R^2$ can be used to select a regression model.
+For regression, $R^2 = 1- \frac{\sum_{i=1}^n(y_i-\hat{y}_i)^2}{\sum_{i=1}^n(y_i-\bar{y})^2}$ was used, mainly because it is the default metric for regression algorithms in `scikit-learn`. $R^2$ has the drawback of depending on the variance of the data used to fit the model and therefore is different for other data. It was however assumed that because learning and test data have the same generating function, $R^2$ can be used to select a regression model.
 
 ### Dealing With Imbalanced Data {#imblearn}
 
@@ -341,23 +339,23 @@ Several different approaches were explored. The following over-/undersampling te
 * Random undersampling of the majority class
 * SMOTE (synthetic minority oversampling technique), variant borderline-1
 
-The random sampling algorithms either draw from the minority class with repetition until the class labels are balanced or draw random samples from the minority class until the labels are balanced. SMOTE generates synthetic samples from the minority class, thereby countering the danger of overfitting by learning on a small number of repeated observations. The SMOTE variant *borderline-1* chosen generates samples that are close to the optimal decision boundary.
+The random sampling algorithms either draw from the minority class with repetition or draw random samples from the majority class without repetition until the labels are balanced. SMOTE does not sample from the data but instead generates synthetic samples from the minority class, thereby countering the danger of overfitting by learning on a small number of repeated observations (random oversampling) or a small subset of the training data available (random undersampling). The SMOTE variant *borderline-1* chosen generates samples that are close to the optimal decision boundary, where misclassifications are likely.
 
 Additional experiments were run with class- and sample-weights set on the data without resampling. For class weights, the ratio of non-donors vs. donors was used. For sample weights, the donation amount was employed, rescaled to the interval $[0,1]$.
 
 ### Algorithms
 
-A short introduction of each algorithm is given below. For each algorithm, the hyperparameters that were considered during learning are given. The choice of algorithms was made so as to cover a wide range of underlying concepts.
+A short introduction of each algorithm is given below. For each algorithm, the hyperparameters that were tuned during learning are given. The choice of algorithms was made so as to cover a wide range of underlying concepts.
 
 #### Random Forest {#methods-rf}
 
-Random forest (RF) belongs to the family of so-called ensemble learners and was introduced by @breiman2001rf. Predictions are made by majority vote of an ensemble of decision trees (CART, @breiman1984classification). The RF can be employed both for regression and classification tasks. RF's are insensitive towards scale differences in the individual features. The input data therefore does not have to be scaled before learning. Another important feature of RF is the assessment of *variable importance* by summing the loss improvement for each split in every tree per feature [@friedman2001elements].
+Random forest (RF) belongs to the family of so-called ensemble learners and was introduced by @breiman2001rf. Predictions are made by majority vote of an ensemble of decision trees (CART, @breiman1984classification). The RF can be employed both for regression and classification tasks. RF's are insensitive towards scale differences in the individual features, and, depending on the implementation, can deal with missing values. Another important feature of RF is the assessment of *variable importance* by summing the loss improvement for each split in every tree per feature [@friedman2001elements].
 
-During learning, a random sample of the available features is drawn with replacement for each tree (bagging, or bootstrap aggregating, see @breiman1996bagging), thereby reducing the variance of the ensemble estimator. Furthermore, splits within a tree are determined again on a random subset of the features. These sources of randomness tend to increase bias of the forest, yet the decrease in variance due to averaging through majority vote outweighs the bias increase @friedman2001elements. @breiman2001rf shows that as the forest grows, the generalization error converges almost surely. This means that random forests are insensitive to overfitting.
+During learning, a random sample of the available features is drawn with replacement for each tree (bagging, or bootstrap aggregating, see @breiman1996bagging), thereby reducing the variance of the ensemble estimator. Furthermore, splits within a tree are determined again on a random subset of the features. These sources of randomness tend to increase bias of the forest, yet the decrease in variance due to averaging through majority vote outweighs the bias increase @friedman2001elements. @breiman2001rf shows that as the forest grows, the generalization error converges almost surely. This means that random forests are insensitive to overfitting and perform better the more trees are grown.
 
 As explained in @friedman2001elements, trees are grown as follows:
 
-For data with n examples and p features $D = \{\{x_i,y_i\}, i=1...n, x_i=\{x_{i,1}, x_{i,2}, ... x_{i,p}\}\}$, the CART algorithm decides on the structure of the tree, the splitting features and the split points. As a result, the data is partitioned into $M$ regions $R_1, R_2, ..., R_M$.
+For data with n examples and p features $D = \{\{x_i,y_i\}, i=1 \ldots n, x_i=\{x_{i,1}, x_{i,2}, \ldots x_{i,p}\}\}$, the CART algorithm decides on the structure of the tree, the splitting features and the split points. As a result, the data is partitioned into $M$ regions $R_1, R_2, \ldots, R_M$.
 
 **Regression**
 The response $\hat{y}$ is modeled as a constant $c_m$ for each region:
@@ -367,7 +365,6 @@ f(x) = \sum_{m=1}^M c_m\mathbb{1}(x \in R_m)
 \end{equation}
 
 Using as loss criterion the sum of squares $\sum_{i=1}^n (y_i - f(x_i))^2$, the best $\hat{c}_m$ is the average of $y_i$ in the region:
-
 \begin{equation}
 \hat{c}_m=ave(y_i|x_i \in R_m).
 (\#eq:cart-hatc)
@@ -388,33 +385,33 @@ For a binary classification problem with outcomes $\{0,1\}$, predictions are mad
 (\#eq:cart-class)
 \end{equation}
 
-When $\hat{p}_m$ is $>0.5$, the positive class is chosen.
+When $\hat{p}_m>0.5$, the positive class is chosen.
 
 The loss is described by impurity. When making a split, the feature $j$ resulting in the highest impurity decrease is selected. Impurity is measured by the *Gini index*. For binary classification: A node $m$, representing region $R_m$ with $N_m$ observations has as proportion of the positive class $\hat{p}_m = \frac{1}{N_m} \sum_{x_i \in R_m} \mathbb{1}(y_i = 1)$. The Gini index is then defined as $2p(1-p)$. So the decision function is:
 \begin{equation}
-\min_{j,s}(\min_{Gini1} \hat{p}_1 + \min_{Gini2} \hat{p}_2)
+\min_{j,s}(\min_{Gini_l} \hat{p}_l + \min_{Gini_r} \hat{p}_r)
 (\#eq:cart-class-dec)
 \end{equation}
-
+for regions $R_l, R_r$ below the node.
 
 The `RandomForestClassifier` and `RandomForestRegressor` included in `scikit-learn` were used for learning.
 
 **Hyperparameters**
 
-* `max_depth`, $\{1,2,3, ...\}$: depth of the trees, $2^n$ leafs maximum. Controls the interaction order of features.
-* `min_samples_split`, $\{2,3,4,...\}$: Minimum number of samples required for a split.
-* `max_features`, $\{1, 2, ..., m\}$: Maximum number of the $m$ features to consider when searching for a split. @friedman2001elements recommend values in  $m = \{1, 2, ... \sqrt{m}\}$, but for high dimensional data with few relevant features, larger $m$ can lead to better results because the probability of including relevant features increases.
-* `n_estimators`, $\{1, 2, ...\}$: Number of trees to grow. In combination with early stopping, this can be set to a high value since learning will stop when the loss converges.
-* `class_weight` $\{\text{balanced}, 1,2,...\}$: Weights on target classes: "balanced" calculates weights according to class frequencies, integer values specify weight on majority class relative to minority
+* `max_depth`, $\{1,2,3, \ldots\}$: depth of the trees, $2^n$ leafs maximum. Controls tree size.
+* `min_samples_split`, $\{2,3,4,\ldots\}$: Minimum number of samples required to split a node, controls tree size.
+* `max_features`, $\{1, 2, \ldots, m\}$: Maximum number of the $m$ features to consider when searching for a split. @friedman2001elements recommend values in  $m = \{1, 2, \ldots \sqrt{m}\}$, but for high dimensional data with few relevant features, larger $m$ can lead to better results because the probability of including relevant features increases.
+* `n_estimators`, $\{1, 2, \ldots\}$: Number of trees to grow. In combination with early stopping, this can be set to a high value since learning will stop when the loss converges.
+* `class_weight` $\{\text{balanced}, 1,2,\ldots\}$: Weights on target classes: "balanced" calculates weights according to class frequencies, integer values specify weight on majority class relative to minority
 
 
 #### Gradient Boosting Machine {#methods-gbm}
 
-The main idea behind boosting is to sequentially train an ensemble of weak learners which on their own are only slightly better than a random decision. The predictions of the individual weak learners are then combined into a majority vote. Boosting was first mentioned by @kearns1988thoughts.
+The main idea behind boosting is to sequentially train an ensemble of weak learners which on their own are only slightly better than a random decision. The predictions of the individual weak learners are then combined into a majority vote [@kearns1988thoughts].
 
-Gradient boosting machine (GBM) extends on this idea. Like a random forest, GBM learns many trees which form an ensemble. However, trees are learned in an additive manner. At each iteration, the tree that improves the model most (i.e. in the direction of the gradient of the loss function) is added. For this thesis, the package `XGBoost` by @chen2016xgboost was used. They describe the algorithm as follows:
+Gradient boosting machine (GBM) extends on this idea. Like a random forest, GBM learns an ensemble of decision trees. However, trees are learned in an additive manner. At each iteration, the tree that improves the model most (i.e. in the direction of the gradient of the loss function) is added. For this thesis, the package `XGBoost` by @chen2016xgboost was used. They describe the algorithm as follows:
 
-Assume we have a data set with $n$ examples and $p$ features: $D = \{\{x_i,y_i\}, i=1...n, x_i=\{x_{i,1}, x_{i,2}, ... x_{i,p}\}\}$. The implementation uses a tree ensemble using $K$ regression trees to predict the outcome for an example in the data by summing up the weights predicted by each tree:
+Assume we have a data set with $n$ examples and $p$ features: $D = \{\{x_i,y_i\}, i=1\ldots n, x_i=\{x_{i,1}, x_{i,2}, \ldots x_{i,p}\}\}$. The implementation uses a tree ensemble with $K$ regression trees to predict the outcome for an example in the data by summing up the weights predicted by each tree:
 
 \begin{equation}
 \hat{y}_i = \phi(x_i) = \sum_{k=1}^K f_k(x_i), f_k \in F
@@ -423,16 +420,16 @@ Assume we have a data set with $n$ examples and $p$ features: $D = \{\{x_i,y_i\}
 
 where $F = \{f(x) = w_{q(x)}\} (q: \mathbb{R}^m \rightarrow T, w \in \mathbb{R}^T)$ is the space of regression trees. $T$ is the number of leaves in a tree, $q$ is the structure of each tree, mapping an example to the corresponding leaf index. Each tree $f_k$ has an independent structure $q$ and weights $w$ at the terminal leafs.
 
-For learning the functions in $F$, the following loss function is minimized:
+For growing the trees in $F$, the following loss function is minimized:
 
 \begin{equation}
 L(\phi) = \sum_{i=1}^n l(y_i, \hat{y_i}) + \sum_k^K \Omega(f_k)
 (\#eq:gbm-loss)
 \end{equation}
 
-Here, $l$ is a differentiable, convex loss function that measures the difference between predictions and true values. Since $l$ is convex, we are guaranteed to find a global minimum. $\Omega(f) = \gamma T + \frac{1}{2}\lambda||w||^2$ is a penalty on the complexity of the trees to counter over-fitting. The algorithm thus features integrated regularization. 
+Here, $l$ is a differentiable, convex loss function that measures the difference between predictions and true values. Since $l$ is convex, a global minimum is guaranteed. $\Omega(f) = \gamma T + \frac{1}{2}\lambda||w||^2$ is a penalty on the complexity of the trees to counter over-fitting. The algorithm thus features integrated regularization. 
 
-Now, at each iteration $t$, the tree $f_t$ that improves the model most is added. For this, we add $f_t(\mathbf{x_i})$ to the predictions at $t-1$. 
+Now, at each iteration $t$, the tree $f_t$ that improves the model most is added. For this, we add $f_t(\mathbf{x_i})$ to the predictions at $t-1$ and compute the loss:
 
 \begin{equation}
 L^{(t)} = \sum_{i=1}^n l(y_i, \hat{y_i}^{t-1} + f_t(\mathbf{x_i})) +\Omega(f_t)
@@ -452,7 +449,7 @@ To find the best $f_t$ to add, the gradients finally come into play. With $g_i$ 
 * `min_child_weight`, $[0, \inf)$: Minimum sum of weights of the hessian in a node. When close to zero, the node is pure. Controls regularization.
 * `subsample`, $[0, 1]$: A random sample from the $n$ examples of size $s, s < n$ is drawn for each iteration, countering overfitting and speeding up learning.
 * `colsample_by_tree`, $[0, 1]$: A random sample of the $m$ features is drawn for growing each tree.
-* `n_iter_no_change`, $\{0,1,2,3, ...\}$: Early stopping. Based on an evaluation set, learning stops when no improvement on the performance metric (misclassification error was chosen) is made for a fixed number of steps.
+* `n_iter_no_change`, $\{0,1,2,3, \ldots\}$: Early stopping. Based on an evaluation set, learning stops when no improvement on the performance metric (misclassification error was chosen) is made for a fixed number of steps.
 
 
 
@@ -460,15 +457,11 @@ To find the best $f_t$ to add, the gradients finally come into play. With $g_i$ 
 
 The GLMnet is an implementation of a generalized linear model (GLM) with penalized maximum likelihood by @hastie2014glmnet. Regularization is achieved through $L^2$ (ridge)  and $L^1$ (lasso) penalties or their combination known as elastic net [@zou2005regularization].
 
-For learning, GLMnet evaluates many different $\lambda$ values for a given $\alpha$ through cross validation. Because GLMnet is sensitive to scale differences in the features, input data (features and target) should be transformed to mean zero and unit variance.
-
-The loss functions are described in @hastie2014glmnet:
-For the binary classification task at hand, a logistic regression was performed.
-The logistic regression model for a two-class response $G = \{0,1\}$ with target $y_i = \mathbb{1}(g_i=1)$ is:
+The loss functions are described in @hastie2014glmnet. For the binary classification task at hand, a logistic regression was performed. The logistic regression model for a two-class response $G = \{0,1\}$ with target $y_i = \mathbb{1}(g_i=1)$ is:
 
 $P(G=1|X=x) = \frac{e^{\beta_0+\beta^Tx}}{1+e^{\beta_0+\beta^Tx}}$ or, in the log-odds transformation: $log\frac{P(G=1|X=x)}{P(G=0|X=x)}=\beta_0+\beta^Tx$.
 
-The loss function is:
+The GLMnet loss function for logistic regression:
 
 \begin{equation}
 \min_{\beta_0,\beta} \frac{1}{N} \sum_{i=1}^{N} w_i l(y_i,\beta_0+\beta^T x_i) + \lambda\left[(1-\alpha)||\beta||_2^2/2 + \alpha ||\beta||_1\right]
@@ -486,10 +479,11 @@ For the regression task, a gaussian family model was used, having loss function:
 
 where $l()$ the (negative) log-likelihood of the parameters $\mathbf{\beta}$ given the data, $\lambda$ the amount of penalization and $\alpha \in [0,1]$ the elastic net parameter, for $\alpha=0$ pure ridge and for $\alpha=1$ pure lasso.
 
+For learning, GLMnet evaluates many different $\lambda$ values for a given $\alpha$ through cross validation. Because GLMnet is sensitive to scale differences in the features, input data (features and target) should be transformed to mean zero and unit variance.
 
 **Hyperparameters**
 
-* `n_splits`, $\{3,4,5, ...\}$: Number of CV-splits. Typical values are 3, 5 and 10.
+* `n_splits`, $\{3,4,5, \ldots\}$: Number of CV-splits. Typical values are 3, 5 and 10.
 * $\alpha$, $[0, 1]$: parametrizes the elastic net. For $\alpha = 0$ pure ridge, for $\alpha = 1$ pure lasso.
 * `scoring`: Scoring method for cross-validation (log-loss, classification error, accuracy, precision, recall, average precision, roc-auc)
 
@@ -499,7 +493,7 @@ where $l()$ the (negative) log-likelihood of the parameters $\mathbf{\beta}$ giv
 
 The multilayer perceptron (MLP) is a so-called feedforward neural network. The network consists of at least three layers: an input layer, an arbitrary number of hidden layers and an output layer. Each layer is made up of units. The term feedforward means that information flows from the input layer through intermediary steps and then to the output. The goal is to approximate the function $f^*$. For a classifier, $y = f^*(x)$ maps an example $x$ to a category $y$. A feedforward network defines a mapping $y=f(x, w)$ and learns the weights $w$ by approximating the function $f$ [@goodfellow2016deep].
 
-For a binary classification problem on a dataset with $n$ examples and $p$ features $D = \{\{x_i, y_i\}\}, x_i \in \mathbb{R}^p, y_i \in \{0,1\}, i = 1...n\}$, the input layer has $p$ units, the output layer has $1$ unit. The hidden layers each have an arbitrary number of *hidden* units.
+For a binary classification problem on a dataset with $n$ examples and $p$ features $D = \{\{x_i, y_i\}\}, x_i = \{x_{i,1},x_{i,2},\ldots,x_{i,p}\}, y_i \in \{0,1\}, i = 1 \ldots n\}$, the input layer has $p$ units, the output layer has $1$ unit. The hidden layers each have an arbitrary number of *hidden* units.
 
 Each unit, except for the input layer, consists of a perceptron, which is in effect a linear model with some non-linear activation function applied:
 
@@ -520,8 +514,6 @@ The complete network is a chain of functions, for the network trained here, it i
 \end{equation}
 where  $x$ is the vector of input features, $y$ is the vector of outputs, $\mathbf{W}^{(1)}, \mathbf{W}^{(2)}, \mathbf{W}^{(3)}$ are the weight matrices for each layer and $b^{(1)}, b^{(2)}, b^{(3)}$ are the bias vectors for each layer and $\phi^{(1)}, \phi^{(2)}, \phi^{(3)}$ are the sets of perceptrons in the corresponding layer.
 
-For this thesis, the scikit-learn implementation `sklearn.neural_network.MLPClassifier` was used. The network topology was determined by treating it as a hyperparameter. Best results were achieved with a network featuring two hidden layers with 28 hidden units each. The network is shown symbolically in Figure \@ref(fig:mlp-graph).
-
 (ref:mlp-g-legend) Neural network topology used. Two hidden layers $\mathbf{h^{(1)}, h^{(2)}}$ are contained. $\mathbf{b^{(2)}, b^{(3)}}$ and $\mathbf{b^{(4)}}$ are the bias vectors for the respective layers.
 
 ```{r mlp-graph, fig.cap="(ref:mlp-g-legend)", echo=F, results="asis"}
@@ -532,7 +524,7 @@ data_graph <- grViz(
     graph [overlap=false,
            fontname=Lato,
            fontsize=28,
-           nodesep=1.0,
+           nodesep=0.5,
            rankdir=LR,
            ranksep= 1.1;]
 
@@ -620,6 +612,14 @@ rsvg_png(charToRaw(DiagrammeRsvg::export_svg(data_graph)),
 knitr::include_graphics("figures/methods/mlp-structure.png")
 ```
 
+For this thesis, the scikit-learn implementation `sklearn.neural_network.MLPClassifier` was used with default settings (rectified linear unit as activation function, adam (stochastic gradient descent) solver). The network topology was determined by treating it as a hyperparameter. Best results were achieved with a network featuring two hidden layers with 28 hidden units each. The network is shown symbolically in Figure \@ref(fig:mlp-graph).
+
+**Hyperparameters**
+
+* `hidden_layer_sizes`: Tuples, i.e. (100,50,) for a network with 2 hidden layers of 100 and 50 units and one output unit.
+* $\alpha$, [0,1]: $L^2$ regularization amount
+* `learning_rate_init` $>0$: Controls step size for the solver during backpropagation (regularization).
+
 
 #### Support Vector Machine
 
@@ -675,54 +675,44 @@ f(x) = \sum_{i=1}^N \alpha_i*y_i\langle h(x), h(x_i)\rangle + \beta_0
 
 where $h(x)$ are the transformations mapping from the input space to the high-dimensional space.
 
-Since the transformations can be prohibitively expensive, the so-called kernel trick [@aizerman1964theoretical] is used [@boser1992svc]. The trick lies in the fact that knowledge of the kernel function $K(x,x') = \langle h(x), h(x') \rangle$ suffices, without need to compute the dot products:
+Since the transformations can be prohibitively expensive, the so-called kernel trick [@aizerman1964theoretical] is used [@boser1992svc]. The trick lies in the fact that knowledge of the kernel function $K(x,x') = \langle h(x), h(x') \rangle$ suffices, without need to compute the dot products.
 
 Several kernels are possible. In `scikit-learn`, linear, polynomial, radial basis function and sigmoid are available.
 
 For regression, the Support Vector Regression Machine (SVR) was introduced by @drucker1997support.
 
+`scikit-learn` implementations were used for both classification and regression.
+
 **Hyperparameters**
 
 * `C`, $(0,\inf)$: Penalty on the margin size
 * `kernel`: One of linear, poly, rbf or sigmoid
-* `degree` $\{1,2,...\}$: Degree of polynomial kernel
+* `degree` $\{1,2, \ldots \}$: Degree of polynomial kernel
 * `class_weight`: Automatic balancing or a dictionary with weights per class
 
 #### Bayesian Ridge Regression
 
-Bayesian Ridge Regression (BR) can be seen as a Bayesian approach to a linear model with $l_2$ regularization. The `sklearn.linear_model.BayesianRidge` algorithm was used which is implemented as described in @tipping2001sparse:
+Bayesian Ridge Regression (BR) can be seen as a Bayesian approach to a linear model with $l_2$ regularization. The `sklearn.linear_model.BayesianRidge` algorithm was used, which is implemented as described in @tipping2001sparse. The linear model is:
 
 \begin{equation}
 y_i = f(x_n, w) + \epsilon_i
 (\#eq:bayesion-linear-model-sk)
 \end{equation}
 
-where $\epsilon_i$ are iid error terms $\sim N(0, \sigma^2).
+where $\epsilon_i$ are iid error terms $\sim \mathcal{N}(0, \sigma^2)$.
 
 The probabilistic model is then:
 
 \begin{equation}
-p(y|x) =\mathcal{N}(y|f(x), \sigma^2)
+p(y|x) =\mathcal{N}(y|f(x,w), \alpha)
 (\#eq:bayesian-prob-model)
 \end{equation}
 
 In order to regularize the model in a ridge manner, a prior probability on the weights in $f(x,w)$ is defined as:
 
 \begin{equation}
-p(w|\lambda) = \prod_{i=0}^p \mathcal{N}(w_i|0, \lambda^-1)
+p(w|\lambda) = \prod_{i=0}^p \mathcal{N}(w_i|0, \lambda_i^-1)
 (\#eq:prior-alpha)
 \end{equation}
 
-where $\lambda$ is a vector of p+1 hyperparameters. An individual hyperparameter is associated with each weight in $w$.
-
-For $\alpha$ and $\lambda$, $\text{Gamma}$ distributions are chosen as priors:
-
-\begin{align}
-p(\alpha) = \prod_{i=0}^p \text{Gamma}(\alpha_i|a, b)
-p(\lambda) = \Gamma(\lambda|c,d)
-(\#eq:priors-a-b)
-\end{align}
-
-The parameters of the gamma distributions $a, b, c$ and $d$ are chosen non-informative and are set to $a = b = c = d = 10^{-6}$ (in the `scikit-learn implementation`).
-
-$w$, $\alpha$ and $\lambda$ are estimated during model fitting. The regularization parameters $\alpha$ and $\lambda$ by maximizing log marginal likelihood.
+The algorithm was trained with default settings.

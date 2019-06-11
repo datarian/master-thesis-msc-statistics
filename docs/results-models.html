@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>4.4 Model Evaluation and Selection | Profit maximization for direct marketing campaigns</title>
+  <meta name="description" content="Master Thesis submitted in partial fulfillment of the requirements for the degree of Master of Science in Statistics" />
+  <meta name="generator" content="bookdown 0.11 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="4.4 Model Evaluation and Selection | Profit maximization for direct marketing campaigns" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="Master Thesis submitted in partial fulfillment of the requirements for the degree of Master of Science in Statistics" />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="4.4 Model Evaluation and Selection | Profit maximization for direct marketing campaigns" />
+  
+  <meta name="twitter:description" content="Master Thesis submitted in partial fulfillment of the requirements for the degree of Master of Science in Statistics" />
+  
+
+<meta name="author" content="Florian Hochstrasser" />
+
+
+<meta name="date" content="2019-06-11" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="feature-selection.html">
+<link rel="next" href="prediction.html">
+<script src="assets/jquery-2.2.3/jquery.min.js"></script>
+<link href="assets/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+<script src="assets/kePrint-0.0.1/kePrint.js"></script>
+
+
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a><ul>
+<li class="chapter" data-level="1.1" data-path="task-background.html"><a href="task-background.html"><i class="fa fa-check"></i><b>1.1</b> Task Background</a></li>
+<li class="chapter" data-level="1.2" data-path="goals-and-requirements.html"><a href="goals-and-requirements.html"><i class="fa fa-check"></i><b>1.2</b> Goals and Requirements</a></li>
+<li class="chapter" data-level="1.3" data-path="conventions-and-notes.html"><a href="conventions-and-notes.html"><i class="fa fa-check"></i><b>1.3</b> Conventions and Notes</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="data.html"><a href="data.html"><i class="fa fa-check"></i><b>2</b> Data</a><ul>
+<li class="chapter" data-level="2.1" data-path="general-structure.html"><a href="general-structure.html"><i class="fa fa-check"></i><b>2.1</b> General Structure</a></li>
+<li class="chapter" data-level="2.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html"><i class="fa fa-check"></i><b>2.2</b> Exploratory Data Analysis</a><ul>
+<li class="chapter" data-level="2.2.1" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#data-types"><i class="fa fa-check"></i><b>2.2.1</b> Data Types</a></li>
+<li class="chapter" data-level="2.2.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#targets"><i class="fa fa-check"></i><b>2.2.2</b> Targets</a></li>
+<li class="chapter" data-level="2.2.3" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#skewness"><i class="fa fa-check"></i><b>2.2.3</b> Skewness</a></li>
+<li class="chapter" data-level="2.2.4" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#correlations"><i class="fa fa-check"></i><b>2.2.4</b> Correlations</a></li>
+<li class="chapter" data-level="2.2.5" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#donation-patterns"><i class="fa fa-check"></i><b>2.2.5</b> Donation Patterns</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="experimental-setup-and-methods.html"><a href="experimental-setup-and-methods.html"><i class="fa fa-check"></i><b>3</b> Experimental Setup and Methods</a><ul>
+<li class="chapter" data-level="3.1" data-path="tools-used.html"><a href="tools-used.html"><i class="fa fa-check"></i><b>3.1</b> Tools Used</a></li>
+<li class="chapter" data-level="3.2" data-path="data-handling.html"><a href="data-handling.html"><i class="fa fa-check"></i><b>3.2</b> Data Handling</a></li>
+<li class="chapter" data-level="3.3" data-path="data-preprocessing.html"><a href="data-preprocessing.html"><i class="fa fa-check"></i><b>3.3</b> Data Preprocessing</a><ul>
+<li class="chapter" data-level="3.3.1" data-path="data-preprocessing.html"><a href="data-preprocessing.html#cleaning"><i class="fa fa-check"></i><b>3.3.1</b> Cleaning</a></li>
+<li class="chapter" data-level="3.3.2" data-path="data-preprocessing.html"><a href="data-preprocessing.html#methods-feature-engineering"><i class="fa fa-check"></i><b>3.3.2</b> Feature Engineering</a></li>
+<li class="chapter" data-level="3.3.3" data-path="data-preprocessing.html"><a href="data-preprocessing.html#imputation"><i class="fa fa-check"></i><b>3.3.3</b> Imputation</a></li>
+<li class="chapter" data-level="3.3.4" data-path="data-preprocessing.html"><a href="data-preprocessing.html#methods-feature-selection"><i class="fa fa-check"></i><b>3.3.4</b> Feature Selection</a></li>
+</ul></li>
+<li class="chapter" data-level="3.4" data-path="methods-prediction.html"><a href="methods-prediction.html"><i class="fa fa-check"></i><b>3.4</b> Prediction</a><ul>
+<li class="chapter" data-level="3.4.1" data-path="methods-prediction.html"><a href="methods-prediction.html#setup-of-the-two-stage-prediction"><i class="fa fa-check"></i><b>3.4.1</b> Setup of the Two-Stage Prediction</a></li>
+<li class="chapter" data-level="3.4.2" data-path="methods-prediction.html"><a href="methods-prediction.html#optimization-of-alpha"><i class="fa fa-check"></i><b>3.4.2</b> Optimization of <span class="math inline">\(\alpha^*\)</span></a></li>
+</ul></li>
+<li class="chapter" data-level="3.5" data-path="eval-and-select.html"><a href="eval-and-select.html"><i class="fa fa-check"></i><b>3.5</b> Model Evaluation and -Selection</a><ul>
+<li class="chapter" data-level="3.5.1" data-path="eval-and-select.html"><a href="eval-and-select.html#evaluation"><i class="fa fa-check"></i><b>3.5.1</b> Evaluation</a></li>
+<li class="chapter" data-level="3.5.2" data-path="eval-and-select.html"><a href="eval-and-select.html#selection"><i class="fa fa-check"></i><b>3.5.2</b> Selection</a></li>
+<li class="chapter" data-level="3.5.3" data-path="eval-and-select.html"><a href="eval-and-select.html#imblearn"><i class="fa fa-check"></i><b>3.5.3</b> Dealing With Imbalanced Data</a></li>
+<li class="chapter" data-level="3.5.4" data-path="eval-and-select.html"><a href="eval-and-select.html#algorithms"><i class="fa fa-check"></i><b>3.5.4</b> Algorithms</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="results-and-discussion.html"><a href="results-and-discussion.html"><i class="fa fa-check"></i><b>4</b> Results and Discussion</a><ul>
+<li class="chapter" data-level="4.1" data-path="preprocessing-with-package-kdd98.html"><a href="preprocessing-with-package-kdd98.html"><i class="fa fa-check"></i><b>4.1</b> Preprocessing With Package kdd98</a></li>
+<li class="chapter" data-level="4.2" data-path="imputation-1.html"><a href="imputation-1.html"><i class="fa fa-check"></i><b>4.2</b> Imputation</a></li>
+<li class="chapter" data-level="4.3" data-path="feature-selection.html"><a href="feature-selection.html"><i class="fa fa-check"></i><b>4.3</b> Feature Selection</a></li>
+<li class="chapter" data-level="4.4" data-path="results-models.html"><a href="results-models.html"><i class="fa fa-check"></i><b>4.4</b> Model Evaluation and Selection</a><ul>
+<li class="chapter" data-level="4.4.1" data-path="results-models.html"><a href="results-models.html#classifiers-1"><i class="fa fa-check"></i><b>4.4.1</b> Classifiers</a></li>
+<li class="chapter" data-level="4.4.2" data-path="results-models.html"><a href="results-models.html#regressors-1"><i class="fa fa-check"></i><b>4.4.2</b> Regressors</a></li>
+</ul></li>
+<li class="chapter" data-level="4.5" data-path="prediction.html"><a href="prediction.html"><i class="fa fa-check"></i><b>4.5</b> Prediction</a><ul>
+<li class="chapter" data-level="4.5.1" data-path="prediction.html"><a href="prediction.html#conditional-prediction-of-the-donation-amount"><i class="fa fa-check"></i><b>4.5.1</b> Conditional Prediction of the Donation Amount</a></li>
+<li class="chapter" data-level="4.5.2" data-path="prediction.html"><a href="prediction.html#profit-optimization"><i class="fa fa-check"></i><b>4.5.2</b> Profit Optimization</a></li>
+<li class="chapter" data-level="4.5.3" data-path="prediction.html"><a href="prediction.html#final-prediction"><i class="fa fa-check"></i><b>4.5.3</b> Final Prediction</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="conclusions.html"><a href="conclusions.html"><i class="fa fa-check"></i><b>5</b> Conclusions</a><ul>
+<li class="chapter" data-level="5.1" data-path="comparison-with-cup-winner.html"><a href="comparison-with-cup-winner.html"><i class="fa fa-check"></i><b>5.1</b> Comparison With Cup Winner</a></li>
+<li class="chapter" data-level="5.2" data-path="achieved.html"><a href="achieved.html"><i class="fa fa-check"></i><b>5.2</b> Achieved</a></li>
+<li class="chapter" data-level="5.3" data-path="shortcomings.html"><a href="shortcomings.html"><i class="fa fa-check"></i><b>5.3</b> Shortcomings</a></li>
+<li class="chapter" data-level="5.4" data-path="outlook.html"><a href="outlook.html"><i class="fa fa-check"></i><b>5.4</b> Outlook</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+<li class="appendix"><span><b>Appendix</b></span></li>
+<li class="chapter" data-level="A" data-path="python-environment.html"><a href="python-environment.html"><i class="fa fa-check"></i><b>A</b> Python Environment</a></li>
+<li class="chapter" data-level="B" data-path="kdd-cup-documents.html"><a href="kdd-cup-documents.html"><i class="fa fa-check"></i><b>B</b> KDD Cup Documents</a><ul>
+<li class="chapter" data-level="B.1" data-path="data-set-documentation.html"><a href="data-set-documentation.html"><i class="fa fa-check"></i><b>B.1</b> Cup Documentation</a></li>
+<li class="chapter" data-level="B.2" data-path="data-set-dictionary.html"><a href="data-set-dictionary.html"><i class="fa fa-check"></i><b>B.2</b> Data Set Dictionary</a></li>
+</ul></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Profit maximization for direct marketing campaigns</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="results-models" class="section level2">
+<h2><span class="header-section-number">4.4</span> Model Evaluation and Selection</h2>
+<p>Model evaluation and -selection may be studied in detail in notebook <code>6_Model_Evaluation_Selection.ipynb</code><a href="#fn20" class="footnote-ref" id="fnref20"><sup>20</sup></a>. As will be explained below, all classifiers performed rather weak and were highly influenced by the imbalance in the data. The best results were achieved by using SMOTE resampling. Random over-/undersampling and specifying class weights however did not have a significant impact on the models’ performance.</p>
+<p>Among the classifiers evaluated, GLMnet consistently showed the best performance and was thus chosen.</p>
+<p>For the regression models, RF outperformed the other models, although the differences were less pronounced compared to the classifier results.</p>
+<div id="classifiers-1" class="section level3">
+<h3><span class="header-section-number">4.4.1</span> Classifiers</h3>
+<p>During grid search, models were trained individually for best <em>F1</em> and <em>recall</em>. The models trained for high recall had only slightly worse precision than those trained for high F1, but at the same time better recall scores (see Jupyter notebook <code>6_Model_Evaluation_Selection.ipynb</code>). Therefore, the recall-trained models were considered for selection of the classifier.</p>
+<p>Evaluation was based on the recall scores, confusion matrices, receiver operating characteristic (ROC) indicating model performance through an area under the curve score (ROC-AUC) and precision-recall (PR) curves.</p>
+<p>If we were to simply decide by recall score, the decision would be obvious, as shown in Figure <a href="results-models.html#fig:recall-scores">4.3</a>. SVM has ~74 % recall, with the next-best scores at 54 % and 53 %. However, it is important to also consider the false positives as those cost money and decrease net profit.</p>
+
+<div class="figure" style="text-align: center"><span id="fig:recall-scores"></span>
+<img src="figures/learning/recall-scores.png" alt="Comparison of recall scores for all classifiers evaluated." width="70%" />
+<p class="caption">
+Figure 4.3: Comparison of recall scores for all classifiers evaluated.
+</p>
+</div>
+<p>The confusion matrices are shown in Figure <a href="results-models.html#fig:conf-matrices">4.4</a>. We aim for a classifier that has a high recall, predicting many donors correctly, and at the same time a low False Positive Rate (FPR).</p>
+<p>We now see that for SVM, the trade off for high recall is also a high FPR. The false positives can be directly translated to cost: the 12’985 false positives in this case would amount to 8’830 $ at a unit cost of 0.68 $, while the 715 true positives generate an expected profit of only 8’808 $ (with a mean net profit of 12.32 $).</p>
+<p>Evidently, GLMnet an NNet have a relatively good balance of recall and FPR. GBM performs well for FPR, which means less money lost due to unit costs, but has a very low recall.</p>
+<p>GLMnet and NNet were also combined into a voting classifier. This classifier creates an ensemble that predicts through a majority vote, therefore compensating for the individual classifier’s weaknesses. It exhibits a slightly lower recall for a slight decrease in FPR. Since <em>recall</em> was seen as being more important, it was not investigated further.</p>
+
+<div class="figure" style="text-align: center"><span id="fig:conf-matrices"></span>
+<img src="figures/learning/confusion_matrix_model_RF_refit_recall.png" alt="Confusion matrices for the 5 classifiers evaluated." width="33%" /><img src="figures/learning/confusion_matrix_model_GBM_refit_recall.png" alt="Confusion matrices for the 5 classifiers evaluated." width="33%" /><img src="figures/learning/confusion_matrix_model_GLMnet_refit_recall.png" alt="Confusion matrices for the 5 classifiers evaluated." width="33%" /><img src="figures/learning/confusion_matrix_model_NNet_refit_recall.png" alt="Confusion matrices for the 5 classifiers evaluated." width="33%" /><img src="figures/learning/confusion_matrix_model_SVM_refit_recall.png" alt="Confusion matrices for the 5 classifiers evaluated." width="33%" /><img src="figures/learning/confusion_matrix_voting_classifier.png" alt="Confusion matrices for the 5 classifiers evaluated." width="33%" />
+<p class="caption">
+Figure 4.4: Confusion matrices for the 5 classifiers evaluated.
+</p>
+</div>
+<p>The ROC-AUC curve is constructed by evaluating the false positive rate (FPR) against the true positive rate (TPR) at various thresholds for the predicted class probabilities of examples in the training data. The closer the curve is to the top-left corner, the better a model performs (we have a large TPR and at the same time a low FPR for a wide range of thresholds). Looking at the ROC-AUC curves shown in Figure <a href="results-models.html#fig:roc-auc-curve">4.5</a>, we see that all classifiers performed rather weak. In the case of imbalanced data, the majority class dominates this metric. The false positive rate is <span class="math inline">\(FPR = \frac{FP}{FP+TN}\)</span>. This means that as the false positives (FP) decrease due to an increasing threshold, FPR does not change a lot.</p>
+
+<div class="figure" style="text-align: center"><span id="fig:roc-auc-curve"></span>
+<img src="figures/learning/roc_auc_compared_refit_recall.png" alt="Comparison of ROC-AUC for the evaluated classifiers." width="70%" />
+<p class="caption">
+Figure 4.5: Comparison of ROC-AUC for the evaluated classifiers.
+</p>
+</div>
+<p>The PR curve with precision <span class="math inline">\(P = \frac{TP}{TP+FP}\)</span> plotted against recall <span class="math inline">\(R = \frac{TP}{{TP+FN}}\)</span> at different threshold values is sensitive to false positives and, since TN is not involved, better suited for the imbalanced data at hand. Figure <a href="results-models.html#fig:p-r-curve">4.6</a> shows the models in direct comparison. All of them suffer from low precision except for the highest threshold values. Again, this is caused by the high imbalance in the data.</p>
+
+<div class="figure" style="text-align: center"><span id="fig:p-r-curve"></span>
+<img src="figures/learning/prec_rec_compared_refit_recall.png" alt="Comparison of PR curves for the classifiers. Recall is plotted against precision for various threshold values of the predicted class probabilities. For good models, the curve is close to the top-right corner." width="70%" />
+<p class="caption">
+Figure 4.6: Comparison of PR curves for the classifiers. Recall is plotted against precision for various threshold values of the predicted class probabilities. For good models, the curve is close to the top-right corner.
+</p>
+</div>
+<p>Using RF, the important features can be identified. The measure implemented in scikit-learn is the <em>Gini importance</em> as described in <span class="citation">Breiman et al. (<a href="references.html#ref-breiman1984classification">1984</a>)</span>. It represents the total decrease in impurity (see Section <a href="eval-and-select.html#methods-rf">3.5.4.1</a>) due to nodes split on feature <span class="math inline">\(f\)</span>, averaged over all trees in the forest. The most important features are all from the giving history, followed by the promotion history. US census features are not important (see Figure <a href="results-models.html#fig:importances">4.7</a>).</p>
+<div class="figure" style="text-align: center"><span id="fig:importances"></span>
+<img src="figures/learning/feature-importance-rf-classification.png" alt="Feature importances determined with the RF classifier. Impurity is measured by Gini importance / mean decrease impurity. Error bars give bootstrap error on 50 repetitions." width="100%" />
+<p class="caption">
+Figure 4.7: Feature importances determined with the RF classifier. Impurity is measured by Gini importance / mean decrease impurity. Error bars give bootstrap error on 50 repetitions.
+</p>
+</div>
+</div>
+<div id="regressors-1" class="section level3">
+<h3><span class="header-section-number">4.4.2</span> Regressors</h3>
+<p>Regressors were learned on a subset of the training data comprised of all donors: <span class="math inline">\(\{\{x_i, y_i\}|y_{b,i} = 1\}\)</span>.</p>
+<p>The target was transformed using a Box-Cox transformation with parameter <span class="math inline">\(\lambda=0.0239\)</span>. The goal was to linearize the target to improve regression models’ performance. The transformed data somewhat resembles a normal distribution, although there are several modes to be made out.</p>
+<div class="figure" style="text-align: center"><span id="fig:reg-targ-transform"></span>
+<img src="figures/learning/target_d-distributions-before-after-transformation.png" alt="Target before transformation (left) and after a Box-Cox transformation (right)." width="70%" />
+<p class="caption">
+Figure 4.8: Target before transformation (left) and after a Box-Cox transformation (right).
+</p>
+</div>
+<p>The resulting distribution of predicted donation amounts on the training data is shown in Figure <a href="results-models.html#fig:reg-distrib">4.9</a>. Except for SVR, the models produce very similar results. We again find the multi-modal distribution (refer to Figure <a href="results-models.html#fig:reg-targ-transform">4.8</a>). RF and SVR are relatively symmetric, while BR and ElasticNet produce right-skewed distributions that predict very large donation amounts for some examples.</p>
+
+<div class="figure" style="text-align: center"><span id="fig:reg-distrib"></span>
+<img src="figures/learning/regressor-predictions-comparison.png" alt="Distribution of (Box-Cox transformed) donation amounts for the four regressors evaluated." width="70%" />
+<p class="caption">
+Figure 4.9: Distribution of (Box-Cox transformed) donation amounts for the four regressors evaluated.
+</p>
+</div>
+<p>The regressor for further use was selected by <span class="math inline">\(R^2\)</span> score on a test set (20% of the learning data was used). RF was the best performing model with <span class="math inline">\(R^2 = 0.72\)</span> (see Figure <a href="results-models.html#fig:reg-eval">4.10</a>).</p>
+
+<div class="figure" style="text-align: center"><span id="fig:reg-eval"></span>
+<img src="figures/learning/regressor-score-comparison.png" alt="Evaluation metric \(R^2\) for all regression models evaluated. The domain for \(R^2\) is \((-\inf, 1]\).)" width="70%" />
+<p class="caption">
+Figure 4.10: Evaluation metric <span class="math inline">\(R^2\)</span> for all regression models evaluated. The domain for <span class="math inline">\(R^2\)</span> is <span class="math inline">\((-\inf, 1]\)</span>.)
+</p>
+</div>
+<p>Again, RF enables to interpret the importance of features. The results (Figure <a href="results-models.html#fig:reg-importance">4.11</a>) confirm an observation during EDA (Section @ref())</p>
+
+<div class="figure" style="text-align: center"><span id="fig:reg-importance"></span>
+<img src="figures/learning/feature-importance-rf-regression.png" alt="Feature importances for the RF regressor. The amount of the last donation prior to the current promotion (LASTGIFT) is by far the most important feature for predicting the donation amount. It is followed by the average donation amount (AVGGIT) and the donation amounts for the three promotions prior to the current one. Intuitively, this makes sense." width="70%" />
+<p class="caption">
+Figure 4.11: Feature importances for the RF regressor. The amount of the last donation prior to the current promotion (LASTGIFT) is by far the most important feature for predicting the donation amount. It is followed by the average donation amount (AVGGIT) and the donation amounts for the three promotions prior to the current one. Intuitively, this makes sense.
+</p>
+</div>
+</div>
+</div>
+<div class="footnotes">
+<hr />
+<ol start="20">
+<li id="fn20"><p><a href="https://github.com/datarian/thesis-msc-statistics/tree/master/code//notebooks/6_Model_Evaluation_Selection.ipynb">https://github.com/datarian/thesis-msc-statistics/tree/master/code//notebooks/6_Model_Evaluation_Selection.ipynb</a><a href="results-models.html#fnref20" class="footnote-back">↩</a></p></li>
+</ol>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="feature-selection.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="prediction.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="assets/gitbook-2.6.7/js/app.min.js"></script>
+<script src="assets/gitbook-2.6.7/js/lunr.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="assets/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"google": false,
+"linkedin": true,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"all": ["facebook", "google", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"download": ["Master_Thesis_Florian_Hochstrasser.pdf"],
+"toc": {
+"collapse": "subsection"
+},
+"toolbar": {
+"position": "static"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:" && /^https?:/.test(src))
+      src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>
