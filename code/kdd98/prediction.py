@@ -167,9 +167,8 @@ class Kdd98ProfitEstimator(BaseEstimator):
             y_d_true = y.TARGET_D.values
         else:
             y_d_true = self.target_transformer.inverse_transform(
-                y_d_predict_transformed)
+                self._make_2d_array(y_d_predict_transformed)).ravel()
 
-        #expected_profit = np.dot(y_b_predict, (y_d_predict * self.alpha_star))[0]
         indicator, expected_profit = self._pi_alpha(y_b_predict,
                                                     y_d_predict_transformed,
                                                     y_d_true, self.alpha_star)
