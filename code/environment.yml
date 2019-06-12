@@ -1,0 +1,43 @@
+name: msc-thesis-fh
+channels:
+  - brittainhard
+  - file:///data/anaconda/envs/py36/conda-bld
+  - saravji
+  - defaults
+  - conda-forge
+dependencies:
+  - anaconda
+  - boruta=0.1.5
+  - cartopy=0.17.0
+  - category_encoders=2.0.0
+  - conda
+  - conda-build
+  - cycler
+  - geographiclib
+  - glmnet=2.1.1
+  - imbalanced-learn=0.4.3
+  - jupyter
+  - jupyter_contrib_core
+  - jupyter_contrib_nbextensions
+  - jupyter_core
+  - jupyter_nbextensions_configurator
+  - knnimpute=0.1.0
+  - missingno=0.4.1
+  - nbconvert
+  - nbformat
+  - notebook
+  - numpy=1.16.3
+  - pandas=0.23.4
+  - pip
+  - py-xgboost=0.80
+  - python=3.6.7
+  - python-dateutil
+  - scikit-learn=0.20.3
+  - scipy=1.2.1
+  - seaborn=0.9.0
+  - pip:
+    - fancyimpute==0.4.2
+    - geopy==1.19.0
+    - missingpy==0.2.0
+    - mpmath==1.1.0
+
