@@ -24,7 +24,7 @@
 <meta name="author" content="Florian Hochstrasser" />
 
 
-<meta name="date" content="2019-06-11" />
+<meta name="date" content="2019-06-12" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -108,20 +108,22 @@
 <li class="chapter" data-level="4.4.2" data-path="results-models.html"><a href="results-models.html#regressors-1"><i class="fa fa-check"></i><b>4.4.2</b> Regressors</a></li>
 </ul></li>
 <li class="chapter" data-level="4.5" data-path="prediction.html"><a href="prediction.html"><i class="fa fa-check"></i><b>4.5</b> Prediction</a><ul>
-<li class="chapter" data-level="4.5.1" data-path="prediction.html"><a href="prediction.html#conditional-prediction-of-the-donation-amount"><i class="fa fa-check"></i><b>4.5.1</b> Conditional Prediction of the Donation Amount</a></li>
-<li class="chapter" data-level="4.5.2" data-path="prediction.html"><a href="prediction.html#profit-optimization"><i class="fa fa-check"></i><b>4.5.2</b> Profit Optimization</a></li>
-<li class="chapter" data-level="4.5.3" data-path="prediction.html"><a href="prediction.html#final-prediction"><i class="fa fa-check"></i><b>4.5.3</b> Final Prediction</a></li>
+<li class="chapter" data-level="4.5.1" data-path="prediction.html"><a href="prediction.html#prediction-of-donation-probability"><i class="fa fa-check"></i><b>4.5.1</b> Prediction of Donation Probability</a></li>
+<li class="chapter" data-level="4.5.2" data-path="prediction.html"><a href="prediction.html#conditional-prediction-of-the-donation-amount"><i class="fa fa-check"></i><b>4.5.2</b> Conditional Prediction of the Donation Amount</a></li>
+<li class="chapter" data-level="4.5.3" data-path="prediction.html"><a href="prediction.html#profit-optimization"><i class="fa fa-check"></i><b>4.5.3</b> Profit Optimization</a></li>
+<li class="chapter" data-level="4.5.4" data-path="prediction.html"><a href="prediction.html#final-prediction"><i class="fa fa-check"></i><b>4.5.4</b> Final Prediction</a></li>
 </ul></li>
 </ul></li>
-<li class="chapter" data-level="5" data-path="conclusions.html"><a href="conclusions.html"><i class="fa fa-check"></i><b>5</b> Conclusions</a><ul>
-<li class="chapter" data-level="5.1" data-path="comparison-with-cup-winner.html"><a href="comparison-with-cup-winner.html"><i class="fa fa-check"></i><b>5.1</b> Comparison With Cup Winner</a></li>
-<li class="chapter" data-level="5.2" data-path="achieved.html"><a href="achieved.html"><i class="fa fa-check"></i><b>5.2</b> Achieved</a></li>
-<li class="chapter" data-level="5.3" data-path="shortcomings.html"><a href="shortcomings.html"><i class="fa fa-check"></i><b>5.3</b> Shortcomings</a></li>
-<li class="chapter" data-level="5.4" data-path="outlook.html"><a href="outlook.html"><i class="fa fa-check"></i><b>5.4</b> Outlook</a></li>
-</ul></li>
+<li class="chapter" data-level="5" data-path="conclusions.html"><a href="conclusions.html"><i class="fa fa-check"></i><b>5</b> Conclusions</a></li>
 <li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
 <li class="appendix"><span><b>Appendix</b></span></li>
-<li class="chapter" data-level="A" data-path="python-environment.html"><a href="python-environment.html"><i class="fa fa-check"></i><b>A</b> Python Environment</a></li>
+<li class="chapter" data-level="A" data-path="software.html"><a href="software.html"><i class="fa fa-check"></i><b>A</b> Software</a><ul>
+<li class="chapter" data-level="A.1" data-path="python-environment.html"><a href="python-environment.html"><i class="fa fa-check"></i><b>A.1</b> Python Environment</a></li>
+<li class="chapter" data-level="A.2" data-path="package-kdd98.html"><a href="package-kdd98.html"><i class="fa fa-check"></i><b>A.2</b> Package kdd98</a><ul>
+<li class="chapter" data-level="A.2.1" data-path="package-kdd98.html"><a href="package-kdd98.html#usage"><i class="fa fa-check"></i><b>A.2.1</b> Usage</a></li>
+<li class="chapter" data-level="A.2.2" data-path="package-kdd98.html"><a href="package-kdd98.html#installation"><i class="fa fa-check"></i><b>A.2.2</b> Installation</a></li>
+</ul></li>
+</ul></li>
 <li class="chapter" data-level="B" data-path="kdd-cup-documents.html"><a href="kdd-cup-documents.html"><i class="fa fa-check"></i><b>B</b> KDD Cup Documents</a><ul>
 <li class="chapter" data-level="B.1" data-path="data-set-documentation.html"><a href="data-set-documentation.html"><i class="fa fa-check"></i><b>B.1</b> Cup Documentation</a></li>
 <li class="chapter" data-level="B.2" data-path="data-set-dictionary.html"><a href="data-set-dictionary.html"><i class="fa fa-check"></i><b>B.2</b> Data Set Dictionary</a></li>
@@ -193,7 +195,7 @@ Figure 2.15: Definition of the confusion matrix for a two-class problem.
 \text{Accuracy} &amp;= \frac{TP + TN}{TP + FP + FN + TN} \\
 \text{F1 score} &amp;= \frac{2TP}{2TP+FP+FN}
 \end{align*}\]</span></p>
-<p>The goal, as mentioned earlier, is to maximize net profit. To achieve this, a balance between predicting as many TP’s as possible while keeping the number of FP’s low has to be found. One FP costs 0.68 $ (sending a letter to a non-donor). Keeping in mind the distribution of TARGET_D (Section <a href="exploratory-data-analysis.html#targets">2.2.2</a>), one FN means loosing at least 0.32 $ of possible profit (not sending a promotion to a donor, smallest donation amount is 1 $). The expected loss in profit for one FN is even 15 $ (corresponding to the mean donation amount), which means that with each TP, the cost of 22 FP’s can be covered on average.</p>
+<p>The goal, as mentioned earlier, is to maximize net profit. To achieve this, a balance between predicting as many TP’s as possible while keeping the number of FP’s low has to be found. One FP costs 0.68 $ (sending a letter to a non-donor). Keeping in mind the distribution of <span class="math inline">\(\text{TARGET}_D\)</span> (Section <a href="exploratory-data-analysis.html#targets">2.2.2</a>), one FN means loosing at least 0.32 $ of possible profit (not sending a promotion to a donor, smallest donation amount is 1 $). The expected loss in profit for one FN is even 15 $ (corresponding to the mean donation amount), which means that with each TP, the cost of 22 FP’s can be covered on average.</p>
 <p>The default metric for classification is accuracy, but in the case of imbalanced targets, it is not a desirable metric (TN is present both in the nominator and denominator, dominating the score). The metrics that could be used beneficially because they involve TP an not TN are F1, recall and precision. Since in precision, the FP of the majority class have the highest influence from among the three, it was discarded from the candidate list.</p>
 </div>
 <div id="regressors" class="section level4">
@@ -209,7 +211,7 @@ Figure 2.15: Definition of the confusion matrix for a two-class problem.
 <li>Random undersampling of the majority class</li>
 <li>SMOTE (synthetic minority oversampling technique), variant borderline-1</li>
 </ul>
-<p>The random sampling algorithms either draw from the minority class with repetition or draw random samples from the majority class without repetition until the labels are balanced. SMOTE does not sample from the data but instead generates synthetic samples from the minority class, thereby countering the danger of overfitting by learning on a small number of repeated observations (random oversampling) or a small subset of the training data available (random undersampling). The SMOTE variant <em>borderline-1</em> chosen generates samples that are close to the optimal decision boundary, where misclassifications are likely.</p>
+<p>The random sampling algorithms either draw from the minority class with repetition or draw random samples from the majority class without repetition until the labels are balanced. SMOTE does not sample from the data but instead generates synthetic samples from the minority class, thereby countering the danger of overfitting by learning on a small number of repeated observations (random oversampling) or a small subset of the training data available (random undersampling). The SMOTE variant <em>borderline-1</em> chosen generates samples that are close to the optimal decision boundary, where misclassification is likely.</p>
 <p>Additional experiments were run with class- and sample-weights set on the data without resampling. For class weights, the ratio of non-donors vs. donors was used. For sample weights, the donation amount was employed, rescaled to the interval <span class="math inline">\([0,1]\)</span>.</p>
 </div>
 <div id="algorithms" class="section level3">
@@ -265,7 +267,7 @@ for regions <span class="math inline">\(R_l, R_r\)</span> below the node.</p>
 <h4><span class="header-section-number">3.5.4.2</span> Gradient Boosting Machine</h4>
 <p>The main idea behind boosting is to sequentially train an ensemble of weak learners which on their own are only slightly better than a random decision. The predictions of the individual weak learners are then combined into a majority vote <span class="citation">(Kearns <a href="references.html#ref-kearns1988thoughts">1988</a>)</span>.</p>
 <p>Gradient boosting machine (GBM) extends on this idea. Like a random forest, GBM learns an ensemble of decision trees. However, trees are learned in an additive manner. At each iteration, the tree that improves the model most (i.e. in the direction of the gradient of the loss function) is added. For this thesis, the package <code>XGBoost</code> by <span class="citation">Chen and Guestrin (<a href="references.html#ref-chen2016xgboost">2016</a>)</span> was used. They describe the algorithm as follows:</p>
-<p>Assume we have a data set with <span class="math inline">\(n\)</span> examples and <span class="math inline">\(p\)</span> features: <span class="math inline">\(D = \{\{x_i,y_i\}, i=1\ldots n, x_i=\{x_{i,1}, x_{i,2}, \ldots x_{i,p}\}\}\)</span>. The implementation uses a tree ensemble with <span class="math inline">\(K\)</span> regression trees to predict the outcome for an example in the data by summing up the weights predicted by each tree:</p>
+<p>Assume a data set with <span class="math inline">\(n\)</span> examples and <span class="math inline">\(p\)</span> features: <span class="math inline">\(D = \{\{x_i,y_i\}, i=1\ldots n, x_i=\{x_{i,1}, x_{i,2}, \ldots x_{i,p}\}\}\)</span>. The implementation uses a tree ensemble with <span class="math inline">\(K\)</span> regression trees to predict the outcome for an example in the data by summing up the weights predicted by each tree:</p>
 <p><span class="math display" id="eq:gbm-ensemble">\[\begin{equation}
 \hat{y}_i = \phi(x_i) = \sum_{k=1}^K f_k(x_i), f_k \in F
 \tag{2.10}
@@ -277,7 +279,7 @@ L(\phi) = \sum_{i=1}^n l(y_i, \hat{y_i}) + \sum_k^K \Omega(f_k)
 \tag{2.11}
 \end{equation}\]</span></p>
 <p>Here, <span class="math inline">\(l\)</span> is a differentiable, convex loss function that measures the difference between predictions and true values. Since <span class="math inline">\(l\)</span> is convex, a global minimum is guaranteed. <span class="math inline">\(\Omega(f) = \gamma T + \frac{1}{2}\lambda||w||^2\)</span> is a penalty on the complexity of the trees to counter over-fitting. The algorithm thus features integrated regularization.</p>
-<p>Now, at each iteration <span class="math inline">\(t\)</span>, the tree <span class="math inline">\(f_t\)</span> that improves the model most is added. For this, we add <span class="math inline">\(f_t(\mathbf{x_i})\)</span> to the predictions at <span class="math inline">\(t-1\)</span> and compute the loss:</p>
+<p>Now, at each iteration <span class="math inline">\(t\)</span>, the tree <span class="math inline">\(f_t\)</span> that improves the model most is added. For this, <span class="math inline">\(f_t(\mathbf{x_i})\)</span> is added to the predictions at <span class="math inline">\(t-1\)</span> and compute the loss:</p>
 <p><span class="math display" id="eq:gbm-iterate">\[\begin{equation}
 L^{(t)} = \sum_{i=1}^n l(y_i, \hat{y_i}^{t-1} + f_t(\mathbf{x_i})) +\Omega(f_t)
 \tag{2.12}
@@ -323,7 +325,7 @@ L^{(t)} = \sum_{i=1}^n l(y_i, \hat{y_i}^{t-1} + f_t(\mathbf{x_i})) +\Omega(f_t)
 </div>
 <div id="multilayer-perceptron" class="section level4">
 <h4><span class="header-section-number">3.5.4.4</span> Multilayer Perceptron</h4>
-<p>The multilayer perceptron (MLP) is a so-called feedforward neural network. The network consists of at least three layers: an input layer, an arbitrary number of hidden layers and an output layer. Each layer is made up of units. The term feedforward means that information flows from the input layer through intermediary steps and then to the output. The goal is to approximate the function <span class="math inline">\(f^*\)</span>. For a classifier, <span class="math inline">\(y = f^*(x)\)</span> maps an example <span class="math inline">\(x\)</span> to a category <span class="math inline">\(y\)</span>. A feedforward network defines a mapping <span class="math inline">\(y=f(x, w)\)</span> and learns the weights <span class="math inline">\(w\)</span> by approximating the function <span class="math inline">\(f\)</span> <span class="citation">(Goodfellow, Bengio, and Courville <a href="references.html#ref-goodfellow2016deep">2016</a>)</span>.</p>
+<p>The multilayer perceptron (MLP) is a so-called feed-forward neural network. The network consists of at least three layers: an input layer, an arbitrary number of hidden layers and an output layer. Each layer is made up of units. The term feed-forward means that information flows from the input layer through intermediary steps and then to the output. The goal is to approximate the function <span class="math inline">\(f^*\)</span>. For a classifier, <span class="math inline">\(y = f^*(x)\)</span> maps an example <span class="math inline">\(x\)</span> to a category <span class="math inline">\(y\)</span>. A feed-forward network defines a mapping <span class="math inline">\(y=f(x, w)\)</span> and learns the weights <span class="math inline">\(w\)</span> by approximating the function <span class="math inline">\(f\)</span> <span class="citation">(Goodfellow, Bengio, and Courville <a href="references.html#ref-goodfellow2016deep">2016</a>)</span>.</p>
 <p>For a binary classification problem on a dataset with <span class="math inline">\(n\)</span> examples and <span class="math inline">\(p\)</span> features <span class="math inline">\(D = \{\{x_i, y_i\}\}, x_i = \{x_{i,1},x_{i,2},\ldots,x_{i,p}\}, y_i \in \{0,1\}, i = 1 \ldots n\}\)</span>, the input layer has <span class="math inline">\(p\)</span> units, the output layer has <span class="math inline">\(1\)</span> unit. The hidden layers each have an arbitrary number of <em>hidden</em> units.</p>
 <p>Each unit, except for the input layer, consists of a perceptron, which is in effect a linear model with some non-linear activation function applied:</p>
 <p><span class="math display" id="eq:perceptron">\[\begin{equation}
@@ -332,7 +334,7 @@ y = \phi(w^Tx+b)
 \end{equation}\]</span></p>
 <p>where <span class="math inline">\(\phi\)</span> is a non-linear activation function, <span class="math inline">\(w\)</span> is the vector of weights, <span class="math inline">\(x\)</span> is the vector of inputs and b is the bias. For <span class="math inline">\(\phi\)</span>, typical functions are the hyperbolic tangens <span class="math inline">\(tanh(\cdot)\)</span>, the logistic sigmoid <span class="math inline">\(\sigma(x) = \frac{1}{1+e^{-x}}\)</span>, or, more recently, the rectified linear unit <span class="math inline">\(relu(x) = max(0,x)\)</span> <span class="citation">(Hahnloser et al. <a href="references.html#ref-hahnloser2000digital">2000</a>; Goodfellow, Bengio, and Courville <a href="references.html#ref-goodfellow2016deep">2016</a>)</span>.</p>
 <p>During learning, the training examples are fed to the network sequentially. For each example, the prediction error is calculated using a loss function, which is typically the negative log-likelihood.</p>
-<p>Then, the partial derivatives of the loss function with respect to the weights are computed for each unit and the parameters updated using stochastic gradient descent. This process is called backpropagation.</p>
+<p>Then, the partial derivatives of the loss function with respect to the weights are computed for each unit and the parameters updated using stochastic gradient descent. This process is called back-propagation.</p>
 <p>The complete network is a chain of functions, for the network trained here, it is:
 <span class="math display">\[\begin{equation}
 \mathbf{y} = \phi^{(3)}(\mathbf{W}^{(3)T} \mathbf{\phi}^{(2)}(\mathbf{W}^{(2)T} \mathbf{\phi}^{(1)}(\mathbf{W}^{(1)T} \mathbf{x} + \mathbf{b}^{(1)}) + \mathbf{b}^{(2)}) + \mathbf{b}^{(3)})
@@ -345,12 +347,12 @@ where <span class="math inline">\(x\)</span> is the vector of input features, <s
 Figure 2.16: Neural network topology used. Two hidden layers <span class="math inline">\(\mathbf{h^{(1)}, h^{(2)}}\)</span> are contained. <span class="math inline">\(\mathbf{b^{(2)}, b^{(3)}}\)</span> and <span class="math inline">\(\mathbf{b^{(4)}}\)</span> are the bias vectors for the respective layers.
 </p>
 </div>
-<p>For this thesis, the scikit-learn implementation <code>sklearn.neural_network.MLPClassifier</code> was used with default settings (rectified linear unit as activation function, adam (stochastic gradient descent) solver). The network topology was determined by treating it as a hyperparameter. Best results were achieved with a network featuring two hidden layers with 28 hidden units each. The network is shown symbolically in Figure <a href="eval-and-select.html#fig:mlp-graph">2.16</a>.</p>
+<p>For this thesis, the scikit-learn implementation <code>sklearn.neural_network.MLPClassifier</code> was used with default settings (rectified linear unit as activation function, <em>adam</em> (stochastic gradient descent) solver). The network topology was determined by treating it as a hyperparameter. Best results were achieved with a network featuring two hidden layers with 28 hidden units each. The network is shown symbolically in Figure <a href="eval-and-select.html#fig:mlp-graph">2.16</a>.</p>
 <p><strong>Hyperparameters</strong></p>
 <ul>
 <li><code>hidden_layer_sizes</code>: Tuples, i.e. (100,50,) for a network with 2 hidden layers of 100 and 50 units and one output unit.</li>
 <li><span class="math inline">\(\alpha\)</span>, [0,1]: <span class="math inline">\(L^2\)</span> regularization amount</li>
-<li><code>learning_rate_init</code> <span class="math inline">\(&gt;0\)</span>: Controls step size for the solver during backpropagation (regularization).</li>
+<li><code>learning_rate_init</code> <span class="math inline">\(&gt;0\)</span>: Controls step size for the solver during back-propagation (regularization).</li>
 </ul>
 </div>
 <div id="support-vector-machine" class="section level4">
@@ -408,7 +410,7 @@ p(w|\lambda) = \prod_{i=0}^p \mathcal{N}(w_i|0, \lambda_i^-1)
 <div class="footnotes">
 <hr />
 <ol start="14">
-<li id="fn14"><p><a href="https://github.com/datarian/thesis-msc-statistics/tree/master/code//notebooks/6_Model_Evaluation_Selection.ipynb">https://github.com/datarian/thesis-msc-statistics/tree/master/code//notebooks/6_Model_Evaluation_Selection.ipynb</a><a href="eval-and-select.html#fnref14" class="footnote-back">↩</a></p></li>
+<li id="fn14"><p><a href="https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/6_Model_Evaluation_Selection.ipynb">https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/6_Model_Evaluation_Selection.ipynb</a><a href="eval-and-select.html#fnref14" class="footnote-back">↩</a></p></li>
 <li id="fn15"><p>taken from <a href="https://en.wikipedia.org/wiki/Confusion_matrix">https://en.wikipedia.org/wiki/Confusion_matrix</a>, accessed on 28.05.2019<a href="eval-and-select.html#fnref15" class="footnote-back">↩</a></p></li>
 </ol>
 </div>

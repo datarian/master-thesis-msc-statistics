@@ -6,9 +6,9 @@ The problem itself was solved using the python language, making use of establish
 
 Calculations were run in the cloud on a linux virtual machine^[For details, refer to: [https://docs.microsoft.com/en-us/azure/machine-learning/data-science-virtual-machine/overview](https://docs.microsoft.com/en-us/azure/machine-learning/data-science-virtual-machine/overview), accessed on 5.6.2019].
 
-Except for the development of a helper packge, most programming was performed in interactive Jupyter notebooks [@Kluyver:2016aa].
+Except for the development of a helper package, most programming was performed in interactive Jupyter notebooks [@Kluyver:2016aa].
 
-The report was written in rmarkdown [@allaire2016rmarkdown] using `knitr` [@xie2015] and `bookdown` [@xie2016bookdown] to render the document into several output formats.
+The report was written in `rmarkdown` [@allaire2016rmarkdown] using `knitr` [@xie2015] and `bookdown` [@xie2016bookdown] to render the document into several output formats.
 
 All work was tracked in version control.
 
@@ -71,19 +71,19 @@ The cleaning stage of preprocessing encompassed the following transformations:
 * Dropping constant and sparse (i.e. those where only few examples have a value set) features
 * Imputation of values missing at random (MAR)
 
-MAR values in the sense of @rubin1976inference are missing conditionally on other features in the data. For example, there are three related features from the promotion and giving history: *ADATE*, the date of mailing a promotion, *RDATE*, the date of receiving a donation in response to the promotion and *RAMOUNT*, the amount received. For missing *RAMOUNT* values, we can check if *RDATE* is non-missing. If *RDATE* is missing, then the example most likely has not donated and we can set *RAMOUNT* to zero. If, on the other hand, both date features have a value, *RAMOUNT* is truly missing.
+MAR values in the sense of @rubin1976inference are missing conditionally on other features in the data. For example, there are three related features from the promotion and giving history: *ADATE*, the date of mailing a promotion, *RDATE*, the date of receiving a donation in response to the promotion and *RAMOUNT*, the amount received. For missing *RAMOUNT* values, it can be checked if *RDATE* is non-missing. If *RDATE* is missing, then the example most likely has not donated and *RAMOUNT* can be set to zero. If, on the other hand, both date features have a value, *RAMOUNT* is truly missing.
 
 
 
 ### Feature Engineering {#methods-feature-engineering}
 
-The transformations applied during feature engineering are described in detail in the Jupyter notebook *2_Feature_Engineering.ipynb*^[`r make_github_link("notebooks", "2_Feature_Engineering.ipynb")`]. The result of this step was an all-numeric data set usable for downstream learning.
+The transformations applied during feature engineering are described in detail in the Jupyter notebook *2_Feature_Engineering.ipynb*^[`r make_github_link("notebooks", "2_Feature Engineering.ipynb")`]. The result of this step was an all-numeric data set usable for downstream learning.
 
-All non-numeric (i.e. categorical) features were encoded as numeric representations. For ordinal features, manual mappings from alphanumeric levels to integer numbers were specified. For nominal features, two encoding techniques provided in package `categorical-encoding`^[Availabe at: [https://github.com/scikit-learn-contrib/categorical-encoding/](https://github.com/scikit-learn-contrib/categorical-encoding/), accessed on 5.6.2019] were employed, depending on the number of levels:
+All non-numeric (i.e. categorical) features were encoded as numeric representations. For ordinal features, manual mappings from alphanumeric levels to integer numbers were specified. For nominal features, two encoding techniques provided in package `categorical-encoding`^[Available at: [https://github.com/scikit-learn-contrib/categorical-encoding/](https://github.com/scikit-learn-contrib/categorical-encoding/), accessed on 5.6.2019] were employed, depending on the number of levels:
 
 * One-hot encoding for $\leq 10$ levels: For each level of a categorical feature, a new feature is created. An additional feature may be added to indicate missing values. Exactly one of these new features is set to $1$, indicating the original level.
 
-* Binary encoding, $> 10$ levels: The levels of the categorical are first transformed ordinally (i.e. to a sequence of integer numbers). Then, these numbers are taken to the base of 2. (A $5$, for example, becomes `101`). According to the number of levels, new features for the binary digits are created. As an example: To represent 60 levels, 6 features are required ($2^6=64$).
+* Binary encoding, $> 10$ levels: The levels of the categorical are first transformed to ordinal (i.e. to a sequence of integer numbers). Then, these numbers are taken to the base of 2. (A $5$, for example, becomes `101`). According to the number of levels, new features for the binary digits are created. As an example: To represent 60 levels, 6 features are required ($2^6=64$).
 
 Also, several features were transformed to better usable formats (i.e. converting dates to time deltas, converting zip codes to coordinates). Care was taken to keep the dimensionality of the data set as low as possible. 
 
@@ -131,7 +131,7 @@ Boruta, introduced by @kursa2010boruta in the form of an R package, performs fea
 
 In short, the algorithm works as follows:
 
-1. The input matrix $\mathbf{X}$ of dimension $n \times p$ is extended with $p$ so-called *shadow features*. The shadow features are permuted copies of the features in $\mathbf{X}$. They are therefore decorrelated with the target.
+1. The input matrix $\mathbf{X}$ of dimension $n \times p$ is extended with $p$ so-called *shadow features*. The shadow features are permuted copies of the features in $\mathbf{X}$. They are therefore de-correlated with the target.
 2. On the resulting matrix $\mathbf{X^*}$, a random forest classifier is trained and the Z-scores $\frac{\bar{\text{loss}}}{sd}$ for each of the $2p$ features calculated.
 3. The highest Z-score among the shadow features $MZSA$ is determined.
 4. All original features are compared against $MZSA$ and those features with a higher score selected as important.
@@ -147,7 +147,7 @@ The models were all learned on the same data set resulting from the boruta selec
 
 ## Prediction {#methods-prediction}
 
-The desired quantity to estimate is net profit $\hat{\Pi}$. In order to predict this quantity, a two-step procedure was implemented, utilizing the response indicator *TARGET_B* and the continuous target *TARGET_D*, respectively. For each step, a model was trained. One is a classifier, predicting $\hat{y}_b$, the probability of donating. The other is a regressor, predicting the donation amount $\hat{y}_d$. The classifier was trained on the complete learning data set, while the regressor was trained on $\mathbf{X}_d = \{x_i|y_{b,i} = 1, i=1 \ldots n\}$ and $y_d = \{y_{d,i}|y_{b,i} = 1, i=1 \ldots n\}$. The non-random sample leads to a conditionally predicted donation amount, thereby introducing bias. A correction for the bias is necessary as a consequence. This approach resembles @heckman1976common's two-stage procedure which is widely used in econometrics. Heckman's procedure was presented for the question of wage offerings for women. Data on wages was only available for working women, thereby introducing bias if wage offerings were only predicted on this sample. The question of whether an example works or not is seen as an unobserved feature. In @heckman1976common, a probit model is used for this first *selection* stage. The inverse Mills ratio of the probit, $\frac{-\phi(\hat{y_i}-\mathbf{X}\beta)}{\Phi(\hat{y_i}-\mathbf{X}\beta}$, is calculated and included in the data for predictions in the second *observation* stage with OLS regression.
+The desired quantity to estimate is net profit $\hat{\Pi}$. In order to predict this quantity, a two-step procedure was implemented, utilizing the response indicator $\text{TARGET}_B$ and the continuous target *$\text{TARGET}_D$*, respectively. For each step, a model was trained. One is a classifier, predicting $\hat{y}_b$, the probability of donating. The other is a regressor, predicting the donation amount $\hat{y}_d$. The classifier was trained on the complete learning data set, while the regressor was trained on $\mathbf{X}_d = \{x_i|y_{b,i} = 1, i=1 \ldots n\}$ and $y_d = \{y_{d,i}|y_{b,i} = 1, i=1 \ldots n\}$. The non-random sample leads to a conditionally predicted donation amount, thereby introducing bias. A correction for the bias is necessary as a consequence. This approach resembles @heckman1976common's two-stage procedure which is widely used in econometrics. Heckman's procedure was presented for the question of wage offerings for women. Data on wages was only available for working women, thereby introducing bias if wage offerings were only predicted on this sample. The question of whether an example works or not is seen as an unobserved feature. In @heckman1976common, a probit model is used for this first *selection* stage. The inverse Mills ratio of the probit, $\frac{-\phi(\hat{y_i}-\mathbf{X}\beta)}{\Phi(\hat{y_i}-\mathbf{X}\beta}$, is calculated and included in the data for predictions in the second *observation* stage with OLS regression.
 
 ### Setup of the Two-Stage Prediction
 
@@ -323,7 +323,7 @@ The definitions of some often-used metrics are given below^[taken from [https://
 \text{F1 score} &= \frac{2TP}{2TP+FP+FN}
 \end{align*}
 
-The goal, as mentioned earlier, is to maximize net profit. To achieve this, a balance between predicting as many TP's as possible while keeping the number of FP's low has to be found. One FP costs `r 0.68` $ (sending a letter to a non-donor). Keeping in mind the distribution of TARGET_D (Section \@ref(targets)), one FN means loosing at least `r 0.32` $ of possible profit (not sending a promotion to a donor, smallest donation amount is 1 $). The expected loss in profit for one FN is even `r 15` $ (corresponding to the mean donation amount), which means that with each TP, the cost of  `r floor(15/0.68)` FP's can be covered on average.
+The goal, as mentioned earlier, is to maximize net profit. To achieve this, a balance between predicting as many TP's as possible while keeping the number of FP's low has to be found. One FP costs `r 0.68` $ (sending a letter to a non-donor). Keeping in mind the distribution of $\text{TARGET}_D$ (Section \@ref(targets)), one FN means loosing at least `r 0.32` $ of possible profit (not sending a promotion to a donor, smallest donation amount is 1 $). The expected loss in profit for one FN is even `r 15` $ (corresponding to the mean donation amount), which means that with each TP, the cost of  `r floor(15/0.68)` FP's can be covered on average.
 
 The default metric for classification is accuracy, but in the case of imbalanced targets, it is not a desirable metric (TN is present both in the nominator and denominator, dominating the score). The metrics that could be used beneficially because they involve TP an not TN are F1, recall and precision. Since in precision, the FP of the majority class have the highest influence from among the three, it was discarded from the candidate list.
 
@@ -339,7 +339,7 @@ Several different approaches were explored. The following over-/undersampling te
 * Random undersampling of the majority class
 * SMOTE (synthetic minority oversampling technique), variant borderline-1
 
-The random sampling algorithms either draw from the minority class with repetition or draw random samples from the majority class without repetition until the labels are balanced. SMOTE does not sample from the data but instead generates synthetic samples from the minority class, thereby countering the danger of overfitting by learning on a small number of repeated observations (random oversampling) or a small subset of the training data available (random undersampling). The SMOTE variant *borderline-1* chosen generates samples that are close to the optimal decision boundary, where misclassifications are likely.
+The random sampling algorithms either draw from the minority class with repetition or draw random samples from the majority class without repetition until the labels are balanced. SMOTE does not sample from the data but instead generates synthetic samples from the minority class, thereby countering the danger of overfitting by learning on a small number of repeated observations (random oversampling) or a small subset of the training data available (random undersampling). The SMOTE variant *borderline-1* chosen generates samples that are close to the optimal decision boundary, where misclassification is likely.
 
 Additional experiments were run with class- and sample-weights set on the data without resampling. For class weights, the ratio of non-donors vs. donors was used. For sample weights, the donation amount was employed, rescaled to the interval $[0,1]$.
 
@@ -411,7 +411,7 @@ The main idea behind boosting is to sequentially train an ensemble of weak learn
 
 Gradient boosting machine (GBM) extends on this idea. Like a random forest, GBM learns an ensemble of decision trees. However, trees are learned in an additive manner. At each iteration, the tree that improves the model most (i.e. in the direction of the gradient of the loss function) is added. For this thesis, the package `XGBoost` by @chen2016xgboost was used. They describe the algorithm as follows:
 
-Assume we have a data set with $n$ examples and $p$ features: $D = \{\{x_i,y_i\}, i=1\ldots n, x_i=\{x_{i,1}, x_{i,2}, \ldots x_{i,p}\}\}$. The implementation uses a tree ensemble with $K$ regression trees to predict the outcome for an example in the data by summing up the weights predicted by each tree:
+Assume a data set with $n$ examples and $p$ features: $D = \{\{x_i,y_i\}, i=1\ldots n, x_i=\{x_{i,1}, x_{i,2}, \ldots x_{i,p}\}\}$. The implementation uses a tree ensemble with $K$ regression trees to predict the outcome for an example in the data by summing up the weights predicted by each tree:
 
 \begin{equation}
 \hat{y}_i = \phi(x_i) = \sum_{k=1}^K f_k(x_i), f_k \in F
@@ -429,7 +429,7 @@ L(\phi) = \sum_{i=1}^n l(y_i, \hat{y_i}) + \sum_k^K \Omega(f_k)
 
 Here, $l$ is a differentiable, convex loss function that measures the difference between predictions and true values. Since $l$ is convex, a global minimum is guaranteed. $\Omega(f) = \gamma T + \frac{1}{2}\lambda||w||^2$ is a penalty on the complexity of the trees to counter over-fitting. The algorithm thus features integrated regularization. 
 
-Now, at each iteration $t$, the tree $f_t$ that improves the model most is added. For this, we add $f_t(\mathbf{x_i})$ to the predictions at $t-1$ and compute the loss:
+Now, at each iteration $t$, the tree $f_t$ that improves the model most is added. For this, $f_t(\mathbf{x_i})$ is added to the predictions at $t-1$ and compute the loss:
 
 \begin{equation}
 L^{(t)} = \sum_{i=1}^n l(y_i, \hat{y_i}^{t-1} + f_t(\mathbf{x_i})) +\Omega(f_t)
@@ -491,7 +491,7 @@ For learning, GLMnet evaluates many different $\lambda$ values for a given $\alp
 
 #### Multilayer Perceptron
 
-The multilayer perceptron (MLP) is a so-called feedforward neural network. The network consists of at least three layers: an input layer, an arbitrary number of hidden layers and an output layer. Each layer is made up of units. The term feedforward means that information flows from the input layer through intermediary steps and then to the output. The goal is to approximate the function $f^*$. For a classifier, $y = f^*(x)$ maps an example $x$ to a category $y$. A feedforward network defines a mapping $y=f(x, w)$ and learns the weights $w$ by approximating the function $f$ [@goodfellow2016deep].
+The multilayer perceptron (MLP) is a so-called feed-forward neural network. The network consists of at least three layers: an input layer, an arbitrary number of hidden layers and an output layer. Each layer is made up of units. The term feed-forward means that information flows from the input layer through intermediary steps and then to the output. The goal is to approximate the function $f^*$. For a classifier, $y = f^*(x)$ maps an example $x$ to a category $y$. A feed-forward network defines a mapping $y=f(x, w)$ and learns the weights $w$ by approximating the function $f$ [@goodfellow2016deep].
 
 For a binary classification problem on a dataset with $n$ examples and $p$ features $D = \{\{x_i, y_i\}\}, x_i = \{x_{i,1},x_{i,2},\ldots,x_{i,p}\}, y_i \in \{0,1\}, i = 1 \ldots n\}$, the input layer has $p$ units, the output layer has $1$ unit. The hidden layers each have an arbitrary number of *hidden* units.
 
@@ -506,7 +506,7 @@ where $\phi$ is a non-linear activation function, $w$ is the vector of weights, 
 
 During learning, the training examples are fed to the network sequentially. For each example, the prediction error is calculated using a loss function, which is typically the negative log-likelihood.
 
-Then, the partial derivatives of the loss function with respect to the weights are computed for each unit and the parameters updated using stochastic gradient descent. This process is called backpropagation.
+Then, the partial derivatives of the loss function with respect to the weights are computed for each unit and the parameters updated using stochastic gradient descent. This process is called back-propagation.
 
 The complete network is a chain of functions, for the network trained here, it is:
 \begin{equation}
@@ -612,13 +612,13 @@ rsvg_png(charToRaw(DiagrammeRsvg::export_svg(data_graph)),
 knitr::include_graphics("figures/methods/mlp-structure.png")
 ```
 
-For this thesis, the scikit-learn implementation `sklearn.neural_network.MLPClassifier` was used with default settings (rectified linear unit as activation function, adam (stochastic gradient descent) solver). The network topology was determined by treating it as a hyperparameter. Best results were achieved with a network featuring two hidden layers with 28 hidden units each. The network is shown symbolically in Figure \@ref(fig:mlp-graph).
+For this thesis, the scikit-learn implementation `sklearn.neural_network.MLPClassifier` was used with default settings (rectified linear unit as activation function, *adam* (stochastic gradient descent) solver). The network topology was determined by treating it as a hyperparameter. Best results were achieved with a network featuring two hidden layers with 28 hidden units each. The network is shown symbolically in Figure \@ref(fig:mlp-graph).
 
 **Hyperparameters**
 
 * `hidden_layer_sizes`: Tuples, i.e. (100,50,) for a network with 2 hidden layers of 100 and 50 units and one output unit.
 * $\alpha$, [0,1]: $L^2$ regularization amount
-* `learning_rate_init` $>0$: Controls step size for the solver during backpropagation (regularization).
+* `learning_rate_init` $>0$: Controls step size for the solver during back-propagation (regularization).
 
 
 #### Support Vector Machine

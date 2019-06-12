@@ -24,7 +24,7 @@
 <meta name="author" content="Florian Hochstrasser" />
 
 
-<meta name="date" content="2019-06-11" />
+<meta name="date" content="2019-06-12" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -108,20 +108,22 @@
 <li class="chapter" data-level="4.4.2" data-path="results-models.html"><a href="results-models.html#regressors-1"><i class="fa fa-check"></i><b>4.4.2</b> Regressors</a></li>
 </ul></li>
 <li class="chapter" data-level="4.5" data-path="prediction.html"><a href="prediction.html"><i class="fa fa-check"></i><b>4.5</b> Prediction</a><ul>
-<li class="chapter" data-level="4.5.1" data-path="prediction.html"><a href="prediction.html#conditional-prediction-of-the-donation-amount"><i class="fa fa-check"></i><b>4.5.1</b> Conditional Prediction of the Donation Amount</a></li>
-<li class="chapter" data-level="4.5.2" data-path="prediction.html"><a href="prediction.html#profit-optimization"><i class="fa fa-check"></i><b>4.5.2</b> Profit Optimization</a></li>
-<li class="chapter" data-level="4.5.3" data-path="prediction.html"><a href="prediction.html#final-prediction"><i class="fa fa-check"></i><b>4.5.3</b> Final Prediction</a></li>
+<li class="chapter" data-level="4.5.1" data-path="prediction.html"><a href="prediction.html#prediction-of-donation-probability"><i class="fa fa-check"></i><b>4.5.1</b> Prediction of Donation Probability</a></li>
+<li class="chapter" data-level="4.5.2" data-path="prediction.html"><a href="prediction.html#conditional-prediction-of-the-donation-amount"><i class="fa fa-check"></i><b>4.5.2</b> Conditional Prediction of the Donation Amount</a></li>
+<li class="chapter" data-level="4.5.3" data-path="prediction.html"><a href="prediction.html#profit-optimization"><i class="fa fa-check"></i><b>4.5.3</b> Profit Optimization</a></li>
+<li class="chapter" data-level="4.5.4" data-path="prediction.html"><a href="prediction.html#final-prediction"><i class="fa fa-check"></i><b>4.5.4</b> Final Prediction</a></li>
 </ul></li>
 </ul></li>
-<li class="chapter" data-level="5" data-path="conclusions.html"><a href="conclusions.html"><i class="fa fa-check"></i><b>5</b> Conclusions</a><ul>
-<li class="chapter" data-level="5.1" data-path="comparison-with-cup-winner.html"><a href="comparison-with-cup-winner.html"><i class="fa fa-check"></i><b>5.1</b> Comparison With Cup Winner</a></li>
-<li class="chapter" data-level="5.2" data-path="achieved.html"><a href="achieved.html"><i class="fa fa-check"></i><b>5.2</b> Achieved</a></li>
-<li class="chapter" data-level="5.3" data-path="shortcomings.html"><a href="shortcomings.html"><i class="fa fa-check"></i><b>5.3</b> Shortcomings</a></li>
-<li class="chapter" data-level="5.4" data-path="outlook.html"><a href="outlook.html"><i class="fa fa-check"></i><b>5.4</b> Outlook</a></li>
-</ul></li>
+<li class="chapter" data-level="5" data-path="conclusions.html"><a href="conclusions.html"><i class="fa fa-check"></i><b>5</b> Conclusions</a></li>
 <li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
 <li class="appendix"><span><b>Appendix</b></span></li>
-<li class="chapter" data-level="A" data-path="python-environment.html"><a href="python-environment.html"><i class="fa fa-check"></i><b>A</b> Python Environment</a></li>
+<li class="chapter" data-level="A" data-path="software.html"><a href="software.html"><i class="fa fa-check"></i><b>A</b> Software</a><ul>
+<li class="chapter" data-level="A.1" data-path="python-environment.html"><a href="python-environment.html"><i class="fa fa-check"></i><b>A.1</b> Python Environment</a></li>
+<li class="chapter" data-level="A.2" data-path="package-kdd98.html"><a href="package-kdd98.html"><i class="fa fa-check"></i><b>A.2</b> Package kdd98</a><ul>
+<li class="chapter" data-level="A.2.1" data-path="package-kdd98.html"><a href="package-kdd98.html#usage"><i class="fa fa-check"></i><b>A.2.1</b> Usage</a></li>
+<li class="chapter" data-level="A.2.2" data-path="package-kdd98.html"><a href="package-kdd98.html#installation"><i class="fa fa-check"></i><b>A.2.2</b> Installation</a></li>
+</ul></li>
+</ul></li>
 <li class="chapter" data-level="B" data-path="kdd-cup-documents.html"><a href="kdd-cup-documents.html"><i class="fa fa-check"></i><b>B</b> KDD Cup Documents</a><ul>
 <li class="chapter" data-level="B.1" data-path="data-set-documentation.html"><a href="data-set-documentation.html"><i class="fa fa-check"></i><b>B.1</b> Cup Documentation</a></li>
 <li class="chapter" data-level="B.2" data-path="data-set-dictionary.html"><a href="data-set-dictionary.html"><i class="fa fa-check"></i><b>B.2</b> Data Set Dictionary</a></li>
@@ -146,30 +148,21 @@
 <div id="imputation-1" class="section level2">
 <h2><span class="header-section-number">4.2</span> Imputation</h2>
 <p>The evaluation of several imputation strategies led to a straightforward approach: Categorical features had a <em>missing</em> level added during encoding (Section <a href="data-preprocessing.html#methods-feature-engineering">3.3.2</a>). All other features were imputed by their median value to account for the skewed distributions. The notebook <em>4_Imputation.ipynb</em><a href="#fn17" class="footnote-ref" id="fnref17"><sup>17</sup></a> contains details on the other approaches studied.</p>
-<p>In concordance with the cup documentation’s requirements (Appendix <a href="data-set-documentation.html#data-set-documentation">B.1</a>), constant and <em>sparse</em> features were dropped from the data set before imputation. The approach used in the R-package <code>caret</code> was implemented in a scikit-learn transformer for this purpose. Work from a blog post by Philip Goddard<a href="#fn18" class="footnote-ref" id="fnref18"><sup>18</sup></a> was adapted. The beauty of the method that is used in <code>caret</code> is that it is data type agnostic. It works on the number of unique values per feature and the frequency ratio between the top and second values by count.</p>
-<p>Missing data after removing sparse features is shown in Figure <a href="imputation-1.html#fig:before-impute">4.1</a>. The matrix displays the complete data set, with missing values indicated by white cells.</p>
-
-<div class="figure" style="text-align: center"><span id="fig:before-impute"></span>
-<img src="figures/imputation/missing-matrix.png" alt="Data before imputation of numeric features. The big complete block at the center is the US census data. " width="70%" />
-<p class="caption">
-Figure 4.1: Data before imputation of numeric features. The big complete block at the center is the US census data.
-</p>
-</div>
-<p>The features with most and least missing values are shown in Figure <a href="imputation-1.html#fig:most-fewest-missing">4.2</a>. It is not surprising to find the <em>MONTHS_TO_DONATION_*</em> features among those with most missing because few examples respond to the promotions with a donation.</p>
-<p>Among the incomplete features with least missing values, we find several of the US census features. The <em>RFA_*</em> features give the status in reference to promotion <span class="math inline">\(i\)</span>. All examples who did donate at some point before have an RFA status. Thus, we can see when new members were added from the missing values in these features because newly added members do not have an RFA status yet.</p>
+<p>In concordance with the cup documentation’s requirements (Appendix <a href="data-set-documentation.html#data-set-documentation">B.1</a>), constant and <em>sparse</em> features were dropped from the data set before imputation. The approach used in the R-package <code>caret</code> was implemented in a scikit-learn transformer for this purpose. Work from a blog post <span class="citation">(Goddard <a href="references.html#ref-goddard2017variance">2017</a>)</span> was adapted. The beauty of the method used in <code>caret</code> is that it is data type agnostic. It works on the number of unique values per feature and the frequency ratio between the top and second values by count.</p>
+<p>The features with most and least missing values are shown in Figure <a href="imputation-1.html#fig:most-fewest-missing">4.1</a>. It is not surprising to find the <em>MONTHS_TO_DONATION_*</em> features among those with most missing because few examples respond to the promotions with a donation.</p>
+<p>Among the incomplete features with least missing values, there are several of the US census features. The <em>RFA_*</em> features give the status in reference to promotion <span class="math inline">\(i\)</span>. All examples who did donate at some point before have an RFA status. Thus, the missingness indicates when new members were added because newly added members do not have an RFA status yet.</p>
 
 <div class="figure" style="text-align: center"><span id="fig:most-fewest-missing"></span>
 <img src="figures/imputation/most-missing.png" alt="Features with most (left) and fewest (right) missing values." width="49%" /><img src="figures/imputation/fewest-missing.png" alt="Features with most (left) and fewest (right) missing values." width="49%" />
 <p class="caption">
-Figure 4.2: Features with most (left) and fewest (right) missing values.
+Figure 4.1: Features with most (left) and fewest (right) missing values.
 </p>
 </div>
 </div>
 <div class="footnotes">
 <hr />
 <ol start="17">
-<li id="fn17"><p><a href="https://github.com/datarian/thesis-msc-statistics/tree/master/code//notebooks/4_Imputation.ipynb">https://github.com/datarian/thesis-msc-statistics/tree/master/code//notebooks/4_Imputation.ipynb</a><a href="imputation-1.html#fnref17" class="footnote-back">↩</a></p></li>
-<li id="fn18"><p>See <a href="http://philipmgoddard.com/modeling/sklearn_pipelines">http://philipmgoddard.com/modeling/sklearn_pipelines</a>, accessed on 4.6.2019<a href="imputation-1.html#fnref18" class="footnote-back">↩</a></p></li>
+<li id="fn17"><p><a href="https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/4_Imputation.ipynb">https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/4_Imputation.ipynb</a><a href="imputation-1.html#fnref17" class="footnote-back">↩</a></p></li>
 </ol>
 </div>
             </section>

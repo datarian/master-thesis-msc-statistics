@@ -13,7 +13,7 @@ toc-depth: 2
 bibliography: thesis.bib
 biblio-style: "apalike"
 link-citations: true
-lot: true
+lot: false
 lof: true
 documentclass: scrbook
 classoption: DIV=12,captions=tableheading,oneside,titlepage
@@ -40,7 +40,7 @@ options(scipen=999)
 
 ```{r global-helpers, include=FALSE,results='hide'}
 
-github_base_url = "https://github.com/datarian/thesis-msc-statistics/tree/master/code/"
+github_base_url = "https://github.com/datarian/thesis-msc-statistics/tree/master/code"
 
 make_github_link <- function(..., text = ""){
   subdirs <- list(...)
@@ -192,16 +192,15 @@ def save_fig(fig_id, tight_layout=True, fig_extension=["pdf", "png"], resolution
 
 ```
 
-Customer segmentation techniques are used in marketing to identify certain groups of customers in order to produce offers tailored to these groups. The ultimate goal is to maximize profit, which is achieved also through customer retention. In the case of direct marketing, especially when unit costs (the cost associated with addressing a customer) are significant, employing some customer segmentation technique is highly beneficial in terms of profit.
+Customer segmentation techniques are used in marketing to identify certain groups of customers in order to produce offers tailored to these groups. Customer segmentation needs a goal to be set. Generally, customer segmentation is performed with the overall goal of increasing the profitability of a business. Retaining profitable customers is one way to achieve that goal. In the case of direct marketing, especially when unit costs (the cost associated with addressing a customer) are significant, employing some customer segmentation technique is highly beneficial in terms of profit.
 
 Historically, the RFM (Recency, Frequency, Monetization) model has been employed with success in designing direct marketing campaigns @kohavi2004visualizing. While definitions vary, generally recency refers to when the last purchase was made. Frequency denotes number of purchases in a certain time period. Monetization can represent the amount of the last purchase, cumulative spending or the average amount spent per purchase.
 
 The RFM model proposed by @hughes-rfm-boost-response is often used: Customers are binned into 5 segments for each of the RFM features individually and labeled ordinal, resulting in 125 cells that can then be used to identify customers most likely to respond. The best customers have a high score for each of the 3 features. The drawback of this approach is that generally, marketing efforts go towards the best customer segment.
 
-Over time, different extensions of RFM [@fader2005rfmclv; @yeh2009] and, increasingly, machine learning models such as Na\{¨i}ve Bayes, Random Forests [@stubseid2018; durango2013], Chi-squared automatic interaction detection and logistic regression were proposed. While in some situations, these alternatives outperformed RFA [@MCCARTY2007656], RFA remains popular because of its intuitive interpretation.
+Over time, different extensions of RFM [@fader2005rfmclv; @yeh2009] and, increasingly, machine learning models such as Na\"ive Bayes, Random Forests [@stubseid2018; durango2013], Chi-squared automatic interaction detection and logistic regression were proposed. While in some situations, these alternatives outperformed RFA [@MCCARTY2007656], RFA remains popular because of its intuitive interpretation.
 
-In this work, a radically data-driven approach was chosen. Several machine learning algorithms were employed and compared to predict potential donors and the net profit generated instead of building on previously developed, specialized models.
-
+In this thesis, a radically data-driven approach was chosen. Several machine learning algorithms were employed and compared to predict potential donors and the net profit generated instead of building on previously developed, specialized models.
 
 
 ## Task Background

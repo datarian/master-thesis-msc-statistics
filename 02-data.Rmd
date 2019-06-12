@@ -33,7 +33,7 @@ In this section, the *learning* data set will be characterized.
 
 The input data with $n = `r nrow(py$raw_data$data)`$ rows and $p= `r ncol(py$raw_data$data)+1`$ columns is structured as follows: $\mathbf{D} = \{\{\mathbf{x}_i,\mathbf{y}_i\}\}, i = 1 ... n, \mathbf{x} \in \mathbb{R}^{p-3}, \mathbf{y} \in \mathbb{R}^2$.
 
-We have $m = p-3 = `r ncol(py$raw_data$data)-2`$ explanatory features, two targets and one unique identifier for each example.
+There are $m = p-3 = `r ncol(py$raw_data$data)-2`$ explanatory features, two targets and one unique identifier for each example.
 
 The $m$ features are grouped into four blocks of information:
 
@@ -56,7 +56,7 @@ Key insights from the exploratory data analysis are shown below. The detailed an
 An analysis of the data set dictionary (Appendix \@ref(data-set-dictionary)) reveals the following data types:
 
 - Index: CONTROLN, unique record identifier
-- Dates: 73 features in yymm format.
+- Dates: 73 features in `yymm` format.
 - Binary: 48 features
 - Categorical: 46 features
 - Numeric: 309
@@ -73,20 +73,20 @@ kable(py$stats,
 
 ### Targets
 
-Of the two targets, one is binary (TARGET_B), the other continuous (TARGET_D). The former is a binary response indicator for the current promotion. The latter represents the dollar amount donated in response to the current promotion and is 0.0 $ in case of non-response.
+Of the two targets, one is binary ($\text{TARGET}_B$), the other continuous (TARGET_D). The former is a binary response indicator for the current promotion. The latter represents the dollar amount donated in response to the current promotion and is 0.0 $ in case of non-response.
 
 As can be seen in Figure \@ref(fig:target-ratio), the response rate is 5.1 %. This means the binary target is highly imbalanced. Extra care will have to be taken during model training to obtain a model with a low generalization error.
 
-(ref:targ-b-legend) Distribution of the binary target TARGET_B.
+(ref:targ-b-legend) Distribution of the binary target $\text{TARGET}_B$.
 
 
 ```{r target-ratio, fig.cap="(ref:targ-b-legend)", echo=F}
 knitr::include_graphics("figures/eda/ratio-binary.png")
 ```
 
-The distribution of the continuous target for TARGET_D > 0.0 \$ is shown in Figure \@ref(fig:target-d-distrib). Evidently, most donations are smaller than 25 \$, the 50-percentile lying at 13 \$ and the mean at 15.62 $. There are a few outliers for donations above 100 \$, making the distribution right-skewed. Being monetary amounts, the observed values are discrete rather than strictly continuous.
+The distribution of the continuous target for $\text{TARGET}_D > 0.0$ \$ is shown in Figure \@ref(fig:target-d-distrib). Evidently, most donations are smaller than 25 \$, the 50-percentile lying at 13 \$ and the mean at 15.62 $. There are a few outliers for donations above 100 \$, making the distribution right-skewed. Being monetary amounts, the observed values are discrete rather than strictly continuous.
 
-(ref:targ-d-legend) Distribution of TARGET_D, the donation amount in \$ US (only amounts > 0.0 \$ are shown).
+(ref:targ-d-legend) Distribution of $\text{TARGET}_D$, the donation amount in \$ US (only amounts > 0.0 \$ are shown).
 
 ```{r target-d-distrib, fig.cap="(ref:targ-d-legend)", echo=F}
 knitr::include_graphics("figures/eda/target-distribution.png")
@@ -102,7 +102,7 @@ Most of the numerical features are skewed. Due to the high dimensionality, indiv
 include_graphics('figures/eda/skewness-numeric-features.png')
 ```
 
- Looking at the 6 least skewed features (Figure \@ref(fig:least-skewed)), we find distributions that resemble normal (respectively binomial) or discrete uniform.
+The distributions of the 6 least skewed features (Figure \@ref(fig:least-skewed)) resemble normal (respectively binomial) or discrete uniform.
 ```{r least-skewed, fig.cap="Least skewed features by G1 (adjusted Fisher-Pearson standardized moment coefficient).", echo=F}
 knitr::include_graphics("figures/eda/least-skewed.png")
 ```
@@ -115,7 +115,7 @@ knitr::include_graphics("figures/eda/most-skewed.png")
 
 ### Correlations
 
-The high dimensionality makes it hard to assess correlations in the data between individual features. A heatmap (see Figure \@ref(fig:heatmap-all)) provides a high-level view. From left to right, three regions can be distinguished: First, there are member database features, followed by a large center region comprised of the U.S. census features, and rightmost, there are promotion and giving history features. Between these blocks, only few features are correlated. Within each block however, we can see some quite strongly correlated data.
+The high dimensionality makes it hard to assess correlations in the data between individual features. A heatmap (see Figure \@ref(fig:heatmap-all)) provides a high-level view. From left to right, three regions can be distinguished: First, there are member database features, followed by a large center region comprised of the U.S. census features, and rightmost, there are promotion and giving history features. Between these blocks, only few features are correlated. Within each block however, there is quite strongly correlated data.
 
 (ref:heatmap-legend) Heatmap of feature correlations. Green means positive correlation, magenta means negative correlation. Perfect correlation occurs at 1.0 and -1.0.
 
@@ -125,7 +125,7 @@ include_graphics("figures/eda/correlations-all.png")
 
 ### Donation Patterns
 
-When looking at the all-time recency-frequency-amount (RFA) fetures for donors (Figure \@ref(fig:rfa-alltime)), no clear trend is visible to discern current donors from non-donors. Current donors are found across the whole range of recency values, although slightly concentrated at the lower end (low recency is better). A slight correlation between frequency and current donation status is also discernible: Current donors tend to "float" on top of the "sedimented" non-donors. Those examples with the highest yearly donation amount did not donate in the current promotion.
+When looking at the all-time recency-frequency-amount (RFA) features for donors (Figure \@ref(fig:rfa-alltime)), no clear trend is visible to discern current donors from non-donors. Current donors are found across the whole range of recency values, although slightly concentrated at the lower end (low recency is better). A slight correlation between frequency and current donation status is also discernible: Current donors tend to "float" on top of the "sedimented" non-donors. Those examples with the highest yearly donation amount did not donate in the current promotion.
 
 (ref:rfa-alltime-legend) Analysis of all-time RFA values by response to current promotion. *Recency* is the time in months since the last donation, *Frequency* the average number of donations per year and *Amount* the average yearly donation amount.
 
@@ -133,7 +133,7 @@ When looking at the all-time recency-frequency-amount (RFA) fetures for donors (
 include_graphics("figures/eda/rfa-alltime-current-donors.png")
 ```
 
-The data set documentation states that donation amounts are positively correlated with recency, the time since the last donation. This means that the longer an example goes without donating, the higher the donation amount if it can be enticed into donating again. Figure (\@ref(fig:donations-vs-time)) gives some evidence for this assumption. We see that starting from 15 months, the number of donations above 50 $ increases.
+The data set documentation states that donation amounts are positively correlated with recency, the time since the last donation. This means that the longer an example goes without donating, the higher the donation amount if it can be enticed into donating again. Figure (\@ref(fig:donations-vs-time)) gives some evidence for this assumption. Starting from 15 months, the number of donations above 50 $ increase.
 
 There is another insight gained when considering the number of donations an example has made, indicated by the point size, and donation amount: Frequent donors give relatively small sums, while the largest donations come from examples who rarely donate.
 
@@ -145,13 +145,13 @@ include_graphics("figures/eda/donations-vs-time-since-last-size-nbr-donations.pn
 
 There are many examples who donated within the last 12 months prior to the current promotion ( Figures \@ref(fig:rfa-alltime) and \@ref(fig:donations-vs-time)). This is a surprising observation.  The data set should contain *lapsed* donors only, so there should be no donations recorded for that period. An explanation could be that the recency status is considered strictly for direct responses to promotions. Examples who donate regularly (i.e. monthly, yearly), irrespective of the promotions mailed out, would not be evaluated in terms of RFA under that assumption.
 
-The data contains RFA features for each of the 24 promotions in the promotion history data, giving example's status per a given promotion. Considering the RFA features for the current promotion, we can support the insights above. Since the data set contains only lapsed donors, the recency feature is constant and not of interest (it is a nominal feature, *lapsed* being one of the levels). Regarding the frequency of donations (number of donations 13 - 24 months prior to the promotion), shown in Figure \@ref(fig:rfa-f), we see a clear trend. With increasing donation frequency, donation amounts decrease.
+The data contains RFA features for each of the 24 promotions in the promotion history data, giving example's status per a given promotion. Considering the RFA features for the current promotion, the insights above can be supported. Since the data set contains only lapsed donors, the recency feature is constant and not of interest (it is a nominal feature, *lapsed* being one of the levels). Regarding the frequency of donations (number of donations 13 - 24 months prior to the promotion), shown in Figure \@ref(fig:rfa-f), a clear trend is apparent. With increasing donation frequency, donation amounts decrease.
 
 ```{r rfa-f, fig.cap="Frequency of donations in the 13-24 months prior to current promotion against amount donated. Frequent donors give smaller amounts.", echo=F}
 include_graphics("figures/eda/frequency-past-donatios-vs-donations.png")
 ```
 
-Figure \@ref(fig:donations-geo) shows the geographical distribution of donations. The large urban centers like San Francisco, Los Angeles, Miami, Chicago and Detroit are clearly visible. To a lesser extent, cities like Houston, Dallas, Minneapolis, Atlanta, Tampa, Seattle and Phoenix can be made out. Examples living there give small amounts. Big donors (large total donations with a high average) can be made out in rural areas in the midwest and Texas. Interestingly, only very few donations come from the north-eastern states.
+Figure \@ref(fig:donations-geo) shows the geographical distribution of donations. The large urban centers like San Francisco, Los Angeles, Miami, Chicago and Detroit are clearly visible. To a lesser extent, cities like Houston, Dallas, Minneapolis, Atlanta, Tampa, Seattle and Phoenix can be made out. Examples living there give small amounts. Big donors (large total donations with a high average) can be made out in rural areas in the mid-west and Texas. Interestingly, only very few donations come from the north-eastern states.
 
 (ref:donations-geo-legend) Geographical distribution of donations by zip code. Point size indicates total donations for a zip code while the hue shows average donation amount.
 
@@ -159,7 +159,7 @@ Figure \@ref(fig:donations-geo) shows the geographical distribution of donations
 include_graphics("figures/eda/donations-geographical.png")
 ```
 
-We can also see that examples living in rural areas tend to donate larger sums when looking at Figure \@ref(fig:donations-le). Shown are the living environments in progressively more rural settings against the average all-time donation amount per capita.
+Examples living in rural areas tend to donate larger sums, as Figure \@ref(fig:donations-le) shows. Shown are the living environments in progressively more rural settings against the average all-time donation amount per capita.
 
 (ref:donations-by-le) Average cumulative donation amount per capita by living environment (C = city, U = urban, S = suburban, T = town, R = rural). The more rural, the higher the average donations.
 

@@ -1,0 +1,38 @@
+\babel@toc {english}{}
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {\relax 2.1}{\ignorespaces Distribution of the binary target \(\text {TARGET}_B\).\relax }}{11}{figure.caption.4}% 
+\contentsline {figure}{\numberline {\relax 2.2}{\ignorespaces Distribution of \(\text {TARGET}_D\), the donation amount in \$ US (only amounts \textgreater {} 0.0 \$ are shown).\relax }}{11}{figure.caption.5}% 
+\contentsline {figure}{\numberline {\relax 2.3}{\ignorespaces Fisher-Pearson standardized moment coefficient (G1) for all numeric features contained in the dataset. The confidence bound indicates the \(\mitalpha = 5 \%\) bound for the skewness of a normal distribution for any given feature.\relax }}{12}{figure.caption.6}% 
+\contentsline {figure}{\numberline {\relax 2.4}{\ignorespaces Least skewed features by G1 (adjusted Fisher-Pearson standardized moment coefficient).\relax }}{12}{figure.caption.7}% 
+\contentsline {figure}{\numberline {\relax 2.5}{\ignorespaces Most skewed features by G1 (adjusted Fisher-Pearson standardized moment coefficient).\relax }}{13}{figure.caption.8}% 
+\contentsline {figure}{\numberline {\relax 2.6}{\ignorespaces Heatmap of feature correlations. Green means positive correlation, magenta means negative correlation. Perfect correlation occurs at 1.0 and -1.0.\relax }}{14}{figure.caption.9}% 
+\contentsline {figure}{\numberline {\relax 2.7}{\ignorespaces Analysis of all-time RFA values by response to current promotion. \emph {Recency} is the time in months since the last donation, \emph {Frequency} the average number of donations per year and \emph {Amount} the average yearly donation amount.\relax }}{15}{figure.caption.10}% 
+\contentsline {figure}{\numberline {\relax 2.8}{\ignorespaces Donation amount for the current promotion against months since last donation. The dot size indicates the number of times an example has donated.\relax }}{15}{figure.caption.11}% 
+\contentsline {figure}{\numberline {\relax 2.9}{\ignorespaces Frequency of donations in the 13-24 months prior to current promotion against amount donated. Frequent donors give smaller amounts.\relax }}{16}{figure.caption.12}% 
+\contentsline {figure}{\numberline {\relax 2.10}{\ignorespaces Geographical distribution of donations by zip code. Point size indicates total donations for a zip code while the hue shows average donation amount.\relax }}{17}{figure.caption.13}% 
+\contentsline {figure}{\numberline {\relax 2.11}{\ignorespaces Average cumulative donation amount per capita by living environment (C = city, U = urban, S = suburban, T = town, R = rural). The more rural, the higher the average donations.\relax }}{17}{figure.caption.14}% 
+\contentsline {figure}{\numberline {\relax 2.12}{\ignorespaces Donation amount for current promotion by living environment and socio-economic status of examples. The violin plot shows the distribution of values similar to a kernel density estimation. Median values are indicated by white dots, the bold regions give the inner quartile range.\relax }}{18}{figure.caption.15}% 
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {\relax 3.1}{\ignorespaces Data set use for training and predictions.\relax }}{20}{figure.caption.16}% 
+\contentsline {figure}{\numberline {\relax 3.2}{\ignorespaces Learning process schematic.\relax }}{25}{figure.caption.17}% 
+\contentsline {figure}{\numberline {\relax 3.3}{\ignorespaces Definition of the confusion matrix for a two-class problem.\relax }}{27}{figure.caption.18}% 
+\contentsline {figure}{\numberline {\relax 3.4}{\ignorespaces Neural network topology used. Two hidden layers \(\mathbf {h^{(1)}, h^{(2)}}\) are contained. \(\mathbf {b^{(2)}, b^{(3)}}\) and \(\mathbf {b^{(4)}}\) are the bias vectors for the respective layers.\relax }}{33}{figure.caption.19}% 
+\contentsline {figure}{\numberline {\relax 3.5}{\ignorespaces Schematic display of an SVM hyperplane (in black), separating two overlapping classes. The margins are shown around the hyperplane, with support vectors falling on the margins. Misclassifications (examples on the wrong side of the hyperplane) have a total budget for distance from the separating plane. The margins are determined by respecting the budget. Adapted from Friedman, Hastie, and Tibshirani (\hyperlink {ref-friedman2001elements}{2001}).\relax }}{34}{figure.caption.20}% 
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {\relax 4.1}{\ignorespaces Features with most (left) and fewest (right) missing values.\relax }}{37}{figure.caption.21}% 
+\contentsline {figure}{\numberline {\relax 4.2}{\ignorespaces Comparison of recall scores for all classifiers evaluated.\relax }}{39}{figure.caption.22}% 
+\contentsline {figure}{\numberline {\relax 4.3}{\ignorespaces Comparison of ROC-AUC for the evaluated classifiers (left) and PR curves (right) for the classifiers.\relax }}{40}{figure.caption.23}% 
+\contentsline {figure}{\numberline {\relax 4.4}{\ignorespaces Confusion matrices for the 6 classifiers studied.\relax }}{41}{figure.caption.24}% 
+\contentsline {figure}{\numberline {\relax 4.5}{\ignorespaces Coefficient values for GLMnet.\relax }}{41}{figure.caption.25}% 
+\contentsline {figure}{\numberline {\relax 4.6}{\ignorespaces Feature importances determined with the RF classifier. Impurity is measured by Gini importance / mean decrease impurity. Error bars give bootstrap error on 50 repetitions.\relax }}{42}{figure.caption.26}% 
+\contentsline {figure}{\numberline {\relax 4.7}{\ignorespaces Target before transformation (left) and after a Box-Cox transformation (right).\relax }}{42}{figure.caption.27}% 
+\contentsline {figure}{\numberline {\relax 4.8}{\ignorespaces Distribution of (Box-Cox transformed) donation amounts for the four regressors evaluated.\relax }}{43}{figure.caption.28}% 
+\contentsline {figure}{\numberline {\relax 4.9}{\ignorespaces Evaluation metric \(R^2\) for all regression models evaluated. The domain for \(R^2\) is \((-\qopname \relax m{inf}, 1]\).)\relax }}{43}{figure.caption.29}% 
+\contentsline {figure}{\numberline {\relax 4.10}{\ignorespaces Feature importances for the RF regressor.\relax }}{44}{figure.caption.30}% 
+\contentsline {figure}{\numberline {\relax 4.11}{\ignorespaces Distribution of predicted donation probabilities \(\hat {y}_b\) on the learning data set.\relax }}{44}{figure.caption.31}% 
+\contentsline {figure}{\numberline {\relax 4.12}{\ignorespaces Conditionally predicted donation amounts, Box-Cox transformed (left) and on the original scale (right).\relax }}{45}{figure.caption.32}% 
+\contentsline {figure}{\numberline {\relax 4.13}{\ignorespaces Expected profit for a range of \(\mitalpha \) values in \([0,1]\) with overlayed cubic spline and polynomial function of order 12.\relax }}{46}{figure.caption.33}% 
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }

@@ -24,7 +24,7 @@
 <meta name="author" content="Florian Hochstrasser" />
 
 
-<meta name="date" content="2019-06-11" />
+<meta name="date" content="2019-06-12" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -108,20 +108,22 @@
 <li class="chapter" data-level="4.4.2" data-path="results-models.html"><a href="results-models.html#regressors-1"><i class="fa fa-check"></i><b>4.4.2</b> Regressors</a></li>
 </ul></li>
 <li class="chapter" data-level="4.5" data-path="prediction.html"><a href="prediction.html"><i class="fa fa-check"></i><b>4.5</b> Prediction</a><ul>
-<li class="chapter" data-level="4.5.1" data-path="prediction.html"><a href="prediction.html#conditional-prediction-of-the-donation-amount"><i class="fa fa-check"></i><b>4.5.1</b> Conditional Prediction of the Donation Amount</a></li>
-<li class="chapter" data-level="4.5.2" data-path="prediction.html"><a href="prediction.html#profit-optimization"><i class="fa fa-check"></i><b>4.5.2</b> Profit Optimization</a></li>
-<li class="chapter" data-level="4.5.3" data-path="prediction.html"><a href="prediction.html#final-prediction"><i class="fa fa-check"></i><b>4.5.3</b> Final Prediction</a></li>
+<li class="chapter" data-level="4.5.1" data-path="prediction.html"><a href="prediction.html#prediction-of-donation-probability"><i class="fa fa-check"></i><b>4.5.1</b> Prediction of Donation Probability</a></li>
+<li class="chapter" data-level="4.5.2" data-path="prediction.html"><a href="prediction.html#conditional-prediction-of-the-donation-amount"><i class="fa fa-check"></i><b>4.5.2</b> Conditional Prediction of the Donation Amount</a></li>
+<li class="chapter" data-level="4.5.3" data-path="prediction.html"><a href="prediction.html#profit-optimization"><i class="fa fa-check"></i><b>4.5.3</b> Profit Optimization</a></li>
+<li class="chapter" data-level="4.5.4" data-path="prediction.html"><a href="prediction.html#final-prediction"><i class="fa fa-check"></i><b>4.5.4</b> Final Prediction</a></li>
 </ul></li>
 </ul></li>
-<li class="chapter" data-level="5" data-path="conclusions.html"><a href="conclusions.html"><i class="fa fa-check"></i><b>5</b> Conclusions</a><ul>
-<li class="chapter" data-level="5.1" data-path="comparison-with-cup-winner.html"><a href="comparison-with-cup-winner.html"><i class="fa fa-check"></i><b>5.1</b> Comparison With Cup Winner</a></li>
-<li class="chapter" data-level="5.2" data-path="achieved.html"><a href="achieved.html"><i class="fa fa-check"></i><b>5.2</b> Achieved</a></li>
-<li class="chapter" data-level="5.3" data-path="shortcomings.html"><a href="shortcomings.html"><i class="fa fa-check"></i><b>5.3</b> Shortcomings</a></li>
-<li class="chapter" data-level="5.4" data-path="outlook.html"><a href="outlook.html"><i class="fa fa-check"></i><b>5.4</b> Outlook</a></li>
-</ul></li>
+<li class="chapter" data-level="5" data-path="conclusions.html"><a href="conclusions.html"><i class="fa fa-check"></i><b>5</b> Conclusions</a></li>
 <li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
 <li class="appendix"><span><b>Appendix</b></span></li>
-<li class="chapter" data-level="A" data-path="python-environment.html"><a href="python-environment.html"><i class="fa fa-check"></i><b>A</b> Python Environment</a></li>
+<li class="chapter" data-level="A" data-path="software.html"><a href="software.html"><i class="fa fa-check"></i><b>A</b> Software</a><ul>
+<li class="chapter" data-level="A.1" data-path="python-environment.html"><a href="python-environment.html"><i class="fa fa-check"></i><b>A.1</b> Python Environment</a></li>
+<li class="chapter" data-level="A.2" data-path="package-kdd98.html"><a href="package-kdd98.html"><i class="fa fa-check"></i><b>A.2</b> Package kdd98</a><ul>
+<li class="chapter" data-level="A.2.1" data-path="package-kdd98.html"><a href="package-kdd98.html#usage"><i class="fa fa-check"></i><b>A.2.1</b> Usage</a></li>
+<li class="chapter" data-level="A.2.2" data-path="package-kdd98.html"><a href="package-kdd98.html#installation"><i class="fa fa-check"></i><b>A.2.2</b> Installation</a></li>
+</ul></li>
+</ul></li>
 <li class="chapter" data-level="B" data-path="kdd-cup-documents.html"><a href="kdd-cup-documents.html"><i class="fa fa-check"></i><b>B</b> KDD Cup Documents</a><ul>
 <li class="chapter" data-level="B.1" data-path="data-set-documentation.html"><a href="data-set-documentation.html"><i class="fa fa-check"></i><b>B.1</b> Cup Documentation</a></li>
 <li class="chapter" data-level="B.2" data-path="data-set-dictionary.html"><a href="data-set-dictionary.html"><i class="fa fa-check"></i><b>B.2</b> Data Set Dictionary</a></li>
@@ -161,7 +163,7 @@
 <li>Dropping constant and sparse (i.e. those where only few examples have a value set) features</li>
 <li>Imputation of values missing at random (MAR)</li>
 </ul>
-<p>MAR values in the sense of <span class="citation">Rubin (<a href="references.html#ref-rubin1976inference">1976</a>)</span> are missing conditionally on other features in the data. For example, there are three related features from the promotion and giving history: <em>ADATE</em>, the date of mailing a promotion, <em>RDATE</em>, the date of receiving a donation in response to the promotion and <em>RAMOUNT</em>, the amount received. For missing <em>RAMOUNT</em> values, we can check if <em>RDATE</em> is non-missing. If <em>RDATE</em> is missing, then the example most likely has not donated and we can set <em>RAMOUNT</em> to zero. If, on the other hand, both date features have a value, <em>RAMOUNT</em> is truly missing.</p>
+<p>MAR values in the sense of <span class="citation">Rubin (<a href="references.html#ref-rubin1976inference">1976</a>)</span> are missing conditionally on other features in the data. For example, there are three related features from the promotion and giving history: <em>ADATE</em>, the date of mailing a promotion, <em>RDATE</em>, the date of receiving a donation in response to the promotion and <em>RAMOUNT</em>, the amount received. For missing <em>RAMOUNT</em> values, it can be checked if <em>RDATE</em> is non-missing. If <em>RDATE</em> is missing, then the example most likely has not donated and <em>RAMOUNT</em> can be set to zero. If, on the other hand, both date features have a value, <em>RAMOUNT</em> is truly missing.</p>
 </div>
 <div id="methods-feature-engineering" class="section level3">
 <h3><span class="header-section-number">3.3.2</span> Feature Engineering</h3>
@@ -169,7 +171,7 @@
 <p>All non-numeric (i.e. categorical) features were encoded as numeric representations. For ordinal features, manual mappings from alphanumeric levels to integer numbers were specified. For nominal features, two encoding techniques provided in package <code>categorical-encoding</code><a href="#fn9" class="footnote-ref" id="fnref9"><sup>9</sup></a> were employed, depending on the number of levels:</p>
 <ul>
 <li><p>One-hot encoding for <span class="math inline">\(\leq 10\)</span> levels: For each level of a categorical feature, a new feature is created. An additional feature may be added to indicate missing values. Exactly one of these new features is set to <span class="math inline">\(1\)</span>, indicating the original level.</p></li>
-<li><p>Binary encoding, <span class="math inline">\(&gt; 10\)</span> levels: The levels of the categorical are first transformed ordinally (i.e. to a sequence of integer numbers). Then, these numbers are taken to the base of 2. (A <span class="math inline">\(5\)</span>, for example, becomes <code>101</code>). According to the number of levels, new features for the binary digits are created. As an example: To represent 60 levels, 6 features are required (<span class="math inline">\(2^6=64\)</span>).</p></li>
+<li><p>Binary encoding, <span class="math inline">\(&gt; 10\)</span> levels: The levels of the categorical are first transformed to ordinal (i.e. to a sequence of integer numbers). Then, these numbers are taken to the base of 2. (A <span class="math inline">\(5\)</span>, for example, becomes <code>101</code>). According to the number of levels, new features for the binary digits are created. As an example: To represent 60 levels, 6 features are required (<span class="math inline">\(2^6=64\)</span>).</p></li>
 </ul>
 <p>Also, several features were transformed to better usable formats (i.e. converting dates to time deltas, converting zip codes to coordinates). Care was taken to keep the dimensionality of the data set as low as possible.</p>
 </div>
@@ -210,7 +212,7 @@
 <p>Boruta, introduced by <span class="citation">Kursa, Rudnicki, and others (<a href="references.html#ref-kursa2010boruta">2010</a>)</span> in the form of an R package, performs feature selection by solving the so-called all-relevant feature problem. The algorithm was found to perform very well regarding selection of relevant features in <span class="citation">Kursa and Rudnicki (<a href="references.html#ref-kursa2011boruta">2011</a>)</span>.</p>
 <p>In short, the algorithm works as follows:</p>
 <ol style="list-style-type: decimal">
-<li>The input matrix <span class="math inline">\(\mathbf{X}\)</span> of dimension <span class="math inline">\(n \times p\)</span> is extended with <span class="math inline">\(p\)</span> so-called <em>shadow features</em>. The shadow features are permuted copies of the features in <span class="math inline">\(\mathbf{X}\)</span>. They are therefore decorrelated with the target.</li>
+<li>The input matrix <span class="math inline">\(\mathbf{X}\)</span> of dimension <span class="math inline">\(n \times p\)</span> is extended with <span class="math inline">\(p\)</span> so-called <em>shadow features</em>. The shadow features are permuted copies of the features in <span class="math inline">\(\mathbf{X}\)</span>. They are therefore de-correlated with the target.</li>
 <li>On the resulting matrix <span class="math inline">\(\mathbf{X^*}\)</span>, a random forest classifier is trained and the Z-scores <span class="math inline">\(\frac{\bar{\text{loss}}}{sd}\)</span> for each of the <span class="math inline">\(2p\)</span> features calculated.</li>
 <li>The highest Z-score among the shadow features <span class="math inline">\(MZSA\)</span> is determined.</li>
 <li>All original features are compared against <span class="math inline">\(MZSA\)</span> and those features with a higher score selected as important.</li>
@@ -225,11 +227,11 @@
 <div class="footnotes">
 <hr />
 <ol start="6">
-<li id="fn6"><p>Available from <a href="https://github.com/datarian/thesis-msc-statistics/tree/master/code//kdd98">https://github.com/datarian/thesis-msc-statistics/tree/master/code//kdd98</a><a href="data-preprocessing.html#fnref6" class="footnote-back">↩</a></p></li>
-<li id="fn7"><p><a href="https://github.com/datarian/thesis-msc-statistics/tree/master/code//notebooks/1_Preprocessing.ipynb">https://github.com/datarian/thesis-msc-statistics/tree/master/code//notebooks/1_Preprocessing.ipynb</a><a href="data-preprocessing.html#fnref7" class="footnote-back">↩</a></p></li>
-<li id="fn8"><p><a href="https://github.com/datarian/thesis-msc-statistics/tree/master/code//notebooks/2_Feature_Engineering.ipynb">https://github.com/datarian/thesis-msc-statistics/tree/master/code//notebooks/2_Feature_Engineering.ipynb</a><a href="data-preprocessing.html#fnref8" class="footnote-back">↩</a></p></li>
-<li id="fn9"><p>Availabe at: <a href="https://github.com/scikit-learn-contrib/categorical-encoding/">https://github.com/scikit-learn-contrib/categorical-encoding/</a>, accessed on 5.6.2019<a href="data-preprocessing.html#fnref9" class="footnote-back">↩</a></p></li>
-<li id="fn10"><p><a href="https://github.com/datarian/thesis-msc-statistics/tree/master/code//notebooks/4_Imputation.ipynb">https://github.com/datarian/thesis-msc-statistics/tree/master/code//notebooks/4_Imputation.ipynb</a><a href="data-preprocessing.html#fnref10" class="footnote-back">↩</a></p></li>
+<li id="fn6"><p>Available from <a href="https://github.com/datarian/thesis-msc-statistics/tree/master/code/kdd98">https://github.com/datarian/thesis-msc-statistics/tree/master/code/kdd98</a><a href="data-preprocessing.html#fnref6" class="footnote-back">↩</a></p></li>
+<li id="fn7"><p><a href="https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/1_Preprocessing.ipynb">https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/1_Preprocessing.ipynb</a><a href="data-preprocessing.html#fnref7" class="footnote-back">↩</a></p></li>
+<li id="fn8"><p><a href="https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/2_Feature%20Engineering.ipynb">https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/2_Feature Engineering.ipynb</a><a href="data-preprocessing.html#fnref8" class="footnote-back">↩</a></p></li>
+<li id="fn9"><p>Available at: <a href="https://github.com/scikit-learn-contrib/categorical-encoding/">https://github.com/scikit-learn-contrib/categorical-encoding/</a>, accessed on 5.6.2019<a href="data-preprocessing.html#fnref9" class="footnote-back">↩</a></p></li>
+<li id="fn10"><p><a href="https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/4_Imputation.ipynb">https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/4_Imputation.ipynb</a><a href="data-preprocessing.html#fnref10" class="footnote-back">↩</a></p></li>
 <li id="fn11"><p>Available at: <a href="https://github.com/epsilon-machine/missingpy">https://github.com/epsilon-machine/missingpy</a>, accessed on 11.6.2019<a href="data-preprocessing.html#fnref11" class="footnote-back">↩</a></p></li>
 <li id="fn12"><p>Available at: <a href="https://pypi.org/project/fancyimpute/">https://pypi.org/project/fancyimpute/</a>, accessed on 30.06.2019<a href="data-preprocessing.html#fnref12" class="footnote-back">↩</a></p></li>
 <li id="fn13"><p>Available from <a href="https://github.com/scikit-learn-contrib/boruta_py">https://github.com/scikit-learn-contrib/boruta_py</a>, accessed on 5.6.2019<a href="data-preprocessing.html#fnref13" class="footnote-back">↩</a></p></li>

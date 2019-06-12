@@ -68,9 +68,6 @@
 \def\fps@figure{htbp}
 \makeatother
 
-%\let\oldmaketitle\maketitle
-%\AtBeginDocument{\let\maketitle\relax}
-
 \usepackage{scrhack}
 \usepackage{booktabs}
 \usepackage{longtable}
@@ -85,16 +82,22 @@
 \usepackage[normalem]{ulem}
 \usepackage{makecell}
 \usepackage{unicode-math}
-%\usepackage{mathptmx}
 
-\usepackage{microtype} % Slightly tweak font spacing for aesthetics
-
-%\usepackage[font=small]{caption}
-%\usepackage{subfig}
-%\usepackage[scaled=0.8]{sourcecodepro}
+%\usepackage{microtype} % Slightly tweak font spacing for aesthetics
+\usepackage[font=small]{caption}
+\usepackage[scaled=0.8]{sourcecodepro}
 
 \usepackage{listings}
 
+\lstset{ % General setup for the package
+	language=Python,%
+	basicstyle=\footnotesize\sffamily,%
+	tabsize=4,%
+	columns=fixed,%
+	showstringspaces=false,%
+	showtabs=false,%
+	keepspaces%
+}
 
 %% Typography defaults
 \usepackage[english]{babel}
@@ -107,9 +110,6 @@
 
 \usepackage{enumitem}
 \setlist[itemize]{noitemsep}
-
-%\providecommand{\tightlist}{%
-%  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 
 \usepackage{graphicx}
 \graphicspath{ {./figures/} }
@@ -155,12 +155,16 @@
 \fi
 \makeatother
 
+\let\oldverbatim\verbatim
+\let\endoldverbatim\endverbatim
+\renewenvironment{verbatim}{\footnotesize\oldverbatim}{\endoldverbatim}
+
 \let\oldmaketitle\maketitle
 \AtBeginDocument{\let\maketitle\relax}
 
 \title{Profit maximization for direct marketing campaigns}
 \author{Florian Hochstrasser}
-\date{2019-06-11}
+\date{2019-06-12}
 
 \begin{document}
 \maketitle
@@ -174,7 +178,6 @@
 \author{Florian Hochstrasser}
 \date{14.06.2019}
 \publishers{Supervisor: Jacques Zuber}
-%\dedication{Dieses Beispiel widme ich\\allen LaTeX Usern}
 
 \end{titlepage}
 
@@ -182,34 +185,32 @@
 \maketitle
 
 \begin{abstract}
+A profit optimization problem, based on the data distributed for the KDD-Cup 1998, was solved using several different supervised learning algorithms. A complete analysis including data preprocessing, model evaluation and selection and construction of the final estimator was conducted.
 
-It is known that....
+During preprocessing, several approaches for imputation and feature selection were explored. A two-stage prediction approach was chosen, separately predicting donation probability and donation amount. Five classification- and four regression-algorithms were evaluated. The best-performing algorithms of both families were then combined for the final prediction.
 
-This work addressed the problem from the perspective of...
+A python package was developed to automate preprocessing of the data, guaranteeing consistent treatment of learning- and validation data. The package features an extensible architecture for future work on the data set.
 
-It could be shown that...
-
-Henceforth, it should be considered that...
+In comparison to the winners of the Cup, the developed model ranked $4^{th}$. Future work based on the results achieved should focus on feature engineering and alternative imputation strategies.
 \end{abstract}
 
 {
 \setcounter{tocdepth}{2}
 \tableofcontents
 }
-\listoftables
 \listoffigures
 \hypertarget{intro}{%
 \chapter{Introduction}\label{intro}}
 
-Customer segmentation techniques are used in marketing to identify certain groups of customers in order to produce offers tailored to these groups. The ultimate goal is to maximize profit, which is achieved also through customer retention. In the case of direct marketing, especially when unit costs (the cost associated with addressing a customer) are significant, employing some customer segmentation technique is highly beneficial in terms of profit.
+Customer segmentation techniques are used in marketing to identify certain groups of customers in order to produce offers tailored to these groups. Customer segmentation needs a goal to be set. Generally, customer segmentation is performed with the overall goal of increasing the profitability of a business. Retaining profitable customers is one way to achieve that goal. In the case of direct marketing, especially when unit costs (the cost associated with addressing a customer) are significant, employing some customer segmentation technique is highly beneficial in terms of profit.
 
 Historically, the RFM (Recency, Frequency, Monetization) model has been employed with success in designing direct marketing campaigns Kohavi and Parekh (\protect\hyperlink{ref-kohavi2004visualizing}{2004}). While definitions vary, generally recency refers to when the last purchase was made. Frequency denotes number of purchases in a certain time period. Monetization can represent the amount of the last purchase, cumulative spending or the average amount spent per purchase.
 
 The RFM model proposed by Hughes (\protect\hyperlink{ref-hughes-rfm-boost-response}{1996}) is often used: Customers are binned into 5 segments for each of the RFM features individually and labeled ordinal, resulting in 125 cells that can then be used to identify customers most likely to respond. The best customers have a high score for each of the 3 features. The drawback of this approach is that generally, marketing efforts go towards the best customer segment.
 
-Over time, different extensions of RFM (Fader, Hardie, and Lee \protect\hyperlink{ref-fader2005rfmclv}{2005}; Yeh, Yang, and Ting \protect\hyperlink{ref-yeh2009}{2009}) and, increasingly, machine learning models such as Na\{¨i\}ve Bayes, Random Forests {[}Stubseid and Arandjelovic (\protect\hyperlink{ref-stubseid2018}{2018}); durango2013{]}, Chi-squared automatic interaction detection and logistic regression were proposed. While in some situations, these alternatives outperformed RFA (McCarty and Hastak \protect\hyperlink{ref-MCCARTY2007656}{2007}), RFA remains popular because of its intuitive interpretation.
+Over time, different extensions of RFM (Fader, Hardie, and Lee \protect\hyperlink{ref-fader2005rfmclv}{2005}; Yeh, Yang, and Ting \protect\hyperlink{ref-yeh2009}{2009}) and, increasingly, machine learning models such as Na"ive Bayes, Random Forests {[}Stubseid and Arandjelovic (\protect\hyperlink{ref-stubseid2018}{2018}); durango2013{]}, Chi-squared automatic interaction detection and logistic regression were proposed. While in some situations, these alternatives outperformed RFA (McCarty and Hastak \protect\hyperlink{ref-MCCARTY2007656}{2007}), RFA remains popular because of its intuitive interpretation.
 
-In this work, a radically data-driven approach was chosen. Several machine learning algorithms were employed and compared to predict potential donors and the net profit generated instead of building on previously developed, specialized models.
+In this thesis, a radically data-driven approach was chosen. Several machine learning algorithms were employed and compared to predict potential donors and the net profit generated instead of building on previously developed, specialized models.
 
 \hypertarget{task-background}{%
 \section{Task Background}\label{task-background}}
@@ -265,7 +266,7 @@ In this section, the \emph{learning} data set will be characterized.
 
 The input data with \(n = 95'412\) rows and \(p= 479\) columns is structured as follows: \(\mathbf{D} = \{\{\mathbf{x}_i,\mathbf{y}_i\}\}, i = 1 ... n, \mathbf{x} \in \mathbb{R}^{p-3}, \mathbf{y} \in \mathbb{R}^2\).
 
-We have \(m = p-3 = 476\) explanatory features, two targets and one unique identifier for each example.
+There are \(m = p-3 = 476\) explanatory features, two targets and one unique identifier for each example.
 
 The \(m\) features are grouped into four blocks of information:
 
@@ -300,7 +301,7 @@ The \(m\) features are grouped into four blocks of information:
 \hypertarget{exploratory-data-analysis}{%
 \section{Exploratory Data Analysis}\label{exploratory-data-analysis}}
 
-Key insights from the exploratory data analysis are shown below. The detailed analysis can be studied online in the corresponding Jupyter notebook \emph{3\_EDA.ipynb}\footnote{\url{https://github.com/datarian/thesis-msc-statistics/tree/master/code//notebooks/3_EDA.ipynb}}.
+Key insights from the exploratory data analysis are shown below. The detailed analysis can be studied online in the corresponding Jupyter notebook \emph{3\_EDA.ipynb}\footnote{\url{https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/3_EDA.ipynb}}.
 
 \hypertarget{data-types}{%
 \subsection{Data Types}\label{data-types}}
@@ -312,7 +313,7 @@ An analysis of the data set dictionary (Appendix \ref{data-set-dictionary}) reve
 \item
   Index: CONTROLN, unique record identifier
 \item
-  Dates: 73 features in yymm format.
+  Dates: 73 features in \texttt{yymm} format.
 \item
   Binary: 48 features
 \item
@@ -343,7 +344,7 @@ Total &  & 478\\
 \hypertarget{targets}{%
 \subsection{Targets}\label{targets}}
 
-Of the two targets, one is binary (TARGET\_B), the other continuous (TARGET\_D). The former is a binary response indicator for the current promotion. The latter represents the dollar amount donated in response to the current promotion and is 0.0 \$ in case of non-response.
+Of the two targets, one is binary (\(\text{TARGET}_B\)), the other continuous (TARGET\_D). The former is a binary response indicator for the current promotion. The latter represents the dollar amount donated in response to the current promotion and is 0.0 \$ in case of non-response.
 
 As can be seen in Figure \ref{fig:target-ratio}, the response rate is 5.1 \%. This means the binary target is highly imbalanced. Extra care will have to be taken during model training to obtain a model with a low generalization error.
 
@@ -355,10 +356,10 @@ As can be seen in Figure \ref{fig:target-ratio}, the response rate is 5.1 \%. Th
 
 }
 
-\caption{Distribution of the binary target TARGET\_B.}\label{fig:target-ratio}
+\caption{Distribution of the binary target \(\text{TARGET}_B\).}\label{fig:target-ratio}
 \end{figure}
 
-The distribution of the continuous target for TARGET\_D \textgreater{} 0.0 \$ is shown in Figure \ref{fig:target-d-distrib}. Evidently, most donations are smaller than 25 \$, the 50-percentile lying at 13 \$ and the mean at 15.62 \$. There are a few outliers for donations above 100 \$, making the distribution right-skewed. Being monetary amounts, the observed values are discrete rather than strictly continuous.
+The distribution of the continuous target for \(\text{TARGET}_D > 0.0\) \$ is shown in Figure \ref{fig:target-d-distrib}. Evidently, most donations are smaller than 25 \$, the 50-percentile lying at 13 \$ and the mean at 15.62 \$. There are a few outliers for donations above 100 \$, making the distribution right-skewed. Being monetary amounts, the observed values are discrete rather than strictly continuous.
 
 
 
@@ -368,7 +369,7 @@ The distribution of the continuous target for TARGET\_D \textgreater{} 0.0 \$ is
 
 }
 
-\caption{Distribution of TARGET\_D, the donation amount in \$ US (only amounts \textgreater{} 0.0 \$ are shown).}\label{fig:target-d-distrib}
+\caption{Distribution of \(\text{TARGET}_D\), the donation amount in \$ US (only amounts \textgreater{} 0.0 \$ are shown).}\label{fig:target-d-distrib}
 \end{figure}
 
 \hypertarget{skewness}{%
@@ -387,7 +388,7 @@ Most of the numerical features are skewed. Due to the high dimensionality, indiv
 \caption{Fisher-Pearson standardized moment coefficient (G1) for all numeric features contained in the dataset. The confidence bound indicates the \(\alpha = 5 \%\) bound for the skewness of a normal distribution for any given feature.}\label{fig:skew-all}
 \end{figure}
 
-Looking at the 6 least skewed features (Figure \ref{fig:least-skewed}), we find distributions that resemble normal (respectively binomial) or discrete uniform.
+The distributions of the 6 least skewed features (Figure \ref{fig:least-skewed}) resemble normal (respectively binomial) or discrete uniform.
 
 \begin{figure}
 
@@ -412,7 +413,7 @@ The 6 most skewed features (Figure \ref{fig:most-skewed}) show heavily right-ske
 \hypertarget{correlations}{%
 \subsection{Correlations}\label{correlations}}
 
-The high dimensionality makes it hard to assess correlations in the data between individual features. A heatmap (see Figure \ref{fig:heatmap-all}) provides a high-level view. From left to right, three regions can be distinguished: First, there are member database features, followed by a large center region comprised of the U.S. census features, and rightmost, there are promotion and giving history features. Between these blocks, only few features are correlated. Within each block however, we can see some quite strongly correlated data.
+The high dimensionality makes it hard to assess correlations in the data between individual features. A heatmap (see Figure \ref{fig:heatmap-all}) provides a high-level view. From left to right, three regions can be distinguished: First, there are member database features, followed by a large center region comprised of the U.S. census features, and rightmost, there are promotion and giving history features. Between these blocks, only few features are correlated. Within each block however, there is quite strongly correlated data.
 
 
 
@@ -428,7 +429,7 @@ The high dimensionality makes it hard to assess correlations in the data between
 \hypertarget{donation-patterns}{%
 \subsection{Donation Patterns}\label{donation-patterns}}
 
-When looking at the all-time recency-frequency-amount (RFA) fetures for donors (Figure \ref{fig:rfa-alltime}), no clear trend is visible to discern current donors from non-donors. Current donors are found across the whole range of recency values, although slightly concentrated at the lower end (low recency is better). A slight correlation between frequency and current donation status is also discernible: Current donors tend to ``float'' on top of the ``sedimented'' non-donors. Those examples with the highest yearly donation amount did not donate in the current promotion.
+When looking at the all-time recency-frequency-amount (RFA) features for donors (Figure \ref{fig:rfa-alltime}), no clear trend is visible to discern current donors from non-donors. Current donors are found across the whole range of recency values, although slightly concentrated at the lower end (low recency is better). A slight correlation between frequency and current donation status is also discernible: Current donors tend to ``float'' on top of the ``sedimented'' non-donors. Those examples with the highest yearly donation amount did not donate in the current promotion.
 
 
 
@@ -441,7 +442,7 @@ When looking at the all-time recency-frequency-amount (RFA) fetures for donors (
 \caption{Analysis of all-time RFA values by response to current promotion. \emph{Recency} is the time in months since the last donation, \emph{Frequency} the average number of donations per year and \emph{Amount} the average yearly donation amount.}\label{fig:rfa-alltime}
 \end{figure}
 
-The data set documentation states that donation amounts are positively correlated with recency, the time since the last donation. This means that the longer an example goes without donating, the higher the donation amount if it can be enticed into donating again. Figure (\ref{fig:donations-vs-time}) gives some evidence for this assumption. We see that starting from 15 months, the number of donations above 50 \$ increases.
+The data set documentation states that donation amounts are positively correlated with recency, the time since the last donation. This means that the longer an example goes without donating, the higher the donation amount if it can be enticed into donating again. Figure (\ref{fig:donations-vs-time}) gives some evidence for this assumption. Starting from 15 months, the number of donations above 50 \$ increase.
 
 There is another insight gained when considering the number of donations an example has made, indicated by the point size, and donation amount: Frequent donors give relatively small sums, while the largest donations come from examples who rarely donate.
 
@@ -458,7 +459,7 @@ There is another insight gained when considering the number of donations an exam
 
 There are many examples who donated within the last 12 months prior to the current promotion ( Figures \ref{fig:rfa-alltime} and \ref{fig:donations-vs-time}). This is a surprising observation. The data set should contain \emph{lapsed} donors only, so there should be no donations recorded for that period. An explanation could be that the recency status is considered strictly for direct responses to promotions. Examples who donate regularly (i.e.~monthly, yearly), irrespective of the promotions mailed out, would not be evaluated in terms of RFA under that assumption.
 
-The data contains RFA features for each of the 24 promotions in the promotion history data, giving example's status per a given promotion. Considering the RFA features for the current promotion, we can support the insights above. Since the data set contains only lapsed donors, the recency feature is constant and not of interest (it is a nominal feature, \emph{lapsed} being one of the levels). Regarding the frequency of donations (number of donations 13 - 24 months prior to the promotion), shown in Figure \ref{fig:rfa-f}, we see a clear trend. With increasing donation frequency, donation amounts decrease.
+The data contains RFA features for each of the 24 promotions in the promotion history data, giving example's status per a given promotion. Considering the RFA features for the current promotion, the insights above can be supported. Since the data set contains only lapsed donors, the recency feature is constant and not of interest (it is a nominal feature, \emph{lapsed} being one of the levels). Regarding the frequency of donations (number of donations 13 - 24 months prior to the promotion), shown in Figure \ref{fig:rfa-f}, a clear trend is apparent. With increasing donation frequency, donation amounts decrease.
 
 \begin{figure}
 
@@ -469,7 +470,7 @@ The data contains RFA features for each of the 24 promotions in the promotion hi
 \caption{Frequency of donations in the 13-24 months prior to current promotion against amount donated. Frequent donors give smaller amounts.}\label{fig:rfa-f}
 \end{figure}
 
-Figure \ref{fig:donations-geo} shows the geographical distribution of donations. The large urban centers like San Francisco, Los Angeles, Miami, Chicago and Detroit are clearly visible. To a lesser extent, cities like Houston, Dallas, Minneapolis, Atlanta, Tampa, Seattle and Phoenix can be made out. Examples living there give small amounts. Big donors (large total donations with a high average) can be made out in rural areas in the midwest and Texas. Interestingly, only very few donations come from the north-eastern states.
+Figure \ref{fig:donations-geo} shows the geographical distribution of donations. The large urban centers like San Francisco, Los Angeles, Miami, Chicago and Detroit are clearly visible. To a lesser extent, cities like Houston, Dallas, Minneapolis, Atlanta, Tampa, Seattle and Phoenix can be made out. Examples living there give small amounts. Big donors (large total donations with a high average) can be made out in rural areas in the mid-west and Texas. Interestingly, only very few donations come from the north-eastern states.
 
 
 
@@ -482,7 +483,7 @@ Figure \ref{fig:donations-geo} shows the geographical distribution of donations.
 \caption{Geographical distribution of donations by zip code. Point size indicates total donations for a zip code while the hue shows average donation amount.}\label{fig:donations-geo}
 \end{figure}
 
-We can also see that examples living in rural areas tend to donate larger sums when looking at Figure \ref{fig:donations-le}. Shown are the living environments in progressively more rural settings against the average all-time donation amount per capita.
+Examples living in rural areas tend to donate larger sums, as Figure \ref{fig:donations-le} shows. Shown are the living environments in progressively more rural settings against the average all-time donation amount per capita.
 
 
 
@@ -518,9 +519,9 @@ The problem itself was solved using the python language, making use of establish
 
 Calculations were run in the cloud on a linux virtual machine\footnote{For details, refer to: \url{https://docs.microsoft.com/en-us/azure/machine-learning/data-science-virtual-machine/overview}, accessed on 5.6.2019}.
 
-Except for the development of a helper packge, most programming was performed in interactive Jupyter notebooks (Kluyver et al. \protect\hyperlink{ref-Kluyver:2016aa}{2016}).
+Except for the development of a helper package, most programming was performed in interactive Jupyter notebooks (Kluyver et al. \protect\hyperlink{ref-Kluyver:2016aa}{2016}).
 
-The report was written in rmarkdown (Allaire et al. \protect\hyperlink{ref-allaire2016rmarkdown}{2018}) using \texttt{knitr} (Xie \protect\hyperlink{ref-xie2015}{2015}) and \texttt{bookdown} (Xie \protect\hyperlink{ref-xie2016bookdown}{2016}) to render the document into several output formats.
+The report was written in \texttt{rmarkdown} (Allaire et al. \protect\hyperlink{ref-allaire2016rmarkdown}{2018}) using \texttt{knitr} (Xie \protect\hyperlink{ref-xie2015}{2015}) and \texttt{bookdown} (Xie \protect\hyperlink{ref-xie2016bookdown}{2016}) to render the document into several output formats.
 
 All work was tracked in version control.
 
@@ -555,12 +556,12 @@ The necessary preprocessing was guided by practical necessity (input errors, inc
   Removal of constant and \emph{sparse} features (required by cup documentation)
 \end{itemize}
 
-The transformations were established interactively in Jupyter notebooks. Once finalized, transformations were implemented in the python package \texttt{kdd98}\footnote{Available from \url{https://github.com/datarian/thesis-msc-statistics/tree/master/code//kdd98}}.
+The transformations were established interactively in Jupyter notebooks. Once finalized, transformations were implemented in the python package \texttt{kdd98}\footnote{Available from \url{https://github.com/datarian/thesis-msc-statistics/tree/master/code/kdd98}}.
 
 \hypertarget{cleaning}{%
 \subsection{Cleaning}\label{cleaning}}
 
-The transformations applied can be studied in the Jupyter notebook \emph{1\_Preprocessing.ipynb}\footnote{\url{https://github.com/datarian/thesis-msc-statistics/tree/master/code//notebooks/1_Preprocessing.ipynb}}.
+The transformations applied can be studied in the Jupyter notebook \emph{1\_Preprocessing.ipynb}\footnote{\url{https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/1_Preprocessing.ipynb}}.
 
 The cleaning stage of preprocessing encompassed the following transformations:
 
@@ -574,20 +575,20 @@ The cleaning stage of preprocessing encompassed the following transformations:
   Imputation of values missing at random (MAR)
 \end{itemize}
 
-MAR values in the sense of Rubin (\protect\hyperlink{ref-rubin1976inference}{1976}) are missing conditionally on other features in the data. For example, there are three related features from the promotion and giving history: \emph{ADATE}, the date of mailing a promotion, \emph{RDATE}, the date of receiving a donation in response to the promotion and \emph{RAMOUNT}, the amount received. For missing \emph{RAMOUNT} values, we can check if \emph{RDATE} is non-missing. If \emph{RDATE} is missing, then the example most likely has not donated and we can set \emph{RAMOUNT} to zero. If, on the other hand, both date features have a value, \emph{RAMOUNT} is truly missing.
+MAR values in the sense of Rubin (\protect\hyperlink{ref-rubin1976inference}{1976}) are missing conditionally on other features in the data. For example, there are three related features from the promotion and giving history: \emph{ADATE}, the date of mailing a promotion, \emph{RDATE}, the date of receiving a donation in response to the promotion and \emph{RAMOUNT}, the amount received. For missing \emph{RAMOUNT} values, it can be checked if \emph{RDATE} is non-missing. If \emph{RDATE} is missing, then the example most likely has not donated and \emph{RAMOUNT} can be set to zero. If, on the other hand, both date features have a value, \emph{RAMOUNT} is truly missing.
 
 \hypertarget{methods-feature-engineering}{%
 \subsection{Feature Engineering}\label{methods-feature-engineering}}
 
-The transformations applied during feature engineering are described in detail in the Jupyter notebook \emph{2\_Feature\_Engineering.ipynb}\footnote{\url{https://github.com/datarian/thesis-msc-statistics/tree/master/code//notebooks/2_Feature_Engineering.ipynb}}. The result of this step was an all-numeric data set usable for downstream learning.
+The transformations applied during feature engineering are described in detail in the Jupyter notebook \emph{2\_Feature\_Engineering.ipynb}\footnote{\href{https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/2_Feature\%20Engineering.ipynb}{https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/2\_Feature Engineering.ipynb}}. The result of this step was an all-numeric data set usable for downstream learning.
 
-All non-numeric (i.e.~categorical) features were encoded as numeric representations. For ordinal features, manual mappings from alphanumeric levels to integer numbers were specified. For nominal features, two encoding techniques provided in package \texttt{categorical-encoding}\footnote{Availabe at: \url{https://github.com/scikit-learn-contrib/categorical-encoding/}, accessed on 5.6.2019} were employed, depending on the number of levels:
+All non-numeric (i.e.~categorical) features were encoded as numeric representations. For ordinal features, manual mappings from alphanumeric levels to integer numbers were specified. For nominal features, two encoding techniques provided in package \texttt{categorical-encoding}\footnote{Available at: \url{https://github.com/scikit-learn-contrib/categorical-encoding/}, accessed on 5.6.2019} were employed, depending on the number of levels:
 
 \begin{itemize}
 \item
   One-hot encoding for \(\leq 10\) levels: For each level of a categorical feature, a new feature is created. An additional feature may be added to indicate missing values. Exactly one of these new features is set to \(1\), indicating the original level.
 \item
-  Binary encoding, \(> 10\) levels: The levels of the categorical are first transformed ordinally (i.e.~to a sequence of integer numbers). Then, these numbers are taken to the base of 2. (A \(5\), for example, becomes \texttt{101}). According to the number of levels, new features for the binary digits are created. As an example: To represent 60 levels, 6 features are required (\(2^6=64\)).
+  Binary encoding, \(> 10\) levels: The levels of the categorical are first transformed to ordinal (i.e.~to a sequence of integer numbers). Then, these numbers are taken to the base of 2. (A \(5\), for example, becomes \texttt{101}). According to the number of levels, new features for the binary digits are created. As an example: To represent 60 levels, 6 features are required (\(2^6=64\)).
 \end{itemize}
 
 Also, several features were transformed to better usable formats (i.e.~converting dates to time deltas, converting zip codes to coordinates). Care was taken to keep the dimensionality of the data set as low as possible.
@@ -595,7 +596,7 @@ Also, several features were transformed to better usable formats (i.e.~convertin
 \hypertarget{imputation}{%
 \subsection{Imputation}\label{imputation}}
 
-Three different approaches were evaluated. The details are shown in Jupyter notebook \emph{4\_Imputation.ipynb}\footnote{\url{https://github.com/datarian/thesis-msc-statistics/tree/master/code//notebooks/4_Imputation.ipynb}}.
+Three different approaches were evaluated. The details are shown in Jupyter notebook \emph{4\_Imputation.ipynb}\footnote{\url{https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/4_Imputation.ipynb}}.
 
 \hypertarget{k-nearest-neighbors}{%
 \subsubsection{K-Nearest Neighbors}\label{k-nearest-neighbors}}
@@ -657,7 +658,7 @@ In short, the algorithm works as follows:
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  The input matrix \(\mathbf{X}\) of dimension \(n \times p\) is extended with \(p\) so-called \emph{shadow features}. The shadow features are permuted copies of the features in \(\mathbf{X}\). They are therefore decorrelated with the target.
+  The input matrix \(\mathbf{X}\) of dimension \(n \times p\) is extended with \(p\) so-called \emph{shadow features}. The shadow features are permuted copies of the features in \(\mathbf{X}\). They are therefore de-correlated with the target.
 \item
   On the resulting matrix \(\mathbf{X^*}\), a random forest classifier is trained and the Z-scores \(\frac{\bar{\text{loss}}}{sd}\) for each of the \(2p\) features calculated.
 \item
@@ -679,7 +680,7 @@ The models were all learned on the same data set resulting from the boruta selec
 \hypertarget{methods-prediction}{%
 \section{Prediction}\label{methods-prediction}}
 
-The desired quantity to estimate is net profit \(\hat{\Pi}\). In order to predict this quantity, a two-step procedure was implemented, utilizing the response indicator \emph{TARGET\_B} and the continuous target \emph{TARGET\_D}, respectively. For each step, a model was trained. One is a classifier, predicting \(\hat{y}_b\), the probability of donating. The other is a regressor, predicting the donation amount \(\hat{y}_d\). The classifier was trained on the complete learning data set, while the regressor was trained on \(\mathbf{X}_d = \{x_i|y_{b,i} = 1, i=1 \ldots n\}\) and \(y_d = \{y_{d,i}|y_{b,i} = 1, i=1 \ldots n\}\). The non-random sample leads to a conditionally predicted donation amount, thereby introducing bias. A correction for the bias is necessary as a consequence. This approach resembles Heckman (\protect\hyperlink{ref-heckman1976common}{1976})'s two-stage procedure which is widely used in econometrics. Heckman's procedure was presented for the question of wage offerings for women. Data on wages was only available for working women, thereby introducing bias if wage offerings were only predicted on this sample. The question of whether an example works or not is seen as an unobserved feature. In Heckman (\protect\hyperlink{ref-heckman1976common}{1976}), a probit model is used for this first \emph{selection} stage. The inverse Mills ratio of the probit, \(\frac{-\phi(\hat{y_i}-\mathbf{X}\beta)}{\Phi(\hat{y_i}-\mathbf{X}\beta}\), is calculated and included in the data for predictions in the second \emph{observation} stage with OLS regression.
+The desired quantity to estimate is net profit \(\hat{\Pi}\). In order to predict this quantity, a two-step procedure was implemented, utilizing the response indicator \(\text{TARGET}_B\) and the continuous target \emph{\(\text{TARGET}_D\)}, respectively. For each step, a model was trained. One is a classifier, predicting \(\hat{y}_b\), the probability of donating. The other is a regressor, predicting the donation amount \(\hat{y}_d\). The classifier was trained on the complete learning data set, while the regressor was trained on \(\mathbf{X}_d = \{x_i|y_{b,i} = 1, i=1 \ldots n\}\) and \(y_d = \{y_{d,i}|y_{b,i} = 1, i=1 \ldots n\}\). The non-random sample leads to a conditionally predicted donation amount, thereby introducing bias. A correction for the bias is necessary as a consequence. This approach resembles Heckman (\protect\hyperlink{ref-heckman1976common}{1976})'s two-stage procedure which is widely used in econometrics. Heckman's procedure was presented for the question of wage offerings for women. Data on wages was only available for working women, thereby introducing bias if wage offerings were only predicted on this sample. The question of whether an example works or not is seen as an unobserved feature. In Heckman (\protect\hyperlink{ref-heckman1976common}{1976}), a probit model is used for this first \emph{selection} stage. The inverse Mills ratio of the probit, \(\frac{-\phi(\hat{y_i}-\mathbf{X}\beta)}{\Phi(\hat{y_i}-\mathbf{X}\beta}\), is calculated and included in the data for predictions in the second \emph{observation} stage with OLS regression.
 
 \hypertarget{setup-of-the-two-stage-prediction}{%
 \subsection{Setup of the Two-Stage Prediction}\label{setup-of-the-two-stage-prediction}}
@@ -741,7 +742,7 @@ For \(f\), a cubic spline \(s\) was used. \(\alpha^*\) was determined as follows
 \hypertarget{eval-and-select}{%
 \section{Model Evaluation and -Selection}\label{eval-and-select}}
 
-Several algorithms (estimators) were trained in parallel. Once good hyperparameters were found using randomized grid search, performance of the estimators was compared using a common metric in order to select the best (see Figure \ref{fig:evaluation-selection} for a schematic process overview). This was done independently for classifiers (predicting the binary target) and regressors (predicting the continuous target). The process is documented in notebook \emph{6\_Model\_Evaluation\_Selection.ipynb}\footnote{\url{https://github.com/datarian/thesis-msc-statistics/tree/master/code//notebooks/6_Model_Evaluation_Selection.ipynb}}.
+Several algorithms (estimators) were trained in parallel. Once good hyperparameters were found using randomized grid search, performance of the estimators was compared using a common metric in order to select the best (see Figure \ref{fig:evaluation-selection} for a schematic process overview). This was done independently for classifiers (predicting the binary target) and regressors (predicting the continuous target). The process is documented in notebook \emph{6\_Model\_Evaluation\_Selection.ipynb}\footnote{\url{https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/6_Model_Evaluation_Selection.ipynb}}.
 
 The pipeline functionality of \texttt{scikit-learn} was used to combine preliminary data transformations, i.e.~scaling of features (where necessary) and resampling with the estimator-algorithm. This allows to jointly tune hyperparameters for transformations and the estimator.
 
@@ -811,7 +812,7 @@ The definitions of some often-used metrics are given below\footnote{taken from \
 \text{F1 score} &= \frac{2TP}{2TP+FP+FN}
 \end{align*}
 
-The goal, as mentioned earlier, is to maximize net profit. To achieve this, a balance between predicting as many TP's as possible while keeping the number of FP's low has to be found. One FP costs 0.68 \$ (sending a letter to a non-donor). Keeping in mind the distribution of TARGET\_D (Section \ref{targets}), one FN means loosing at least 0.32 \$ of possible profit (not sending a promotion to a donor, smallest donation amount is 1 \$). The expected loss in profit for one FN is even 15 \$ (corresponding to the mean donation amount), which means that with each TP, the cost of 22 FP's can be covered on average.
+The goal, as mentioned earlier, is to maximize net profit. To achieve this, a balance between predicting as many TP's as possible while keeping the number of FP's low has to be found. One FP costs 0.68 \$ (sending a letter to a non-donor). Keeping in mind the distribution of \(\text{TARGET}_D\) (Section \ref{targets}), one FN means loosing at least 0.32 \$ of possible profit (not sending a promotion to a donor, smallest donation amount is 1 \$). The expected loss in profit for one FN is even 15 \$ (corresponding to the mean donation amount), which means that with each TP, the cost of 22 FP's can be covered on average.
 
 The default metric for classification is accuracy, but in the case of imbalanced targets, it is not a desirable metric (TN is present both in the nominator and denominator, dominating the score). The metrics that could be used beneficially because they involve TP an not TN are F1, recall and precision. Since in precision, the FP of the majority class have the highest influence from among the three, it was discarded from the candidate list.
 
@@ -835,7 +836,7 @@ Several different approaches were explored. The following over-/undersampling te
   SMOTE (synthetic minority oversampling technique), variant borderline-1
 \end{itemize}
 
-The random sampling algorithms either draw from the minority class with repetition or draw random samples from the majority class without repetition until the labels are balanced. SMOTE does not sample from the data but instead generates synthetic samples from the minority class, thereby countering the danger of overfitting by learning on a small number of repeated observations (random oversampling) or a small subset of the training data available (random undersampling). The SMOTE variant \emph{borderline-1} chosen generates samples that are close to the optimal decision boundary, where misclassifications are likely.
+The random sampling algorithms either draw from the minority class with repetition or draw random samples from the majority class without repetition until the labels are balanced. SMOTE does not sample from the data but instead generates synthetic samples from the minority class, thereby countering the danger of overfitting by learning on a small number of repeated observations (random oversampling) or a small subset of the training data available (random undersampling). The SMOTE variant \emph{borderline-1} chosen generates samples that are close to the optimal decision boundary, where misclassification is likely.
 
 Additional experiments were run with class- and sample-weights set on the data without resampling. For class weights, the ratio of non-donors vs.~donors was used. For sample weights, the donation amount was employed, rescaled to the interval \([0,1]\).
 
@@ -907,7 +908,7 @@ The main idea behind boosting is to sequentially train an ensemble of weak learn
 
 Gradient boosting machine (GBM) extends on this idea. Like a random forest, GBM learns an ensemble of decision trees. However, trees are learned in an additive manner. At each iteration, the tree that improves the model most (i.e.~in the direction of the gradient of the loss function) is added. For this thesis, the package \texttt{XGBoost} by Chen and Guestrin (\protect\hyperlink{ref-chen2016xgboost}{2016}) was used. They describe the algorithm as follows:
 
-Assume we have a data set with \(n\) examples and \(p\) features: \(D = \{\{x_i,y_i\}, i=1\ldots n, x_i=\{x_{i,1}, x_{i,2}, \ldots x_{i,p}\}\}\). The implementation uses a tree ensemble with \(K\) regression trees to predict the outcome for an example in the data by summing up the weights predicted by each tree:
+Assume a data set with \(n\) examples and \(p\) features: \(D = \{\{x_i,y_i\}, i=1\ldots n, x_i=\{x_{i,1}, x_{i,2}, \ldots x_{i,p}\}\}\). The implementation uses a tree ensemble with \(K\) regression trees to predict the outcome for an example in the data by summing up the weights predicted by each tree:
 
 \begin{equation}
 \hat{y}_i = \phi(x_i) = \sum_{k=1}^K f_k(x_i), f_k \in F
@@ -925,7 +926,7 @@ L(\phi) = \sum_{i=1}^n l(y_i, \hat{y_i}) + \sum_k^K \Omega(f_k)
 
 Here, \(l\) is a differentiable, convex loss function that measures the difference between predictions and true values. Since \(l\) is convex, a global minimum is guaranteed. \(\Omega(f) = \gamma T + \frac{1}{2}\lambda||w||^2\) is a penalty on the complexity of the trees to counter over-fitting. The algorithm thus features integrated regularization.
 
-Now, at each iteration \(t\), the tree \(f_t\) that improves the model most is added. For this, we add \(f_t(\mathbf{x_i})\) to the predictions at \(t-1\) and compute the loss:
+Now, at each iteration \(t\), the tree \(f_t\) that improves the model most is added. For this, \(f_t(\mathbf{x_i})\) is added to the predictions at \(t-1\) and compute the loss:
 
 \begin{equation}
 L^{(t)} = \sum_{i=1}^n l(y_i, \hat{y_i}^{t-1} + f_t(\mathbf{x_i})) +\Omega(f_t)
@@ -999,7 +1000,7 @@ For learning, GLMnet evaluates many different \(\lambda\) values for a given \(\
 \hypertarget{multilayer-perceptron}{%
 \subsubsection{Multilayer Perceptron}\label{multilayer-perceptron}}
 
-The multilayer perceptron (MLP) is a so-called feedforward neural network. The network consists of at least three layers: an input layer, an arbitrary number of hidden layers and an output layer. Each layer is made up of units. The term feedforward means that information flows from the input layer through intermediary steps and then to the output. The goal is to approximate the function \(f^*\). For a classifier, \(y = f^*(x)\) maps an example \(x\) to a category \(y\). A feedforward network defines a mapping \(y=f(x, w)\) and learns the weights \(w\) by approximating the function \(f\) (Goodfellow, Bengio, and Courville \protect\hyperlink{ref-goodfellow2016deep}{2016}).
+The multilayer perceptron (MLP) is a so-called feed-forward neural network. The network consists of at least three layers: an input layer, an arbitrary number of hidden layers and an output layer. Each layer is made up of units. The term feed-forward means that information flows from the input layer through intermediary steps and then to the output. The goal is to approximate the function \(f^*\). For a classifier, \(y = f^*(x)\) maps an example \(x\) to a category \(y\). A feed-forward network defines a mapping \(y=f(x, w)\) and learns the weights \(w\) by approximating the function \(f\) (Goodfellow, Bengio, and Courville \protect\hyperlink{ref-goodfellow2016deep}{2016}).
 
 For a binary classification problem on a dataset with \(n\) examples and \(p\) features \(D = \{\{x_i, y_i\}\}, x_i = \{x_{i,1},x_{i,2},\ldots,x_{i,p}\}, y_i \in \{0,1\}, i = 1 \ldots n\}\), the input layer has \(p\) units, the output layer has \(1\) unit. The hidden layers each have an arbitrary number of \emph{hidden} units.
 
@@ -1014,7 +1015,7 @@ where \(\phi\) is a non-linear activation function, \(w\) is the vector of weigh
 
 During learning, the training examples are fed to the network sequentially. For each example, the prediction error is calculated using a loss function, which is typically the negative log-likelihood.
 
-Then, the partial derivatives of the loss function with respect to the weights are computed for each unit and the parameters updated using stochastic gradient descent. This process is called backpropagation.
+Then, the partial derivatives of the loss function with respect to the weights are computed for each unit and the parameters updated using stochastic gradient descent. This process is called back-propagation.
 
 The complete network is a chain of functions, for the network trained here, it is: \begin{equation}
 \mathbf{y} = \phi^{(3)}(\mathbf{W}^{(3)T} \mathbf{\phi}^{(2)}(\mathbf{W}^{(2)T} \mathbf{\phi}^{(1)}(\mathbf{W}^{(1)T} \mathbf{x} + \mathbf{b}^{(1)}) + \mathbf{b}^{(2)}) + \mathbf{b}^{(3)})
@@ -1031,7 +1032,7 @@ The complete network is a chain of functions, for the network trained here, it i
 \caption{Neural network topology used. Two hidden layers \(\mathbf{h^{(1)}, h^{(2)}}\) are contained. \(\mathbf{b^{(2)}, b^{(3)}}\) and \(\mathbf{b^{(4)}}\) are the bias vectors for the respective layers.}\label{fig:mlp-graph}
 \end{figure}
 
-For this thesis, the scikit-learn implementation \texttt{sklearn.neural\_network.MLPClassifier} was used with default settings (rectified linear unit as activation function, adam (stochastic gradient descent) solver). The network topology was determined by treating it as a hyperparameter. Best results were achieved with a network featuring two hidden layers with 28 hidden units each. The network is shown symbolically in Figure \ref{fig:mlp-graph}.
+For this thesis, the scikit-learn implementation \texttt{sklearn.neural\_network.MLPClassifier} was used with default settings (rectified linear unit as activation function, \emph{adam} (stochastic gradient descent) solver). The network topology was determined by treating it as a hyperparameter. Best results were achieved with a network featuring two hidden layers with 28 hidden units each. The network is shown symbolically in Figure \ref{fig:mlp-graph}.
 
 \textbf{Hyperparameters}
 
@@ -1042,7 +1043,7 @@ For this thesis, the scikit-learn implementation \texttt{sklearn.neural\_network
 \item
   \(\alpha\), {[}0,1{]}: \(L^2\) regularization amount
 \item
-  \texttt{learning\_rate\_init} \(>0\): Controls step size for the solver during backpropagation (regularization).
+  \texttt{learning\_rate\_init} \(>0\): Controls step size for the solver during back-propagation (regularization).
 \end{itemize}
 
 \hypertarget{support-vector-machine}{%
@@ -1123,14 +1124,14 @@ The algorithm was trained with default settings.
 \hypertarget{results-and-discussion}{%
 \chapter{Results and Discussion}\label{results-and-discussion}}
 
-Below, the results from data preprocessing, model evaluation, -selection and predictions are shown.
+Below, the results from data preprocessing, model evaluation/-selection and predictions are shown.
 
 \hypertarget{preprocessing-with-package-kdd98}{%
 \section{Preprocessing With Package kdd98}\label{preprocessing-with-package-kdd98}}
 
 The self-written package \texttt{kdd98} ensures consistent data provisioning. It handles downloading and preprocessing of the data set for both the learning and validation set. All preprocessing steps are trained on the learning data set. The individual trained transformations are persisted on disk. After training, the transformations can be applied on the validation data. This process is transparent to the user. It is enough to instantiate the data provider for either learning or validation data set and request the data. Examples for usage can be found in the Jupyter notebooks.
 
-The data sets can be obtained at the following intermediate steps from \textbackslash{} \texttt{kdd98.data\_handler.KDD98DataProvider}:
+The data sets can be obtained at intermediate steps from \texttt{kdd98.data\_handler.KDD98DataProvider}:
 
 \begin{itemize}
 \tightlist
@@ -1148,31 +1149,18 @@ The data sets can be obtained at the following intermediate steps from \textback
 
 For some transformers, behavior can be controlled by specifying parameters (which has to be done in the code). The package's architecture makes it easy to implement additional transformation steps.
 
-The source code, along with a short introduction, is available online\footnote{\url{https://github.com/datarian/thesis-msc-statistics/tree/master/code//kdd98}}.
+The source code, along with a short introduction, is available online\footnote{\url{https://github.com/datarian/thesis-msc-statistics/tree/master/code/kdd98}}.
 
 \hypertarget{imputation-1}{%
 \section{Imputation}\label{imputation-1}}
 
-The evaluation of several imputation strategies led to a straightforward approach: Categorical features had a \emph{missing} level added during encoding (Section \ref{methods-feature-engineering}). All other features were imputed by their median value to account for the skewed distributions. The notebook \emph{4\_Imputation.ipynb}\footnote{\url{https://github.com/datarian/thesis-msc-statistics/tree/master/code//notebooks/4_Imputation.ipynb}} contains details on the other approaches studied.
+The evaluation of several imputation strategies led to a straightforward approach: Categorical features had a \emph{missing} level added during encoding (Section \ref{methods-feature-engineering}). All other features were imputed by their median value to account for the skewed distributions. The notebook \emph{4\_Imputation.ipynb}\footnote{\url{https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/4_Imputation.ipynb}} contains details on the other approaches studied.
 
-In concordance with the cup documentation's requirements (Appendix \ref{data-set-documentation}), constant and \emph{sparse} features were dropped from the data set before imputation. The approach used in the R-package \texttt{caret} was implemented in a scikit-learn transformer for this purpose. Work from a blog post by Philip Goddard\footnote{See \url{http://philipmgoddard.com/modeling/sklearn_pipelines}, accessed on 4.6.2019} was adapted. The beauty of the method that is used in \texttt{caret} is that it is data type agnostic. It works on the number of unique values per feature and the frequency ratio between the top and second values by count.
-
-Missing data after removing sparse features is shown in Figure \ref{fig:before-impute}. The matrix displays the complete data set, with missing values indicated by white cells.
-
-
-
-\begin{figure}
-
-{\centering \includegraphics[width=0.7\linewidth]{figures/imputation/missing-matrix} 
-
-}
-
-\caption{Data before imputation of numeric features. The big complete block at the center is the US census data. }\label{fig:before-impute}
-\end{figure}
+In concordance with the cup documentation's requirements (Appendix \ref{data-set-documentation}), constant and \emph{sparse} features were dropped from the data set before imputation. The approach used in the R-package \texttt{caret} was implemented in a scikit-learn transformer for this purpose. Work from a blog post (Goddard \protect\hyperlink{ref-goddard2017variance}{2017}) was adapted. The beauty of the method used in \texttt{caret} is that it is data type agnostic. It works on the number of unique values per feature and the frequency ratio between the top and second values by count.
 
 The features with most and least missing values are shown in Figure \ref{fig:most-fewest-missing}. It is not surprising to find the \emph{MONTHS\_TO\_DONATION\_*} features among those with most missing because few examples respond to the promotions with a donation.
 
-Among the incomplete features with least missing values, we find several of the US census features. The \emph{RFA\_*} features give the status in reference to promotion \(i\). All examples who did donate at some point before have an RFA status. Thus, we can see when new members were added from the missing values in these features because newly added members do not have an RFA status yet.
+Among the incomplete features with least missing values, there are several of the US census features. The \emph{RFA\_*} features give the status in reference to promotion \(i\). All examples who did donate at some point before have an RFA status. Thus, the missingness indicates when new members were added because newly added members do not have an RFA status yet.
 
 
 
@@ -1188,9 +1176,9 @@ Among the incomplete features with least missing values, we find several of the 
 \hypertarget{feature-selection}{%
 \section{Feature Selection}\label{feature-selection}}
 
-After preprocessing and feature engineering, 653 features were present in the data. Using boruta, 58 features were identified as important, resulting in a 91 \% reduction of the number of features. For details, refer to notebook \texttt{5\_Feature\_Extraction.ipynb}\footnote{\href{https://github.com/datarian/thesis-msc-statistics/tree/master/code//notebooks/5_Feature\%20Extraction.ipynb}{https://github.com/datarian/thesis-msc-statistics/tree/master/code//notebooks/5\_Feature Extraction.ipynb}}.
+After preprocessing and feature engineering, 653 features were present in the data. Using boruta, 58 features were identified as important, resulting in a 91 \% reduction of the number of features. For details, refer to notebook \emph{5\_Feature\_Extraction.ipynb}\footnote{\href{https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/5_Feature\%20Extraction.ipynb}{https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/5\_Feature Extraction.ipynb}}.
 
-Three groups of features were selected.
+Three groups of features were selected. By crosschecking with the dataset dictionary (Appendix \ref{data-set-dictionary}), their meaning could be identified:
 
 Features from the \textbf{giving history} broadly correspond to those used in classical RFM models mentioned in literature (Section \ref{intro}). It is reassuring to find them among the all-relevant features:
 
@@ -1226,7 +1214,7 @@ The \textbf{promotion history} features can be interpreted as a measure of the i
   Number of card promotions in last 12 months before the current promotion
 \end{itemize}
 
-Features from the \textbf{US census} data seem to be concerned with the social status and wealth of the neighborhood of donors and by intuition make sense to be deemed relevant.
+Features from the \textbf{US census} data are concerned with the social status and wealth of the neighborhood of donors and by intuition make sense to be deemed relevant.
 
 \begin{itemize}
 \tightlist
@@ -1253,20 +1241,20 @@ Features from the \textbf{US census} data seem to be concerned with the social s
 \hypertarget{results-models}{%
 \section{Model Evaluation and Selection}\label{results-models}}
 
-Model evaluation and -selection may be studied in detail in notebook \texttt{6\_Model\_Evaluation\_Selection.ipynb}\footnote{\url{https://github.com/datarian/thesis-msc-statistics/tree/master/code//notebooks/6_Model_Evaluation_Selection.ipynb}}. As will be explained below, all classifiers performed rather weak and were highly influenced by the imbalance in the data. The best results were achieved by using SMOTE resampling. Random over-/undersampling and specifying class weights however did not have a significant impact on the models' performance.
+Model evaluation and -selection may be studied in detail in notebook ~ \emph{6\_Model\_Evaluation\_Selection.ipynb}\footnote{\url{https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/6_Model_Evaluation_Selection.ipynb}}. As will be explained below, all classifiers performed rather weak and were highly influenced by the imbalance in the data. The best results were achieved when using SMOTE resampling. Random over-/undersampling and specifying class weights had an inferior effect on model performance.
 
-Among the classifiers evaluated, GLMnet consistently showed the best performance and was thus chosen.
+Among the classifiers evaluated, GLMnet showed the best performance and was thus chosen.
 
 For the regression models, RF outperformed the other models, although the differences were less pronounced compared to the classifier results.
 
 \hypertarget{classifiers-1}{%
 \subsection{Classifiers}\label{classifiers-1}}
 
-During grid search, models were trained individually for best \emph{F1} and \emph{recall}. The models trained for high recall had only slightly worse precision than those trained for high F1, but at the same time better recall scores (see Jupyter notebook \texttt{6\_Model\_Evaluation\_Selection.ipynb}). Therefore, the recall-trained models were considered for selection of the classifier.
+During grid search, models were trained individually for best F1 and recall. The models trained for high recall had only slightly worse precision than those trained for high F1, but at the same time better recall scores (see Jupyter notebook \texttt{6\_Model\_Evaluation\_Selection.ipynb}). Therefore, the recall-trained models were considered for selection of the classifier.
 
 Evaluation was based on the recall scores, confusion matrices, receiver operating characteristic (ROC) indicating model performance through an area under the curve score (ROC-AUC) and precision-recall (PR) curves.
 
-If we were to simply decide by recall score, the decision would be obvious, as shown in Figure \ref{fig:recall-scores}. SVM has \textasciitilde{}74 \% recall, with the next-best scores at 54 \% and 53 \%. However, it is important to also consider the false positives as those cost money and decrease net profit.
+If only the recall score were considered, the decision would be obvious, as shown in Figure \ref{fig:recall-scores}. SVM has \textasciitilde{}74 \% recall, with the next-best scores at 54 \% and 53 \%. However, it is important to also consider the false positives as those cost money and decrease net profit.
 
 
 
@@ -1279,9 +1267,24 @@ If we were to simply decide by recall score, the decision would be obvious, as s
 \caption{Comparison of recall scores for all classifiers evaluated.}\label{fig:recall-scores}
 \end{figure}
 
-The confusion matrices are shown in Figure \ref{fig:conf-matrices}. We aim for a classifier that has a high recall, predicting many donors correctly, and at the same time a low False Positive Rate (FPR).
+The ROC-AUC curve (Figure \ref{fig:roc-auc-pr}, left panel) was constructed by evaluating the false positive rate (FPR) against the true positive rate (TPR) at various thresholds for the predicted class probabilities of examples in the training data. The closer the curve is to the top-left corner, the better a model performs (large TPR and at the same time a low FPR for a wide range of thresholds). All classifiers seemingly performed rather weak. In the case of imbalanced data, the majority class dominates this metric. The false positive rate is \(FPR = \frac{FP}{FP+TN}\). This means that as the false positives (FP) decrease due to an increasing threshold, FPR does not change a lot.
 
-We now see that for SVM, the trade off for high recall is also a high FPR. The false positives can be directly translated to cost: the 12'985 false positives in this case would amount to 8'830 \$ at a unit cost of 0.68 \$, while the 715 true positives generate an expected profit of only 8'808 \$ (with a mean net profit of 12.32 \$).
+The PR curve with precision \(P = \frac{TP}{TP+FP}\) plotted against recall \(R = \frac{TP}{{TP+FN}}\) at different threshold values is sensitive to false positives and, since TN is not involved, better suited for the imbalanced data at hand. To construct the curve, recall is plotted against precision for various threshold values of the predicted class probabilities. For good models, the curve is close to the top-right corner. The right panel of Figure \ref{fig:roc-auc-pr} shows the models in direct comparison. All of them suffer from low precision except for the highest threshold values. Again, this is caused by the high imbalance in the data.
+
+
+
+\begin{figure}
+
+{\centering \includegraphics[width=0.49\linewidth]{figures/learning/roc_auc_compared_refit_recall} \includegraphics[width=0.49\linewidth]{figures/learning/prec_rec_compared_refit_recall} 
+
+}
+
+\caption{Comparison of ROC-AUC for the evaluated classifiers (left) and PR curves (right) for the classifiers.}\label{fig:roc-auc-pr}
+\end{figure}
+
+More insight can be gained from the confusion matrices, shown in Figure \ref{fig:conf-matrices}. The best classifier should have a high recall, predicting many donors correctly, and at the same time a low False Positive Rate (FPR).
+
+From the confusion matrices, it becomes obvious that for SVM, the trade off for high recall is also a high FPR. The false positives can be directly translated to cost: the 12'985 false positives in this case would amount to 8'830 \$ at a unit cost of 0.68 \$, while the 715 true positives generate an expected profit of only 8'808 \$ (with a mean net profit of 12.32 \$).
 
 Evidently, GLMnet an NNet have a relatively good balance of recall and FPR. GBM performs well for FPR, which means less money lost due to unit costs, but has a very low recall.
 
@@ -1291,40 +1294,25 @@ GLMnet and NNet were also combined into a voting classifier. This classifier cre
 
 \begin{figure}
 
-{\centering \includegraphics[width=0.33\linewidth]{figures/learning/confusion_matrix_model_RF_refit_recall} \includegraphics[width=0.33\linewidth]{figures/learning/confusion_matrix_model_GBM_refit_recall} \includegraphics[width=0.33\linewidth]{figures/learning/confusion_matrix_model_GLMnet_refit_recall} \includegraphics[width=0.33\linewidth]{figures/learning/confusion_matrix_model_NNet_refit_recall} \includegraphics[width=0.33\linewidth]{figures/learning/confusion_matrix_model_SVM_refit_recall} \includegraphics[width=0.33\linewidth]{figures/learning/confusion_matrix_voting_classifier} 
+{\centering \includegraphics[width=0.3\linewidth]{figures/learning/confusion_matrix_model_RF_refit_recall} \includegraphics[width=0.3\linewidth]{figures/learning/confusion_matrix_model_GBM_refit_recall} \includegraphics[width=0.3\linewidth]{figures/learning/confusion_matrix_model_GLMnet_refit_recall} \includegraphics[width=0.3\linewidth]{figures/learning/confusion_matrix_model_NNet_refit_recall} \includegraphics[width=0.3\linewidth]{figures/learning/confusion_matrix_model_SVM_refit_recall} \includegraphics[width=0.3\linewidth]{figures/learning/confusion_matrix_voting_classifier} 
 
 }
 
-\caption{Confusion matrices for the 5 classifiers evaluated.}\label{fig:conf-matrices}
+\caption{Confusion matrices for the 6 classifiers studied.}\label{fig:conf-matrices}
 \end{figure}
 
-The ROC-AUC curve is constructed by evaluating the false positive rate (FPR) against the true positive rate (TPR) at various thresholds for the predicted class probabilities of examples in the training data. The closer the curve is to the top-left corner, the better a model performs (we have a large TPR and at the same time a low FPR for a wide range of thresholds). Looking at the ROC-AUC curves shown in Figure \ref{fig:roc-auc-curve}, we see that all classifiers performed rather weak. In the case of imbalanced data, the majority class dominates this metric. The false positive rate is \(FPR = \frac{FP}{FP+TN}\). This means that as the false positives (FP) decrease due to an increasing threshold, FPR does not change a lot.
-
-
+The non-null coefficients of the GLMnet model are shown in \ref{fig:glmnet-coefficients}. 22 coefficients are non-null. The absolute values of the coefficients indicate importance of the respective feature. The first five features are from the promotion- and giving history and are concerned with the amount and frequency of donations.
 
 \begin{figure}
 
-{\centering \includegraphics[width=0.7\linewidth]{figures/learning/roc_auc_compared_refit_recall} 
+{\centering \includegraphics[width=1\linewidth]{figures/learning/glmnet_coefficients} 
 
 }
 
-\caption{Comparison of ROC-AUC for the evaluated classifiers.}\label{fig:roc-auc-curve}
+\caption{Coefficient values for GLMnet.}\label{fig:glmnet-coefficients}
 \end{figure}
 
-The PR curve with precision \(P = \frac{TP}{TP+FP}\) plotted against recall \(R = \frac{TP}{{TP+FN}}\) at different threshold values is sensitive to false positives and, since TN is not involved, better suited for the imbalanced data at hand. Figure \ref{fig:p-r-curve} shows the models in direct comparison. All of them suffer from low precision except for the highest threshold values. Again, this is caused by the high imbalance in the data.
-
-
-
-\begin{figure}
-
-{\centering \includegraphics[width=0.7\linewidth]{figures/learning/prec_rec_compared_refit_recall} 
-
-}
-
-\caption{Comparison of PR curves for the classifiers. Recall is plotted against precision for various threshold values of the predicted class probabilities. For good models, the curve is close to the top-right corner.}\label{fig:p-r-curve}
-\end{figure}
-
-Using RF, the important features can be identified. The measure implemented in scikit-learn is the \emph{Gini importance} as described in Breiman et al. (\protect\hyperlink{ref-breiman1984classification}{1984}). It represents the total decrease in impurity (see Section \ref{methods-rf}) due to nodes split on feature \(f\), averaged over all trees in the forest. The most important features are all from the giving history, followed by the promotion history. US census features are not important (see Figure \ref{fig:importances}).
+Although RF performed poorly, it can be used to have a second source of information on the important features. The measure implemented in scikit-learn is the \emph{Gini importance} as described in Breiman et al. (\protect\hyperlink{ref-breiman1984classification}{1984}). It represents the total decrease in impurity (see Section \ref{methods-rf}) due to nodes split on feature \(f\), averaged over all trees in the forest. The most important features again are all from the giving history, followed by the promotion history. US census features are not important (see Figure \ref{fig:importances}).
 
 \begin{figure}
 
@@ -1338,9 +1326,7 @@ Using RF, the important features can be identified. The measure implemented in s
 \hypertarget{regressors-1}{%
 \subsection{Regressors}\label{regressors-1}}
 
-Regressors were learned on a subset of the training data comprised of all donors: \(\{\{x_i, y_i\}|y_{b,i} = 1\}\).
-
-The target was transformed using a Box-Cox transformation with parameter \(\lambda=0.0239\). The goal was to linearize the target to improve regression models' performance. The transformed data somewhat resembles a normal distribution, although there are several modes to be made out.
+As explained in Section \ref{methods-prediction}, the regressors were learned on a subset of the training data comprised of all donors: \(\{\{x_i, y_i\}|y_{b,i} = 1\}\). Before learning, \emph{TARGET\_D} was Box-Cox transformed for normalization with \(\lambda=0.0239\). The goal of the transformation was to improve regression models' performance. The transformed data somewhat resembles a normal distribution, although there are several modes to be made out (see Figure \ref{fig:reg-targ-transform}).
 
 \begin{figure}
 
@@ -1351,7 +1337,7 @@ The target was transformed using a Box-Cox transformation with parameter \(\lamb
 \caption{Target before transformation (left) and after a Box-Cox transformation (right).}\label{fig:reg-targ-transform}
 \end{figure}
 
-The resulting distribution of predicted donation amounts on the training data is shown in Figure \ref{fig:reg-distrib}. Except for SVR, the models produce very similar results. We again find the multi-modal distribution (refer to Figure \ref{fig:reg-targ-transform}). RF and SVR are relatively symmetric, while BR and ElasticNet produce right-skewed distributions that predict very large donation amounts for some examples.
+The resulting distribution of predicted donation amounts on the training data is shown in Figure \ref{fig:reg-distrib}. Except for SVR, the models produce very similar results. Again, the multi-modal distribution is found (refer to Figure \ref{fig:reg-targ-transform}). RF and SVR are relatively symmetric, while BR and ElasticNet produce right-skewed distributions that predict very large donation amounts for some examples.
 
 
 
@@ -1364,7 +1350,7 @@ The resulting distribution of predicted donation amounts on the training data is
  \caption{Distribution of (Box-Cox transformed) donation amounts for the four regressors evaluated.}\label{fig:reg-distrib}
  \end{figure}
 
-The regressor for further use was selected by \(R^2\) score on a test set (20\% of the learning data was used). RF was the best performing model with \(R^2 = 0.72\) (see Figure \ref{fig:reg-eval}).
+The regressor for final prediction was selected by \(R^2\) score on a test set (20\% of the learning data was used). RF was the best performing model with \(R^2 = 0.72\) (see Figure \ref{fig:reg-eval}).
 
 
 
@@ -1377,7 +1363,7 @@ The regressor for further use was selected by \(R^2\) score on a test set (20\% 
 \caption{Evaluation metric \(R^2\) for all regression models evaluated. The domain for \(R^2\) is \((-\inf, 1]\).)}\label{fig:reg-eval}
 \end{figure}
 
-Again, RF enables to interpret the importance of features. The results (Figure \ref{fig:reg-importance}) confirm an observation during EDA (Section @ref())
+Again, RF enables to interpret the importance of features. The results (Figure \ref{fig:reg-importance}) show that mainly the amount of the last donation, and to a lesser amount the average donation amount and the amounts of the last three donations were important for predicting donation amounts. This would indicate that donors tend to always donate the same sums.
 
 
 
@@ -1387,18 +1373,34 @@ Again, RF enables to interpret the importance of features. The results (Figure \
 
 }
 
-\caption{Feature importances for the RF regressor. The amount of the last donation prior to the current promotion (LASTGIFT) is by far the most important feature for predicting the donation amount. It is followed by the average donation amount (AVGGIT) and the donation amounts for the three promotions prior to the current one. Intuitively, this makes sense.}\label{fig:reg-importance}
+\caption{Feature importances for the RF regressor.}\label{fig:reg-importance}
 \end{figure}
 
 \hypertarget{prediction}{%
 \section{Prediction}\label{prediction}}
 
-The intermediate steps for arriving at the final prediction will be examined in this section. For details on the steps, see `7\_Predictions.ipynb\footnote{\url{https://github.com/datarian/thesis-msc-statistics/tree/master/code//notebooks/7_Predictions.ipynb}}
+The intermediate steps for arriving at the final prediction will be examined in this section. For details on the steps, see \emph{7\_Predictions.ipynb}\footnote{\url{https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/7_Predictions.ipynb}}. Up until the final prediction, the results reported are on the learning data set. The test data was only used for the final prediction for comparison with the results of the participants of the cup.
+
+\hypertarget{prediction-of-donation-probability}{%
+\subsection{Prediction of Donation Probability}\label{prediction-of-donation-probability}}
+
+Using the GLMnet regressor on the learning data set, \(\hat{y}_b\) is distributed close to normal with a slight right skew (see Figure \ref{fig:y-b-predict}). 33'559 examples are selected, which amounts to 35.2 \% of the training data set.
+
+
+
+\begin{figure}
+
+{\centering \includegraphics[width=0.7\linewidth]{figures/predictions/y_b_predicted} 
+
+}
+
+\caption{Distribution of predicted donation probabilities \(\hat{y}_b\) on the learning data set.}\label{fig:y-b-predict}
+\end{figure}
 
 \hypertarget{conditional-prediction-of-the-donation-amount}{%
 \subsection{Conditional Prediction of the Donation Amount}\label{conditional-prediction-of-the-donation-amount}}
 
-Compared to the true distribution of \(y_d\) (Figure \ref{fig:reg-targ-transform}), we see a similar distribution for \(\hat{y}_d\), predicted on the learning data. The distribution is again multi-modal, with approximately the same median value. The predicted donation amounts are however strictly positive with a minimum of 3.2 \$. The reason is that the predictions are biased due to the non-random sample of donors used to learn the regressor. Unfortunately, the high-dollar donations are missing. The highest prediction is 82.1 \$.
+Compared to the true distribution of \(y_d\) (see Figure \ref{fig:reg-targ-transform}), a similar distribution for \(\hat{y}_d\) results from predictions with the RF regressor on the complete learning data, shown in Figure \ref{fig:y-d-predict}. The distribution is again multi-modal, with approximately the same median value. The predicted donation amounts are however strictly positive with a minimum of 3.2 \$. The reason is that the predictions are biased due to the non-random sample of donors used to learn the regressor. Unfortunately, the high-dollar donations are missing. The highest prediction is 82.1 \$, the median is 30.7 \$, which is almost double the median of the complete learning data set.
 
 
 
@@ -1414,9 +1416,9 @@ Compared to the true distribution of \(y_d\) (Figure \ref{fig:reg-targ-transform
 \hypertarget{profit-optimization}{%
 \subsection{Profit Optimization}\label{profit-optimization}}
 
-The correction factor \(\alpha\), used to account for bias introduced by learning the regression models on a non-random sample, was found as described in section \ref{methods-prediction}. First, estimated net profit \(\hat{\Pi}\) was calculated using equation \eqref{eq:pi-alpha} for a grid of \(\alpha\) values in \([0,1]\). Then, a polynomial model and a cubic spline were fitted to the data and \(\alpha\) optimized subsequently.
+The correction factor \(\alpha\), used to account for bias introduced by learning the regression models on a non-random sample, was found as described in section \ref{methods-prediction}. First, estimated net profit \(\hat{\Pi}\) was calculated using equation \eqref{eq:pi-alpha} for a grid of \(\alpha\) values in \([0,1]\). Then, a cubic spline was fitted to the data and \(\alpha\) optimized subsequently.
 
-As can be observed in Figure \ref{fig:alpha-grid}, the region of \(\alpha\) for high profit is narrow. This is not surprising given the distribution of \(\hat{y}_d\) (Figure \ref{fig:y-d-predict}), which is narrowly concentrated around \textasciitilde{}15 \$. Furthermore, the curve is constant over much of the domain, meaning that all examples were selected from approximately \(\alpha=0.15\). The shape of this function makes fitting a polynomial difficult. The cubic spline was therefore used to find the optimal value \(\alpha^*=0.02\).
+As can be observed in Figure \ref{fig:alpha-grid}, the region of \(\alpha\) for high profit is narrow. This is not surprising given the distribution of \(\hat{y}_d\) (Figure \ref{fig:y-d-predict}), which is narrowly concentrated around \textasciitilde{}15 \$. Furthermore, the curve is constant over much of the domain, meaning that all examples were selected from \(\alpha \approx 0.15\). The cubic spline fits the data very well and finding the maximum at \(\alpha^*=0.02\). For reference, a polynomial of degree 12 is also shown in \ref{fig:alpha-grid}, highlighting the difference in the fit for the two approaches.
 
 
 
@@ -1426,23 +1428,29 @@ As can be observed in Figure \ref{fig:alpha-grid}, the region of \(\alpha\) for 
 
 }
 
-\caption{Expected profit for a range of \(\alpha\) values in \([0,1]\) with overlayed cubic spline and polynomial function of order 12. Shown are the results for the training data set. \(\alpha^*\) was found by considering the roots of the derivate of the cubic spline, choosing the root where expected profit was highest.}\label{fig:alpha-grid}
+\caption{Expected profit for a range of \(\alpha\) values in \([0,1]\) with overlayed cubic spline and polynomial function of order 12.}\label{fig:alpha-grid}
 \end{figure}
 
 \hypertarget{final-prediction}{%
 \subsection{Final Prediction}\label{final-prediction}}
 
-For final predictions, the classifier and regressor were first fitted on the complete learning data set. Then, \(\alpha^*\) was calculated (\(\alpha^* = 0.023\)) and finally, the test data set was used for prediction. The process is documented in notebook \texttt{7\_Prediction.ipynb}\footnote{\url{https://github.com/datarian/thesis-msc-statistics/tree/master/code//notebooks/7_Prediction.ipynb}}.
+For the final prediction, an estimator combining the two-step prediction process was implemented in package \texttt{kdd98}. The estimator \texttt{Kdd98ProfitEstimator} was initialized with the GLMnet classifier and RF regressor determined as the best during model evaluation and selection.
 
-The learned estimators were then applied on the test data set. The results are shown in Table \ref{tab:prediction-results} together with the winners of the cup. The model trained here selects less donors compared to the top-ranked participants and has a higher mean donation amount. Nevertheless, net profit is lower and thus the model is placed on the 4th rank.
+Then, the estimator was fitted on the complete learning data set, thereby fitting both the classifier and regressor and optimizing \(\alpha*\), which was computed as \(\alpha^* = 0.023\).
 
-The theoretical maximum is 72'776 \$: \(\sum_{i=1}^n \mathbb{1}_{\{\text{TARGET}_{D,i} > 0.0\}}*(\text{TARGET}_{D,i} - u)\) with \(u\) the unit cost of 0.68 \$ per mailing.
+The fitted estimator could then be used for prediction on the test data set. The results are shown in Table \ref{tab:prediction-results} together with the winners of the cup. The model learned in this thesis selects less donors compared to the top-ranked participants and has a higher mean donation amount. Nevertheless, net profit is lower, resulting in the \(4^{th}\) rank.
+
+The winner, Urban Science Applications with their proprietary software Gainsmarts, chose a two-step approach as well. In the first step, a logistic regression was used. The second step consisted of linear regression. Their software automated feature-engineering (by trying several different transformations for each feature) and feature selection through an expert system\footnote{see \url{https://www.kdnuggets.com/meetings-past/kdd98/gain-kddcup98-release.html}}. They selected a distinct subset of features for each step.
+
+No information is available on SAS's approach. Decisionhouse's Quadstone on \(3^{rd}\) rank also invested heavily in feature engineering. The proprietary software was specially designed for customer behavior modeling. They used decision trees for conditioned profit estimation using 6 features and an additive scorecard model for selecting examples based on 10 features in combination. For the estimation of donation amount, they also found the amount of the last donation and average donation amounts as important.
+
+Surely, if domain knowledge had influenced feature engineering and feature selection for the model developed here, performance would have been better. Given the radically data-driven approach, the result can be considered good.
 
 
 
 \begin{table}[!h]
 
-\caption{\label{tab:prediction-results}Prediction results for the test data set (in color) and the results of the cup-winners. \(N^*\) denotes number of examples selected.}
+\caption{\label{tab:prediction-results}Prediction results for the test data set (in color) and the results of the cup-winners. \(N^*\) denotes number of examples selected. The theoretical maximum was calculated with: \$ (\(\sum_{i=1}^n \mathbb{1}_{\{\text{TARGET}_{D,i} > 0.0\}}*(\text{TARGET}_{D,i} - u)\) with \(u\) the unit cost of 0.68 \$ per mailing).}
 \centering
 \begin{tabular}{lrrrrrrr}
 \toprule
@@ -1450,101 +1458,39 @@ The theoretical maximum is 72'776 \$: \(\sum_{i=1}^n \mathbb{1}_{\{\text{TARGET}
 \cmidrule(l{3pt}r{3pt}){3-7}
   & N* & Min & Mean & Std & Max & Net Profit & Percent of Maximum\\
 \midrule
-GainSmarts & 56330 & -0.68 & 0.260 & 5.57 & 499.32 & 14712 & 0.2021546\\
-SAS & 55838 & -0.68 & 0.260 & 5.64 & 499.32 & 14662 & 0.2014675\\
-Quadstone & 57836 & -0.68 & 0.240 & 5.66 & 499.32 & 13954 & 0.1917390\\
-\textcolor[HTML]{39a8d1}{\textbf{Own}} & \textcolor[HTML]{39a8d1}{\textbf{40984}} & \textcolor[HTML]{39a8d1}{\textbf{-0.68}} & \textcolor[HTML]{39a8d1}{\textbf{0.338}} & \textcolor[HTML]{39a8d1}{\textbf{6.28}} & \textcolor[HTML]{39a8d1}{\textbf{499.32}} & \textcolor[HTML]{39a8d1}{\textbf{13877}} & \textcolor[HTML]{39a8d1}{\textbf{0.1906810}}\\
-CARRL & 55650 & -0.68 & 0.250 & 5.61 & 499.32 & 13825 & 0.1899665\\
+GainSmarts & 56330 & -0.68 & 0.26 & 5.57 & 499.32 & 14712 & 20.22\\
+SAS & 55838 & -0.68 & 0.26 & 5.64 & 499.32 & 14662 & 20.15\\
+Quadstone & 57836 & -0.68 & 0.24 & 5.66 & 499.32 & 13954 & 19.17\\
+\textcolor[HTML]{39a8d1}{\textbf{Own}} & \textcolor[HTML]{39a8d1}{\textbf{40984}} & \textcolor[HTML]{39a8d1}{\textbf{-0.68}} & \textcolor[HTML]{39a8d1}{\textbf{0.34}} & \textcolor[HTML]{39a8d1}{\textbf{6.28}} & \textcolor[HTML]{39a8d1}{\textbf{499.32}} & \textcolor[HTML]{39a8d1}{\textbf{13877}} & \textcolor[HTML]{39a8d1}{\textbf{19.07}}\\
+CARRL & 55650 & -0.68 & 0.25 & 5.61 & 499.32 & 13825 & 19.00\\
 \bottomrule
 \end{tabular}
 \end{table}
 
+However, these predictions were made using the true \emph{TARGET\_D}. When treating the data as unseen, predicted net profit was unrealistically high, at 861'562 \$, which translates to an error of 6'208 \%. In this case, net profit was calculated by substituting \((y_d-u)\) with \((\hat{y}_d-u)\) in Equation \eqref{eq:pi-alpha}. However bad this result is, would the model developed be used to select examples for a promotion, it would still lead to relatively good net profit.
+
 \hypertarget{conclusions}{%
 \chapter{Conclusions}\label{conclusions}}
 
-\hypertarget{comparison-with-cup-winner}{%
-\section{Comparison With Cup Winner}\label{comparison-with-cup-winner}}
-
-The winner, Urban Science Applications with their proprietary software Gainsmarts, chose a two-step approach as well. In the first step, a logistic regression was used. The second step consisted of linear regression. Their software automated feature-engineering (by trying several different transformations for each feature) and feature selection through an expert system\footnote{see \url{https://www.kdnuggets.com/meetings-past/kdd98/gain-kddcup98-release.html}}. They selected a distinct subset of features for each step.
-
-No information is available on SAS's apprach. Decisionhouse's Quadstone on 3rd rank also invested heavily in feature engineering. The proprietary software was specially designed for customer behaviour modeling. They used decision trees and scorecard models in combination.
-
-\hypertarget{achieved}{%
-\section{Achieved}\label{achieved}}
-
-\begin{itemize}
-\tightlist
-\item
-  A solid preprocessing package, albeit data set specific, extensible and easy to use
-\end{itemize}
-
-\hypertarget{shortcomings}{%
-\section{Shortcomings}\label{shortcomings}}
-
 \begin{itemize}
 \item
-  Poor prediction performance: Non-gaussian distribution of \(\hat{y}_b\), which violates assumptions for Heckman-correctio., bias-variance tradeoff
+  The effort put into preprocessing and development of the package \texttt{kdd98} laid a basis for future work on the data set. The architecture of the package makes modifications to existing transformers or implementation of additional transformations time-efficient. Care was taken to document the code so that future users can quickly add their own modifications.
 \item
-  Problems with lax implementation of two-stage Heckman: Bushway, Johnson, and Slocum (\protect\hyperlink{ref-bushway2007magic}{2007})
-\end{itemize}
-
-Prediction Error \(PE(z) = \sigma_{\epsilon}^2+\text{Bias}^2(\hat{f}(z))+\text{Var}(\hat{f}(z))\). When model more complex, local structure picked up, coefficient estimates suffer from high Var as more terms included in model -\textgreater{} more bias can lead to decrease in variance, decreasing PE.
-
-\hypertarget{outlook}{%
-\section{Outlook}\label{outlook}}
-
-\begin{itemize}
-\tightlist
-\item
-  Next iteration:
+  Regarding model learning, the current approach using a two-step prediction is promising in principle. Shortcomings in terms of classifier and regressor performance are suspected to mainly result from the remaining high dimensionality, even after reducing the number features by 90\%. A logical next step would be to reiterate over feature engineering, imputation, and feature selection:
 
   \begin{itemize}
   \tightlist
   \item
-    Try other imputation strategies:
-
-    \begin{itemize}
-    \tightlist
-    \item
-      Median perhaps too simple, introducing bias
-    \item
-      Iterative imputer struggles with non-normal data due to linear models
-    \item
-      CART imputation could be interesting
-    \item
-      kNN problematic because of high dimensionality -\textgreater{} distances small, but maybe worth a try on powerful hardware
-    \end{itemize}
+    In feature engineering, the promotion- and giving history features should be carefully reexamined. Given the selection of various \emph{RFA\_} features for promotions in the past through \texttt{boruta}, these could be distilled into single \emph{R}, \emph{F}, \emph{A} summaries.
   \item
-    Revise outliers:
-
-    \begin{itemize}
-    \tightlist
-    \item
-      Relied on Yeo-Johnson transformation to normalize
-    \item
-      Other possibilities:
-    \end{itemize}
+    Imputation with a CART method like in R's \texttt{caret} package is another imputation strategy to consider. The simple strategy implemented in this thesis might have led to bias during model learning.
   \item
-    Feature Extraction
-
-    \begin{itemize}
-    \tightlist
-    \item
-      Based on domain knowledge, create new features from promotion / giving history
-    \end{itemize}
-  \item
-    Feature Selection
-
-    \begin{itemize}
-    \tightlist
-    \item
-      Tune boruta to select less features
-    \end{itemize}
-  \item
-    Choice of Models
+    Feature selection using \texttt{boruta} could be combined with a manual step afterwards, informed by domain knowledge.
   \end{itemize}
 \item
-  Will be easy to work on these specific areas given the infrastructure created in this thesis
+  The \(4^{th}\) rank achieved proves that selection of examples works in principle. The high error on predicted net profit however suggests a thorough reconsideration of the prediction method is necessary. Again, the implementation in \texttt{kdd98} can serve as a basis, providing the necessary ``plumbing'' for efficient examination and future work.
+\item
+  The result in comparison with the performance of specialized software coupled with expertise in the field employed by the cup winners emphasizes the power of domain knowledge. The progress made in machine learning over the past 20 years since the cup does not automatically lead to superior results when strictly taking only the information contained in the data itself.
 \end{itemize}
 
 \hypertarget{references}{%
@@ -1576,9 +1522,6 @@ Breiman, Leo. 1996. ``Bagging Predictors.'' \emph{Machine Learning} 24 (2): 123-
 \leavevmode\hypertarget{ref-breiman1984classification}{}%
 Breiman, Leo, JH Friedman, R Olshen, and CJ Stone. 1984. ``Classification and Regression Trees.''
 
-\leavevmode\hypertarget{ref-bushway2007magic}{}%
-Bushway, Shawn, Brian D Johnson, and Lee Ann Slocum. 2007. ``Is the Magic Still There? The Use of the Heckman Two-Step Correction for Selection Bias in Criminology.'' \emph{Journal of Quantitative Criminology} 23 (2): 151--78.
-
 \leavevmode\hypertarget{ref-chen2016xgboost}{}%
 Chen, Tianqi, and Carlos Guestrin. 2016. ``Xgboost: A Scalable Tree Boosting System.'' In \emph{Proceedings of the 22nd Acm Sigkdd International Conference on Knowledge Discovery and Data Mining}, 785--94. ACM.
 
@@ -1593,6 +1536,9 @@ Fader, Peter S, Bruce GS Hardie, and Ka Lok Lee. 2005. ``RFM and Clv: Using Iso-
 
 \leavevmode\hypertarget{ref-friedman2001elements}{}%
 Friedman, Jerome, Trevor Hastie, and Robert Tibshirani. 2001. \emph{The Elements of Statistical Learning}. Vol. 1. 10. Springer series in statistics New York, NY, USA.
+
+\leavevmode\hypertarget{ref-goddard2017variance}{}%
+Goddard, Philip. 2017. ``Machine Learning Pipelines with Scikit-learn.''
 
 \leavevmode\hypertarget{ref-goodfellow2016deep}{}%
 Goodfellow, Ian, Yoshua Bengio, and Aaron Courville. 2016. \emph{Deep Learning}. MIT Press.
@@ -1685,21 +1631,99 @@ Zou, Hui, and Trevor Hastie. 2005. ``Regularization and Variable Selection via t
 \appendix}
 
 
+\hypertarget{software}{%
+\chapter{Software}\label{software}}
+
 \hypertarget{python-environment}{%
-\chapter{Python Environment}\label{python-environment}}
+\section{Python Environment}\label{python-environment}}
 
 Python was installed through the Anaconda distribution\footnote{Available from \url{https://www.anaconda.com}}.
 
 The analysis documented should be reproduced using the same environment, thereby ensuring that the packages produce the same results and expose the API's used in the code.
 
-The environment can be created using the file \texttt{environment.yml} in the main repository directory at \url{https://github.com/datarian/thesis-msc-statistics/tree/master/code//}.
+The environment can be created using the file \texttt{environment.yml} in the main repository directory at \url{https://github.com/datarian/thesis-msc-statistics/tree/master/code/}.
 
 Once conda is installed the following two commands first set up the environment with all the analysis' required packages, then activates that environment. Only after running these commands should the package \texttt{kdd98} be installed and the notebooks evaluated.
 
 \begin{verbatim}
 > conda env create -f environment.yml
-> source activate ma-thesis-fh
+> source activate msc-thesis-fh
 \end{verbatim}
+
+\hypertarget{package-kdd98}{%
+\section{Package kdd98}\label{package-kdd98}}
+
+The source code is at: \url{https://github.com/datarian/thesis-msc-statistics/tree/master/code/kdd98}
+
+\hypertarget{usage}{%
+\subsection{Usage}\label{usage}}
+
+\hypertarget{data-provisioning}{%
+\subsubsection{Data Provisioning}\label{data-provisioning}}
+
+\begin{verbatim}
+from kdd98 import data_handler as dh
+
+provider = dh.KDD98DataProvider(["cup98LRN.txt", "cup98VAL.txt"])
+
+# Get data at several intermediate steps as necessary
+provider.raw_data
+provider.preprocessed_data
+provider.numeric_data
+provider.imputed_data
+provider.all_relevant_data
+\end{verbatim}
+
+By requesting \texttt{all\_relevant\_data}, all transformation steps are applied. Request data for cup98LRN.txt first to learn all transformers involved. Only then can the provider be instantiated with cup98VAL.txt and the exact same transformations applied to that data set.
+
+\hypertarget{predictions}{%
+\subsubsection{Predictions}\label{predictions}}
+
+\begin{verbatim}
+from kdd98.prediction import Kdd98ProfitEstimator
+
+# These are found beforehand and expected to implement scikit-learn's API
+classifier = SomeClassifier() # predicts donation probability
+regressor = SomeRegressor() # conditionally predicts donation amount
+
+estimator = Kdd98ProfitEstimator(classifier, regressor)
+
+estimator.fit(X_learn, y_learn)
+
+# Returns a tuple (indicator, net_profit):
+estimator.predict(X_test, y_test)
+\end{verbatim}
+
+\hypertarget{installation}{%
+\subsection{Installation}\label{installation}}
+
+Clone the repository, then, from the base directory:
+
+\begin{verbatim}
+cd code
+
+python setup.py install # for direct install
+
+# for a conda package to be installed manually afterards:
+python setup.py bdist_conda 
+\end{verbatim}
+
+\hypertarget{project-structure}{%
+\subsubsection{Project structure}\label{project-structure}}
+
+After installing the package, several folders and files are created in the working directory when using it:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{data} contains the data files and documentation of the original KDD Cup 1998
+\item
+  \texttt{data/data\_frames} contains pickled pandas df's with data at the corresponding transformation step
+\item
+  \texttt{models/internal} contains persisted transformers for data set transformations.
+\item
+  \texttt{out.log} reports transformation progress / potential problems
+\end{itemize}
 
 \hypertarget{kdd-cup-documents}{%
 \chapter{KDD Cup Documents}\label{kdd-cup-documents}}
