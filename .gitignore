@@ -14,3 +14,4 @@ figures/**
 models/**
 ma-thesis-report.sublime-project
 ma-thesis-report.sublime-workspace
+.vscode/**
