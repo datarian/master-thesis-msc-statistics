@@ -24,10 +24,18 @@ The tranformations can be learned on the LRN data set, then applied on the VAL d
 
 ### Usage
 
+The package relies on the Here geolocator service. Get an app id and app code at [https://developer.here.com/](https://developer.here.com/).
+
+It can then be set using Config.set("here_geolocator_app_id", "yourappid"), Config.set("here_geolocator_app_code", "yourappcode") or directly in the code. This is only needed on the first run. After that, an internal database of zip codes provides the information.
+
 #### Data Provisioning
 
 ```{python}
 from kdd98 import data_handler as dh
+from kdd98.config import Config
+
+Config.set("here_geolocator_app_id", "yourappid")
+Config.set("here_geolocator_app_code", "yourappcode")
 
 provider = dh.KDD98DataProvider(["cup98LRN.txt", "cup98VAL.txt"])
 
