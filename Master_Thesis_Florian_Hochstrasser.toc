@@ -1,62 +1,67 @@
 \babel@toc {english}{}
-\contentsline {chapter}{\numberline {1}Introduction}{5}{chapter.1}% 
-\contentsline {section}{\numberline {1.1}Task Background}{5}{section.1.1}% 
-\contentsline {section}{\numberline {1.2}Goal}{6}{section.1.2}% 
-\contentsline {section}{\numberline {1.3}Conventions and Notes}{6}{section.1.3}% 
-\contentsline {chapter}{\numberline {2}Data}{7}{chapter.2}% 
-\contentsline {section}{\numberline {2.1}General Structure}{7}{section.2.1}% 
-\contentsline {section}{\numberline {2.2}Exploratory Data Analysis}{8}{section.2.2}% 
-\contentsline {subsection}{\numberline {2.2.1}Data Types}{8}{subsection.2.2.1}% 
-\contentsline {subsection}{\numberline {2.2.2}Targets}{8}{subsection.2.2.2}% 
-\contentsline {subsection}{\numberline {2.2.3}Skewness}{9}{subsection.2.2.3}% 
-\contentsline {subsection}{\numberline {2.2.4}Correlations}{11}{subsection.2.2.4}% 
-\contentsline {subsection}{\numberline {2.2.5}Donation Patterns}{11}{subsection.2.2.5}% 
-\contentsline {chapter}{\numberline {3}Experimental Setup and Methods}{16}{chapter.3}% 
-\contentsline {section}{\numberline {3.1}Tools Used}{16}{section.3.1}% 
-\contentsline {section}{\numberline {3.2}Data Handling}{16}{section.3.2}% 
-\contentsline {section}{\numberline {3.3}Data Preprocessing}{17}{section.3.3}% 
-\contentsline {subsection}{\numberline {3.3.1}Cleaning}{17}{subsection.3.3.1}% 
-\contentsline {subsection}{\numberline {3.3.2}Feature Engineering}{18}{subsection.3.3.2}% 
-\contentsline {subsection}{\numberline {3.3.3}Imputation}{18}{subsection.3.3.3}% 
-\contentsline {subsubsection}{\numberline {3.3.3.1}K-Nearest Neighbors}{19}{subsubsection.3.3.3.1}% 
-\contentsline {subsubsection}{\numberline {3.3.3.2}Iterative imputation}{19}{subsubsection.3.3.3.2}% 
-\contentsline {subsubsection}{\numberline {3.3.3.3}Simple Imputation and Categorical Indicator}{19}{subsubsection.3.3.3.3}% 
-\contentsline {subsection}{\numberline {3.3.4}Feature Selection}{20}{subsection.3.3.4}% 
-\contentsline {section}{\numberline {3.4}Prediction}{20}{section.3.4}% 
-\contentsline {subsection}{\numberline {3.4.1}Setup of the Two-Stage Prediction}{21}{subsection.3.4.1}% 
-\contentsline {subsection}{\numberline {3.4.2}Optimization of \(\mitalpha ^*\)}{22}{subsection.3.4.2}% 
-\contentsline {section}{\numberline {3.5}Model Evaluation and -Selection}{22}{section.3.5}% 
-\contentsline {subsection}{\numberline {3.5.1}Evaluation}{23}{subsection.3.5.1}% 
-\contentsline {subsubsection}{\numberline {3.5.1.1}Randomized Grid Search}{23}{subsubsection.3.5.1.1}% 
-\contentsline {subsubsection}{\numberline {3.5.1.2}Cross-Validation}{23}{subsubsection.3.5.1.2}% 
-\contentsline {subsection}{\numberline {3.5.2}Selection}{23}{subsection.3.5.2}% 
-\contentsline {subsubsection}{\numberline {3.5.2.1}Classifiers}{23}{subsubsection.3.5.2.1}% 
-\contentsline {subsubsection}{\numberline {3.5.2.2}Regressors}{25}{subsubsection.3.5.2.2}% 
-\contentsline {subsection}{\numberline {3.5.3}Dealing With Imbalanced Data}{25}{subsection.3.5.3}% 
-\contentsline {subsection}{\numberline {3.5.4}Algorithms}{25}{subsection.3.5.4}% 
-\contentsline {subsubsection}{\numberline {3.5.4.1}Random Forest}{25}{subsubsection.3.5.4.1}% 
-\contentsline {subsubsection}{\numberline {3.5.4.2}Gradient Boosting Machine}{27}{subsubsection.3.5.4.2}% 
-\contentsline {subsubsection}{\numberline {3.5.4.3}GLMnet}{28}{subsubsection.3.5.4.3}% 
-\contentsline {subsubsection}{\numberline {3.5.4.4}Multilayer Perceptron}{29}{subsubsection.3.5.4.4}% 
-\contentsline {subsubsection}{\numberline {3.5.4.5}Support Vector Machine}{30}{subsubsection.3.5.4.5}% 
-\contentsline {subsubsection}{\numberline {3.5.4.6}Bayesian Ridge Regression}{32}{subsubsection.3.5.4.6}% 
-\contentsline {chapter}{\numberline {4}Results and Discussion}{34}{chapter.4}% 
-\contentsline {section}{\numberline {4.1}Preprocessing With Package kdd98}{34}{section.4.1}% 
-\contentsline {section}{\numberline {4.2}Imputation}{34}{section.4.2}% 
-\contentsline {section}{\numberline {4.3}Feature Selection}{36}{section.4.3}% 
-\contentsline {section}{\numberline {4.4}Model Evaluation and Selection}{37}{section.4.4}% 
-\contentsline {subsection}{\numberline {4.4.1}Classifiers}{37}{subsection.4.4.1}% 
-\contentsline {subsection}{\numberline {4.4.2}Regressors}{38}{subsection.4.4.2}% 
-\contentsline {section}{\numberline {4.5}Prediction}{43}{section.4.5}% 
-\contentsline {subsection}{\numberline {4.5.1}Conditional Prediction of the Donation Amount}{43}{subsection.4.5.1}% 
-\contentsline {subsection}{\numberline {4.5.2}Profit Optimization}{43}{subsection.4.5.2}% 
-\contentsline {subsection}{\numberline {4.5.3}Final Prediction}{44}{subsection.4.5.3}% 
-\contentsline {chapter}{\numberline {5}Conclusions}{46}{chapter.5}% 
-\contentsline {section}{\numberline {5.1}Comparison With Cup Winners}{46}{section.5.1}% 
-\contentsline {section}{\numberline {5.2}Achieved}{46}{section.5.2}% 
-\contentsline {section}{\numberline {5.3}Shortcomings}{46}{section.5.3}% 
-\contentsline {section}{\numberline {5.4}Outlook}{46}{section.5.4}% 
-\contentsline {chapter}{References}{48}{chapter*.34}% 
-\contentsline {section}{\numberline {.1}Python Environment}{50}{section.Alph0.1}% 
-\contentsline {section}{\numberline {.2}Cup Documentation}{51}{section.Alph0.2}% 
-\contentsline {section}{\numberline {.3}Data Set Dictionary}{81}{section.Alph0.3}% 
+\contentsline {chapter}{\numberline {1}Introduction}{7}{chapter.1}% 
+\contentsline {section}{\numberline {1.1}Task Background}{7}{section.1.1}% 
+\contentsline {section}{\numberline {1.2}Goals and Requirements}{8}{section.1.2}% 
+\contentsline {section}{\numberline {1.3}Conventions and Notes}{8}{section.1.3}% 
+\contentsline {chapter}{\numberline {2}Data}{9}{chapter.2}% 
+\contentsline {section}{\numberline {2.1}General Structure}{9}{section.2.1}% 
+\contentsline {section}{\numberline {2.2}Exploratory Data Analysis}{9}{section.2.2}% 
+\contentsline {subsection}{\numberline {2.2.1}Data Types}{10}{subsection.2.2.1}% 
+\contentsline {subsection}{\numberline {2.2.2}Targets}{10}{subsection.2.2.2}% 
+\contentsline {subsection}{\numberline {2.2.3}Skewness}{12}{subsection.2.2.3}% 
+\contentsline {subsection}{\numberline {2.2.4}Correlations}{13}{subsection.2.2.4}% 
+\contentsline {subsection}{\numberline {2.2.5}Donation Patterns}{14}{subsection.2.2.5}% 
+\contentsline {chapter}{\numberline {3}Experimental Setup and Methods}{19}{chapter.3}% 
+\contentsline {section}{\numberline {3.1}Tools Used}{19}{section.3.1}% 
+\contentsline {section}{\numberline {3.2}Data Handling}{19}{section.3.2}% 
+\contentsline {section}{\numberline {3.3}Data Preprocessing}{20}{section.3.3}% 
+\contentsline {subsection}{\numberline {3.3.1}Cleaning}{20}{subsection.3.3.1}% 
+\contentsline {subsection}{\numberline {3.3.2}Feature Engineering}{21}{subsection.3.3.2}% 
+\contentsline {subsection}{\numberline {3.3.3}Imputation}{21}{subsection.3.3.3}% 
+\contentsline {subsubsection}{\numberline {3.3.3.1}K-Nearest Neighbors}{22}{subsubsection.3.3.3.1}% 
+\contentsline {subsubsection}{\numberline {3.3.3.2}Iterative imputation}{22}{subsubsection.3.3.3.2}% 
+\contentsline {subsubsection}{\numberline {3.3.3.3}Simple Imputation and Categorical Indicator}{22}{subsubsection.3.3.3.3}% 
+\contentsline {subsection}{\numberline {3.3.4}Feature Selection}{23}{subsection.3.3.4}% 
+\contentsline {section}{\numberline {3.4}Prediction}{23}{section.3.4}% 
+\contentsline {subsection}{\numberline {3.4.1}Setup of the Two-Stage Prediction}{24}{subsection.3.4.1}% 
+\contentsline {subsection}{\numberline {3.4.2}Optimization of \(\mitalpha ^*\)}{25}{subsection.3.4.2}% 
+\contentsline {section}{\numberline {3.5}Model Evaluation and -Selection}{25}{section.3.5}% 
+\contentsline {subsection}{\numberline {3.5.1}Evaluation}{26}{subsection.3.5.1}% 
+\contentsline {subsubsection}{\numberline {3.5.1.1}Randomized Grid Search}{26}{subsubsection.3.5.1.1}% 
+\contentsline {subsubsection}{\numberline {3.5.1.2}Cross-Validation}{26}{subsubsection.3.5.1.2}% 
+\contentsline {subsection}{\numberline {3.5.2}Selection}{26}{subsection.3.5.2}% 
+\contentsline {subsubsection}{\numberline {3.5.2.1}Classifiers}{26}{subsubsection.3.5.2.1}% 
+\contentsline {subsubsection}{\numberline {3.5.2.2}Regressors}{28}{subsubsection.3.5.2.2}% 
+\contentsline {subsection}{\numberline {3.5.3}Dealing With Imbalanced Data}{28}{subsection.3.5.3}% 
+\contentsline {subsection}{\numberline {3.5.4}Algorithms}{28}{subsection.3.5.4}% 
+\contentsline {subsubsection}{\numberline {3.5.4.1}Random Forest}{28}{subsubsection.3.5.4.1}% 
+\contentsline {subsubsection}{\numberline {3.5.4.2}Gradient Boosting Machine}{30}{subsubsection.3.5.4.2}% 
+\contentsline {subsubsection}{\numberline {3.5.4.3}GLMnet}{31}{subsubsection.3.5.4.3}% 
+\contentsline {subsubsection}{\numberline {3.5.4.4}Multilayer Perceptron}{32}{subsubsection.3.5.4.4}% 
+\contentsline {subsubsection}{\numberline {3.5.4.5}Support Vector Machine}{34}{subsubsection.3.5.4.5}% 
+\contentsline {subsubsection}{\numberline {3.5.4.6}Bayesian Ridge Regression}{35}{subsubsection.3.5.4.6}% 
+\contentsline {chapter}{\numberline {4}Results and Discussion}{36}{chapter.4}% 
+\contentsline {section}{\numberline {4.1}Preprocessing With Package kdd98}{36}{section.4.1}% 
+\contentsline {section}{\numberline {4.2}Imputation}{36}{section.4.2}% 
+\contentsline {section}{\numberline {4.3}Feature Selection}{37}{section.4.3}% 
+\contentsline {section}{\numberline {4.4}Model Evaluation and Selection}{38}{section.4.4}% 
+\contentsline {subsection}{\numberline {4.4.1}Classifiers}{38}{subsection.4.4.1}% 
+\contentsline {subsection}{\numberline {4.4.2}Regressors}{42}{subsection.4.4.2}% 
+\contentsline {section}{\numberline {4.5}Prediction}{44}{section.4.5}% 
+\contentsline {subsection}{\numberline {4.5.1}Prediction of Donation Probability}{44}{subsection.4.5.1}% 
+\contentsline {subsection}{\numberline {4.5.2}Conditional Prediction of the Donation Amount}{45}{subsection.4.5.2}% 
+\contentsline {subsection}{\numberline {4.5.3}Profit Optimization}{45}{subsection.4.5.3}% 
+\contentsline {subsection}{\numberline {4.5.4}Final Prediction}{46}{subsection.4.5.4}% 
+\contentsline {chapter}{\numberline {5}Conclusions}{48}{chapter.5}% 
+\contentsline {chapter}{References}{49}{chapter*.35}% 
+\contentsline {chapter}{\numberline {A}Software}{52}{appendix.A}% 
+\contentsline {section}{\numberline {A.1}Python Environment}{52}{section.A.1}% 
+\contentsline {section}{\numberline {A.2}Package kdd98}{52}{section.A.2}% 
+\contentsline {subsection}{\numberline {A.2.1}Usage}{52}{subsection.A.2.1}% 
+\contentsline {subsubsection}{\numberline {A.2.1.1}Data Provisioning}{52}{subsubsection.A.2.1.1}% 
+\contentsline {subsubsection}{\numberline {A.2.1.2}Predictions}{53}{subsubsection.A.2.1.2}% 
+\contentsline {subsection}{\numberline {A.2.2}Installation}{53}{subsection.A.2.2}% 
+\contentsline {subsubsection}{\numberline {A.2.2.1}Project structure}{53}{subsubsection.A.2.2.1}% 
+\contentsline {chapter}{\numberline {B}KDD Cup Documents}{54}{appendix.B}% 
+\contentsline {section}{\numberline {B.1}Cup Documentation}{54}{section.B.1}% 
+\contentsline {section}{\numberline {B.2}Data Set Dictionary}{79}{section.B.2}% 

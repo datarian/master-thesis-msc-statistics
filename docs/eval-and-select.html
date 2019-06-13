@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>3.5 Model Evaluation and -Selection | Profit maximization for direct marketing campaigns</title>
+  <meta name="description" content="Master Thesis submitted in partial fulfillment of the requirements for the degree of Master of Science in Statistics" />
+  <meta name="generator" content="bookdown 0.11 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="3.5 Model Evaluation and -Selection | Profit maximization for direct marketing campaigns" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="Master Thesis submitted in partial fulfillment of the requirements for the degree of Master of Science in Statistics" />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="3.5 Model Evaluation and -Selection | Profit maximization for direct marketing campaigns" />
+  
+  <meta name="twitter:description" content="Master Thesis submitted in partial fulfillment of the requirements for the degree of Master of Science in Statistics" />
+  
+
+<meta name="author" content="Florian Hochstrasser" />
+
+
+<meta name="date" content="2019-06-12" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="methods-prediction.html">
+<link rel="next" href="results-and-discussion.html">
+<script src="assets/jquery-2.2.3/jquery.min.js"></script>
+<link href="assets/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+<script src="assets/kePrint-0.0.1/kePrint.js"></script>
+
+
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a><ul>
+<li class="chapter" data-level="1.1" data-path="task-background.html"><a href="task-background.html"><i class="fa fa-check"></i><b>1.1</b> Task Background</a></li>
+<li class="chapter" data-level="1.2" data-path="goals-and-requirements.html"><a href="goals-and-requirements.html"><i class="fa fa-check"></i><b>1.2</b> Goals and Requirements</a></li>
+<li class="chapter" data-level="1.3" data-path="conventions-and-notes.html"><a href="conventions-and-notes.html"><i class="fa fa-check"></i><b>1.3</b> Conventions and Notes</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="data.html"><a href="data.html"><i class="fa fa-check"></i><b>2</b> Data</a><ul>
+<li class="chapter" data-level="2.1" data-path="general-structure.html"><a href="general-structure.html"><i class="fa fa-check"></i><b>2.1</b> General Structure</a></li>
+<li class="chapter" data-level="2.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html"><i class="fa fa-check"></i><b>2.2</b> Exploratory Data Analysis</a><ul>
+<li class="chapter" data-level="2.2.1" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#data-types"><i class="fa fa-check"></i><b>2.2.1</b> Data Types</a></li>
+<li class="chapter" data-level="2.2.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#targets"><i class="fa fa-check"></i><b>2.2.2</b> Targets</a></li>
+<li class="chapter" data-level="2.2.3" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#skewness"><i class="fa fa-check"></i><b>2.2.3</b> Skewness</a></li>
+<li class="chapter" data-level="2.2.4" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#correlations"><i class="fa fa-check"></i><b>2.2.4</b> Correlations</a></li>
+<li class="chapter" data-level="2.2.5" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#donation-patterns"><i class="fa fa-check"></i><b>2.2.5</b> Donation Patterns</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="experimental-setup-and-methods.html"><a href="experimental-setup-and-methods.html"><i class="fa fa-check"></i><b>3</b> Experimental Setup and Methods</a><ul>
+<li class="chapter" data-level="3.1" data-path="tools-used.html"><a href="tools-used.html"><i class="fa fa-check"></i><b>3.1</b> Tools Used</a></li>
+<li class="chapter" data-level="3.2" data-path="data-handling.html"><a href="data-handling.html"><i class="fa fa-check"></i><b>3.2</b> Data Handling</a></li>
+<li class="chapter" data-level="3.3" data-path="data-preprocessing.html"><a href="data-preprocessing.html"><i class="fa fa-check"></i><b>3.3</b> Data Preprocessing</a><ul>
+<li class="chapter" data-level="3.3.1" data-path="data-preprocessing.html"><a href="data-preprocessing.html#cleaning"><i class="fa fa-check"></i><b>3.3.1</b> Cleaning</a></li>
+<li class="chapter" data-level="3.3.2" data-path="data-preprocessing.html"><a href="data-preprocessing.html#methods-feature-engineering"><i class="fa fa-check"></i><b>3.3.2</b> Feature Engineering</a></li>
+<li class="chapter" data-level="3.3.3" data-path="data-preprocessing.html"><a href="data-preprocessing.html#imputation"><i class="fa fa-check"></i><b>3.3.3</b> Imputation</a></li>
+<li class="chapter" data-level="3.3.4" data-path="data-preprocessing.html"><a href="data-preprocessing.html#methods-feature-selection"><i class="fa fa-check"></i><b>3.3.4</b> Feature Selection</a></li>
+</ul></li>
+<li class="chapter" data-level="3.4" data-path="methods-prediction.html"><a href="methods-prediction.html"><i class="fa fa-check"></i><b>3.4</b> Prediction</a><ul>
+<li class="chapter" data-level="3.4.1" data-path="methods-prediction.html"><a href="methods-prediction.html#setup-of-the-two-stage-prediction"><i class="fa fa-check"></i><b>3.4.1</b> Setup of the Two-Stage Prediction</a></li>
+<li class="chapter" data-level="3.4.2" data-path="methods-prediction.html"><a href="methods-prediction.html#optimization-of-alpha"><i class="fa fa-check"></i><b>3.4.2</b> Optimization of <span class="math inline">\(\alpha^*\)</span></a></li>
+</ul></li>
+<li class="chapter" data-level="3.5" data-path="eval-and-select.html"><a href="eval-and-select.html"><i class="fa fa-check"></i><b>3.5</b> Model Evaluation and -Selection</a><ul>
+<li class="chapter" data-level="3.5.1" data-path="eval-and-select.html"><a href="eval-and-select.html#evaluation"><i class="fa fa-check"></i><b>3.5.1</b> Evaluation</a></li>
+<li class="chapter" data-level="3.5.2" data-path="eval-and-select.html"><a href="eval-and-select.html#selection"><i class="fa fa-check"></i><b>3.5.2</b> Selection</a></li>
+<li class="chapter" data-level="3.5.3" data-path="eval-and-select.html"><a href="eval-and-select.html#imblearn"><i class="fa fa-check"></i><b>3.5.3</b> Dealing With Imbalanced Data</a></li>
+<li class="chapter" data-level="3.5.4" data-path="eval-and-select.html"><a href="eval-and-select.html#algorithms"><i class="fa fa-check"></i><b>3.5.4</b> Algorithms</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="results-and-discussion.html"><a href="results-and-discussion.html"><i class="fa fa-check"></i><b>4</b> Results and Discussion</a><ul>
+<li class="chapter" data-level="4.1" data-path="preprocessing-with-package-kdd98.html"><a href="preprocessing-with-package-kdd98.html"><i class="fa fa-check"></i><b>4.1</b> Preprocessing With Package kdd98</a></li>
+<li class="chapter" data-level="4.2" data-path="imputation-1.html"><a href="imputation-1.html"><i class="fa fa-check"></i><b>4.2</b> Imputation</a></li>
+<li class="chapter" data-level="4.3" data-path="feature-selection.html"><a href="feature-selection.html"><i class="fa fa-check"></i><b>4.3</b> Feature Selection</a></li>
+<li class="chapter" data-level="4.4" data-path="results-models.html"><a href="results-models.html"><i class="fa fa-check"></i><b>4.4</b> Model Evaluation and Selection</a><ul>
+<li class="chapter" data-level="4.4.1" data-path="results-models.html"><a href="results-models.html#classifiers-1"><i class="fa fa-check"></i><b>4.4.1</b> Classifiers</a></li>
+<li class="chapter" data-level="4.4.2" data-path="results-models.html"><a href="results-models.html#regressors-1"><i class="fa fa-check"></i><b>4.4.2</b> Regressors</a></li>
+</ul></li>
+<li class="chapter" data-level="4.5" data-path="prediction.html"><a href="prediction.html"><i class="fa fa-check"></i><b>4.5</b> Prediction</a><ul>
+<li class="chapter" data-level="4.5.1" data-path="prediction.html"><a href="prediction.html#prediction-of-donation-probability"><i class="fa fa-check"></i><b>4.5.1</b> Prediction of Donation Probability</a></li>
+<li class="chapter" data-level="4.5.2" data-path="prediction.html"><a href="prediction.html#conditional-prediction-of-the-donation-amount"><i class="fa fa-check"></i><b>4.5.2</b> Conditional Prediction of the Donation Amount</a></li>
+<li class="chapter" data-level="4.5.3" data-path="prediction.html"><a href="prediction.html#profit-optimization"><i class="fa fa-check"></i><b>4.5.3</b> Profit Optimization</a></li>
+<li class="chapter" data-level="4.5.4" data-path="prediction.html"><a href="prediction.html#final-prediction"><i class="fa fa-check"></i><b>4.5.4</b> Final Prediction</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="conclusions.html"><a href="conclusions.html"><i class="fa fa-check"></i><b>5</b> Conclusions</a></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+<li class="appendix"><span><b>Appendix</b></span></li>
+<li class="chapter" data-level="A" data-path="software.html"><a href="software.html"><i class="fa fa-check"></i><b>A</b> Software</a><ul>
+<li class="chapter" data-level="A.1" data-path="python-environment.html"><a href="python-environment.html"><i class="fa fa-check"></i><b>A.1</b> Python Environment</a></li>
+<li class="chapter" data-level="A.2" data-path="package-kdd98.html"><a href="package-kdd98.html"><i class="fa fa-check"></i><b>A.2</b> Package kdd98</a><ul>
+<li class="chapter" data-level="A.2.1" data-path="package-kdd98.html"><a href="package-kdd98.html#usage"><i class="fa fa-check"></i><b>A.2.1</b> Usage</a></li>
+<li class="chapter" data-level="A.2.2" data-path="package-kdd98.html"><a href="package-kdd98.html#installation"><i class="fa fa-check"></i><b>A.2.2</b> Installation</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="B" data-path="kdd-cup-documents.html"><a href="kdd-cup-documents.html"><i class="fa fa-check"></i><b>B</b> KDD Cup Documents</a><ul>
+<li class="chapter" data-level="B.1" data-path="data-set-documentation.html"><a href="data-set-documentation.html"><i class="fa fa-check"></i><b>B.1</b> Cup Documentation</a></li>
+<li class="chapter" data-level="B.2" data-path="data-set-dictionary.html"><a href="data-set-dictionary.html"><i class="fa fa-check"></i><b>B.2</b> Data Set Dictionary</a></li>
+</ul></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Profit maximization for direct marketing campaigns</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="eval-and-select" class="section level2">
+<h2><span class="header-section-number">3.5</span> Model Evaluation and -Selection</h2>
+<p>Several algorithms (estimators) were trained in parallel. Once good hyperparameters were found using randomized grid search, performance of the estimators was compared using a common metric in order to select the best (see Figure <a href="eval-and-select.html#fig:evaluation-selection">2.14</a> for a schematic process overview). This was done independently for classifiers (predicting the binary target) and regressors (predicting the continuous target). The process is documented in notebook <em>6_Model_Evaluation_Selection.ipynb</em><a href="#fn14" class="footnote-ref" id="fnref14"><sup>14</sup></a>.</p>
+<p>The pipeline functionality of <code>scikit-learn</code> was used to combine preliminary data transformations, i.e. scaling of features (where necessary) and resampling with the estimator-algorithm. This allows to jointly tune hyperparameters for transformations and the estimator.</p>
+<div class="figure" style="text-align: center"><span id="fig:evaluation-selection"></span>
+<img src="figures/methods/evaluation-process.png" alt="Learning process schematic." width="80%" />
+<p class="caption">
+Figure 2.14: Learning process schematic.
+</p>
+</div>
+<p>A common random seed was used for all algorithms and random number generators.</p>
+<div id="evaluation" class="section level3">
+<h3><span class="header-section-number">3.5.1</span> Evaluation</h3>
+<p>Randomized grid search was run with 10-fold cross-validation (CV). The best-performing pipeline for each algorithm was stored in a python dictionary during evaluation. The dictionary was persisted to disk and only updated when an algorithm’s metric improved. This ensured that the best hyperparameter settings were always retained during the extensive model evaluation phase.</p>
+<div id="randomized-grid-search" class="section level4">
+<h4><span class="header-section-number">3.5.1.1</span> Randomized Grid Search</h4>
+<p>In randomized grid search, <span class="citation">(Bergstra and Bengio <a href="references.html#ref-bergstra2012random">2012</a>)</span>, probability distributions for hyperparameter values are specified. The algorithm then runs a defined number (10 were used) of random combinations by sampling from the distributions. Compared to the usual grid search, this can greatly speed up the learning process because good hyperparameter settings are generally identified with less iterations.</p>
+<p>After one round of learning, the hyperparameter distributions were adjusted before the next iteration as follows: When the best value was found near the limits of the domain, the distribution was shifted in this direction. For values falling inside the domain, the distribution was narrowed down towards the found value. This procedure was repeated until the hyperparameters converged.</p>
+<p>The implementation of randomized grid search in <code>scikit-learn</code> returns a summary table with the CV results for each hyperparameter combination. By comparing the mean test score for the chosen metric, the best hyperparameters can be determined.</p>
+</div>
+<div id="cross-validation" class="section level4">
+<h4><span class="header-section-number">3.5.1.2</span> Cross-Validation</h4>
+<p>CV splits the training data into several <em>folds</em> of equal size. The algorithm is trained as many times as there are folds, holding back one of the folds at each training step for validation using some specified performance metric and training with the rest of the data. This procedure enables quantification of the generalization error and the calculation of statistics that indicate the variance of the model. Following guidance in <span class="citation">Kohavi and others (<a href="references.html#ref-kohavi1995study">1995</a>)</span>, 10-fold CV was used, which trades higher bias for lower variance compared to fewer folds.</p>
+</div>
+</div>
+<div id="selection" class="section level3">
+<h3><span class="header-section-number">3.5.2</span> Selection</h3>
+<div id="classifiers" class="section level4">
+<h4><span class="header-section-number">3.5.2.1</span> Classifiers</h4>
+<p>Both recall and F1 were initially selected and calculated during model evaluation. In the end, recall was used to select the best classifier as it produced better estimators for the task. Reasoning for the choice of these metrics is given below.</p>
+<p>For classification problems, the confusion matrix (see Figure <a href="eval-and-select.html#fig:conf-mat-plot">2.15</a>) can be used to construct various performance metrics. A true positive (TP) indicates a correctly predicted 1, a false negative (FN) is a falsely predicted 0, a false positive is a falsely predicted 1 and finally a true negative (TN) is a correctly predicted 0.</p>
+<p>For the data analyzed here, <em>1</em> means an example has donated, <em>0</em> means the example has not donated.</p>
+
+<div class="figure" style="text-align: center"><span id="fig:conf-mat-plot"></span>
+<img src="figures/methods/conf-mat.png" alt="Definition of the confusion matrix for a two-class problem." width="30%" />
+<p class="caption">
+Figure 2.15: Definition of the confusion matrix for a two-class problem.
+</p>
+</div>
+<p>The definitions of some often-used metrics are given below<a href="#fn15" class="footnote-ref" id="fnref15"><sup>15</sup></a>. The choice of metric depends on the goal of the prediction and the data at hand.</p>
+<p><span class="math display">\[\begin{align*}
+\text{Recall / Sensitivity / True Positive Rate TPR} &amp;= \frac{TP}{TP + FN} \\
+\text{Specificity / True Negative Rate TNR} &amp;= \frac{TN}{TN+FP} \\ 
+\text{Precision / Positive Predictive Value PPV} &amp;= \frac{TP}{TP + FP}\\
+\text{Negative Predictive Value NPV} &amp;= \frac{TN}{TN+FN}\\
+\text{False Negative Rate FNR} &amp;= \frac{FN}{FN+TP}\\
+\text{False Positive Rate FPR} &amp;= \frac{FP}{FP+TN}\\
+\text{Accuracy} &amp;= \frac{TP + TN}{TP + FP + FN + TN} \\
+\text{F1 score} &amp;= \frac{2TP}{2TP+FP+FN}
+\end{align*}\]</span></p>
+<p>The goal, as mentioned earlier, is to maximize net profit. To achieve this, a balance between predicting as many TP’s as possible while keeping the number of FP’s low has to be found. One FP costs 0.68 $ (sending a letter to a non-donor). Keeping in mind the distribution of <span class="math inline">\(\text{TARGET}_D\)</span> (Section <a href="exploratory-data-analysis.html#targets">2.2.2</a>), one FN means loosing at least 0.32 $ of possible profit (not sending a promotion to a donor, smallest donation amount is 1 $). The expected loss in profit for one FN is even 15 $ (corresponding to the mean donation amount), which means that with each TP, the cost of 22 FP’s can be covered on average.</p>
+<p>The default metric for classification is accuracy, but in the case of imbalanced targets, it is not a desirable metric (TN is present both in the nominator and denominator, dominating the score). The metrics that could be used beneficially because they involve TP an not TN are F1, recall and precision. Since in precision, the FP of the majority class have the highest influence from among the three, it was discarded from the candidate list.</p>
+</div>
+<div id="regressors" class="section level4">
+<h4><span class="header-section-number">3.5.2.2</span> Regressors</h4>
+<p>For regression, <span class="math inline">\(R^2 = 1- \frac{\sum_{i=1}^n(y_i-\hat{y}_i)^2}{\sum_{i=1}^n(y_i-\bar{y})^2}\)</span> was used, mainly because it is the default metric for regression algorithms in <code>scikit-learn</code>. <span class="math inline">\(R^2\)</span> has the drawback of depending on the variance of the data used to fit the model and therefore is different for other data. It was however assumed that because learning and test data have the same generating function, <span class="math inline">\(R^2\)</span> can be used to select a regression model.</p>
+</div>
+</div>
+<div id="imblearn" class="section level3">
+<h3><span class="header-section-number">3.5.3</span> Dealing With Imbalanced Data</h3>
+<p>Several different approaches were explored. The following over-/undersampling techniques available in package <code>imblearn</code> by <span class="citation">Lemaître, Nogueira, and Aridas (<a href="references.html#ref-lemaitre2017imblearn">2017</a>)</span> were studied:</p>
+<ul>
+<li>Random oversampling of the minority class</li>
+<li>Random undersampling of the majority class</li>
+<li>SMOTE (synthetic minority oversampling technique), variant borderline-1</li>
+</ul>
+<p>The random sampling algorithms either draw from the minority class with repetition or draw random samples from the majority class without repetition until the labels are balanced. SMOTE does not sample from the data but instead generates synthetic samples from the minority class, thereby countering the danger of overfitting by learning on a small number of repeated observations (random oversampling) or a small subset of the training data available (random undersampling). The SMOTE variant <em>borderline-1</em> chosen generates samples that are close to the optimal decision boundary, where misclassification is likely.</p>
+<p>Additional experiments were run with class- and sample-weights set on the data without resampling. For class weights, the ratio of non-donors vs. donors was used. For sample weights, the donation amount was employed, rescaled to the interval <span class="math inline">\([0,1]\)</span>.</p>
+</div>
+<div id="algorithms" class="section level3">
+<h3><span class="header-section-number">3.5.4</span> Algorithms</h3>
+<p>A short introduction of each algorithm is given below. For each algorithm, the hyperparameters that were tuned during learning are given. The choice of algorithms was made so as to cover a wide range of underlying concepts.</p>
+<div id="methods-rf" class="section level4">
+<h4><span class="header-section-number">3.5.4.1</span> Random Forest</h4>
+<p>Random forest (RF) belongs to the family of so-called ensemble learners and was introduced by <span class="citation">Breiman (<a href="references.html#ref-breiman2001rf">2001</a>)</span>. Predictions are made by majority vote of an ensemble of decision trees (CART, <span class="citation">Breiman et al. (<a href="references.html#ref-breiman1984classification">1984</a>)</span>). The RF can be employed both for regression and classification tasks. RF’s are insensitive towards scale differences in the individual features, and, depending on the implementation, can deal with missing values. Another important feature of RF is the assessment of <em>variable importance</em> by summing the loss improvement for each split in every tree per feature <span class="citation">(Friedman, Hastie, and Tibshirani <a href="references.html#ref-friedman2001elements">2001</a>)</span>.</p>
+<p>During learning, a random sample of the available features is drawn with replacement for each tree (bagging, or bootstrap aggregating, see <span class="citation">Breiman (<a href="references.html#ref-breiman1996bagging">1996</a>)</span>), thereby reducing the variance of the ensemble estimator. Furthermore, splits within a tree are determined again on a random subset of the features. These sources of randomness tend to increase bias of the forest, yet the decrease in variance due to averaging through majority vote outweighs the bias increase <span class="citation">Friedman, Hastie, and Tibshirani (<a href="references.html#ref-friedman2001elements">2001</a>)</span>. <span class="citation">Breiman (<a href="references.html#ref-breiman2001rf">2001</a>)</span> shows that as the forest grows, the generalization error converges almost surely. This means that random forests are insensitive to overfitting and perform better the more trees are grown.</p>
+<p>As explained in <span class="citation">Friedman, Hastie, and Tibshirani (<a href="references.html#ref-friedman2001elements">2001</a>)</span>, trees are grown as follows:</p>
+<p>For data with n examples and p features <span class="math inline">\(D = \{\{x_i,y_i\}, i=1 \ldots n, x_i=\{x_{i,1}, x_{i,2}, \ldots x_{i,p}\}\}\)</span>, the CART algorithm decides on the structure of the tree, the splitting features and the split points. As a result, the data is partitioned into <span class="math inline">\(M\)</span> regions <span class="math inline">\(R_1, R_2, \ldots, R_M\)</span>.</p>
+<p><strong>Regression</strong>
+The response <span class="math inline">\(\hat{y}\)</span> is modeled as a constant <span class="math inline">\(c_m\)</span> for each region:
+<span class="math display" id="eq:cart-const">\[\begin{equation}
+f(x) = \sum_{m=1}^M c_m\mathbb{1}(x \in R_m)
+\tag{2.5}
+\end{equation}\]</span></p>
+<p>Using as loss criterion the sum of squares <span class="math inline">\(\sum_{i=1}^n (y_i - f(x_i))^2\)</span>, the best <span class="math inline">\(\hat{c}_m\)</span> is the average of <span class="math inline">\(y_i\)</span> in the region:
+<span class="math display" id="eq:cart-hatc">\[\begin{equation}
+\hat{c}_m=ave(y_i|x_i \in R_m).
+\tag{2.6}
+\end{equation}\]</span></p>
+<p>The algorithm greedily decides on the best partition. Starting with all data, a splitting feature <span class="math inline">\(j\)</span> and a split point <span class="math inline">\(s\)</span> is considered, creating two regions <span class="math inline">\(R_1(j,s) = \{X|X_j \leq s\}, R_2(j,s) = \{X|X_j &gt; s\}\)</span>. Feature <span class="math inline">\(j\)</span> and split point <span class="math inline">\(s\)</span> are chosen by solving
+<span class="math display" id="eq:cart-opt">\[\begin{equation}
+\min_{j,s}\left[\min_{c1} \sum_{x_i \in R_1(j,s)}(y_i-c_1)^2 + min_{c2} \sum_{x_i \in R_2(j,s)}(y_i-c_2)^2\right]
+\tag{2.7}
+\end{equation}\]</span>
+with the inner minimization solved using <a href="eval-and-select.html#eq:cart-hatc">(2.6)</a>.</p>
+<p><strong>Classification</strong>
+For a binary classification problem with outcomes <span class="math inline">\(\{0,1\}\)</span>, predictions are made through the proportion of the positive class in a region <span class="math inline">\(R_m\)</span> with <span class="math inline">\(N_m\)</span> examples <span class="math inline">\(x_i\)</span> inside, which is given by:
+<span class="math display" id="eq:cart-class">\[\begin{equation}
+\hat{p}_m = \frac{1}{N_m} \sum_{x_i \in R_m} \mathbb{1}(y_i = 1)
+\tag{2.8}
+\end{equation}\]</span></p>
+<p>When <span class="math inline">\(\hat{p}_m&gt;0.5\)</span>, the positive class is chosen.</p>
+<p>The loss is described by impurity. When making a split, the feature <span class="math inline">\(j\)</span> resulting in the highest impurity decrease is selected. Impurity is measured by the <em>Gini index</em>. For binary classification: A node <span class="math inline">\(m\)</span>, representing region <span class="math inline">\(R_m\)</span> with <span class="math inline">\(N_m\)</span> observations has as proportion of the positive class <span class="math inline">\(\hat{p}_m = \frac{1}{N_m} \sum_{x_i \in R_m} \mathbb{1}(y_i = 1)\)</span>. The Gini index is then defined as <span class="math inline">\(2p(1-p)\)</span>. So the decision function is:
+<span class="math display" id="eq:cart-class-dec">\[\begin{equation}
+\min_{j,s}(\min_{Gini_l} \hat{p}_l + \min_{Gini_r} \hat{p}_r)
+\tag{2.9}
+\end{equation}\]</span>
+for regions <span class="math inline">\(R_l, R_r\)</span> below the node.</p>
+<p>The <code>RandomForestClassifier</code> and <code>RandomForestRegressor</code> included in <code>scikit-learn</code> were used for learning.</p>
+<p><strong>Hyperparameters</strong></p>
+<ul>
+<li><code>max_depth</code>, <span class="math inline">\(\{1,2,3, \ldots\}\)</span>: depth of the trees, <span class="math inline">\(2^n\)</span> leafs maximum. Controls tree size.</li>
+<li><code>min_samples_split</code>, <span class="math inline">\(\{2,3,4,\ldots\}\)</span>: Minimum number of samples required to split a node, controls tree size.</li>
+<li><code>max_features</code>, <span class="math inline">\(\{1, 2, \ldots, m\}\)</span>: Maximum number of the <span class="math inline">\(m\)</span> features to consider when searching for a split. <span class="citation">Friedman, Hastie, and Tibshirani (<a href="references.html#ref-friedman2001elements">2001</a>)</span> recommend values in <span class="math inline">\(m = \{1, 2, \ldots \sqrt{m}\}\)</span>, but for high dimensional data with few relevant features, larger <span class="math inline">\(m\)</span> can lead to better results because the probability of including relevant features increases.</li>
+<li><code>n_estimators</code>, <span class="math inline">\(\{1, 2, \ldots\}\)</span>: Number of trees to grow. In combination with early stopping, this can be set to a high value since learning will stop when the loss converges.</li>
+<li><code>class_weight</code> <span class="math inline">\(\{\text{balanced}, 1,2,\ldots\}\)</span>: Weights on target classes: “balanced” calculates weights according to class frequencies, integer values specify weight on majority class relative to minority</li>
+</ul>
+</div>
+<div id="methods-gbm" class="section level4">
+<h4><span class="header-section-number">3.5.4.2</span> Gradient Boosting Machine</h4>
+<p>The main idea behind boosting is to sequentially train an ensemble of weak learners which on their own are only slightly better than a random decision. The predictions of the individual weak learners are then combined into a majority vote <span class="citation">(Kearns <a href="references.html#ref-kearns1988thoughts">1988</a>)</span>.</p>
+<p>Gradient boosting machine (GBM) extends on this idea. Like a random forest, GBM learns an ensemble of decision trees. However, trees are learned in an additive manner. At each iteration, the tree that improves the model most (i.e. in the direction of the gradient of the loss function) is added. For this thesis, the package <code>XGBoost</code> by <span class="citation">Chen and Guestrin (<a href="references.html#ref-chen2016xgboost">2016</a>)</span> was used. They describe the algorithm as follows:</p>
+<p>Assume a data set with <span class="math inline">\(n\)</span> examples and <span class="math inline">\(p\)</span> features: <span class="math inline">\(D = \{\{x_i,y_i\}, i=1\ldots n, x_i=\{x_{i,1}, x_{i,2}, \ldots x_{i,p}\}\}\)</span>. The implementation uses a tree ensemble with <span class="math inline">\(K\)</span> regression trees to predict the outcome for an example in the data by summing up the weights predicted by each tree:</p>
+<p><span class="math display" id="eq:gbm-ensemble">\[\begin{equation}
+\hat{y}_i = \phi(x_i) = \sum_{k=1}^K f_k(x_i), f_k \in F
+\tag{2.10}
+\end{equation}\]</span></p>
+<p>where <span class="math inline">\(F = \{f(x) = w_{q(x)}\} (q: \mathbb{R}^m \rightarrow T, w \in \mathbb{R}^T)\)</span> is the space of regression trees. <span class="math inline">\(T\)</span> is the number of leaves in a tree, <span class="math inline">\(q\)</span> is the structure of each tree, mapping an example to the corresponding leaf index. Each tree <span class="math inline">\(f_k\)</span> has an independent structure <span class="math inline">\(q\)</span> and weights <span class="math inline">\(w\)</span> at the terminal leafs.</p>
+<p>For growing the trees in <span class="math inline">\(F\)</span>, the following loss function is minimized:</p>
+<p><span class="math display" id="eq:gbm-loss">\[\begin{equation}
+L(\phi) = \sum_{i=1}^n l(y_i, \hat{y_i}) + \sum_k^K \Omega(f_k)
+\tag{2.11}
+\end{equation}\]</span></p>
+<p>Here, <span class="math inline">\(l\)</span> is a differentiable, convex loss function that measures the difference between predictions and true values. Since <span class="math inline">\(l\)</span> is convex, a global minimum is guaranteed. <span class="math inline">\(\Omega(f) = \gamma T + \frac{1}{2}\lambda||w||^2\)</span> is a penalty on the complexity of the trees to counter over-fitting. The algorithm thus features integrated regularization.</p>
+<p>Now, at each iteration <span class="math inline">\(t\)</span>, the tree <span class="math inline">\(f_t\)</span> that improves the model most is added. For this, <span class="math inline">\(f_t(\mathbf{x_i})\)</span> is added to the predictions at <span class="math inline">\(t-1\)</span> and compute the loss:</p>
+<p><span class="math display" id="eq:gbm-iterate">\[\begin{equation}
+L^{(t)} = \sum_{i=1}^n l(y_i, \hat{y_i}^{t-1} + f_t(\mathbf{x_i})) +\Omega(f_t)
+\tag{2.12}
+\end{equation}\]</span></p>
+<p>To find the best <span class="math inline">\(f_t\)</span> to add, the gradients finally come into play. With <span class="math inline">\(g_i\)</span> and <span class="math inline">\(h_i\)</span> the first- and second-order gradient statistics of <span class="math inline">\(l\)</span>, the loss function becomes:</p>
+<p><span class="math display" id="eq:gbm-grad">\[\begin{equation}
+\tilde{L}^{(t)} = \sum_{i=1}^n l(y_i, \hat{y_i}^{t-1} + g_if_t(x_i) + h_i f_t^2(x_i)) +\Omega(f_t)
+\tag{2.13}
+\end{equation}\]</span></p>
+<p><strong>Hyperparameters</strong></p>
+<ul>
+<li><code>learning_rate</code>, <span class="math inline">\([0, 1]\)</span>: <em>Shrinkage</em>, decreases step size for the gradient descent when <span class="math inline">\(\eta &lt; 1.0\)</span>, helping convergence. The number of estimators <span class="math inline">\(f_k\)</span> has to be increased for small learning rates in order for the algorithm to converge.</li>
+<li><code>min_child_weight</code>, <span class="math inline">\([0, \inf)\)</span>: Minimum sum of weights of the hessian in a node. When close to zero, the node is pure. Controls regularization.</li>
+<li><code>subsample</code>, <span class="math inline">\([0, 1]\)</span>: A random sample from the <span class="math inline">\(n\)</span> examples of size <span class="math inline">\(s, s &lt; n\)</span> is drawn for each iteration, countering overfitting and speeding up learning.</li>
+<li><code>colsample_by_tree</code>, <span class="math inline">\([0, 1]\)</span>: A random sample of the <span class="math inline">\(m\)</span> features is drawn for growing each tree.</li>
+<li><code>n_iter_no_change</code>, <span class="math inline">\(\{0,1,2,3, \ldots\}\)</span>: Early stopping. Based on an evaluation set, learning stops when no improvement on the performance metric (misclassification error was chosen) is made for a fixed number of steps.</li>
+</ul>
+</div>
+<div id="glmnet" class="section level4">
+<h4><span class="header-section-number">3.5.4.3</span> GLMnet</h4>
+<p>The GLMnet is an implementation of a generalized linear model (GLM) with penalized maximum likelihood by <span class="citation">Hastie and Qian (<a href="references.html#ref-hastie2014glmnet">2014</a>)</span>. Regularization is achieved through <span class="math inline">\(L^2\)</span> (ridge) and <span class="math inline">\(L^1\)</span> (lasso) penalties or their combination known as elastic net <span class="citation">(Zou and Hastie <a href="references.html#ref-zou2005regularization">2005</a>)</span>.</p>
+<p>The loss functions are described in <span class="citation">Hastie and Qian (<a href="references.html#ref-hastie2014glmnet">2014</a>)</span>. For the binary classification task at hand, a logistic regression was performed. The logistic regression model for a two-class response <span class="math inline">\(G = \{0,1\}\)</span> with target <span class="math inline">\(y_i = \mathbb{1}(g_i=1)\)</span> is:</p>
+<p><span class="math inline">\(P(G=1|X=x) = \frac{e^{\beta_0+\beta^Tx}}{1+e^{\beta_0+\beta^Tx}}\)</span> or, in the log-odds transformation: <span class="math inline">\(log\frac{P(G=1|X=x)}{P(G=0|X=x)}=\beta_0+\beta^Tx\)</span>.</p>
+<p>The GLMnet loss function for logistic regression:</p>
+<p><span class="math display" id="eq:glmnet-logit">\[\begin{equation}
+\min_{\beta_0,\beta} \frac{1}{N} \sum_{i=1}^{N} w_i l(y_i,\beta_0+\beta^T x_i) + \lambda\left[(1-\alpha)||\beta||_2^2/2 + \alpha ||\beta||_1\right]
+\tag{2.14}
+\end{equation}\]</span></p>
+<p>where <span class="math inline">\(w_i\)</span> are individual sample weights, <span class="math inline">\(l(\cdot)\)</span> the (negative) log-likelihood of the parameters <span class="math inline">\(\mathbf{\beta}\)</span> given the data, <span class="math inline">\(\lambda\)</span> the amount of penalization and <span class="math inline">\(\alpha \in [0,1]\)</span> the elastic net parameter, for <span class="math inline">\(\alpha=0\)</span> pure ridge and for <span class="math inline">\(\alpha=1\)</span> pure lasso.</p>
+<p>For the regression task, a gaussian family model was used, having loss function:</p>
+<p><span class="math display" id="eq:glmnet-gaussian">\[\begin{equation}
+\min_{(\beta_0, \beta) \in \mathbb{R}^{p+1}}\frac{1}{2N} \sum_{i=1}^N (y_i -\beta_0-x_i^T \beta)^2+\lambda \left[ (1-\alpha)||\beta||_2^2/2 + \alpha||\beta||_1\right]
+\tag{2.15}
+\end{equation}\]</span></p>
+<p>where <span class="math inline">\(l()\)</span> the (negative) log-likelihood of the parameters <span class="math inline">\(\mathbf{\beta}\)</span> given the data, <span class="math inline">\(\lambda\)</span> the amount of penalization and <span class="math inline">\(\alpha \in [0,1]\)</span> the elastic net parameter, for <span class="math inline">\(\alpha=0\)</span> pure ridge and for <span class="math inline">\(\alpha=1\)</span> pure lasso.</p>
+<p>For learning, GLMnet evaluates many different <span class="math inline">\(\lambda\)</span> values for a given <span class="math inline">\(\alpha\)</span> through cross validation. Because GLMnet is sensitive to scale differences in the features, input data (features and target) should be transformed to mean zero and unit variance.</p>
+<p><strong>Hyperparameters</strong></p>
+<ul>
+<li><code>n_splits</code>, <span class="math inline">\(\{3,4,5, \ldots\}\)</span>: Number of CV-splits. Typical values are 3, 5 and 10.</li>
+<li><span class="math inline">\(\alpha\)</span>, <span class="math inline">\([0, 1]\)</span>: parametrizes the elastic net. For <span class="math inline">\(\alpha = 0\)</span> pure ridge, for <span class="math inline">\(\alpha = 1\)</span> pure lasso.</li>
+<li><code>scoring</code>: Scoring method for cross-validation (log-loss, classification error, accuracy, precision, recall, average precision, roc-auc)</li>
+</ul>
+</div>
+<div id="multilayer-perceptron" class="section level4">
+<h4><span class="header-section-number">3.5.4.4</span> Multilayer Perceptron</h4>
+<p>The multilayer perceptron (MLP) is a so-called feed-forward neural network. The network consists of at least three layers: an input layer, an arbitrary number of hidden layers and an output layer. Each layer is made up of units. The term feed-forward means that information flows from the input layer through intermediary steps and then to the output. The goal is to approximate the function <span class="math inline">\(f^*\)</span>. For a classifier, <span class="math inline">\(y = f^*(x)\)</span> maps an example <span class="math inline">\(x\)</span> to a category <span class="math inline">\(y\)</span>. A feed-forward network defines a mapping <span class="math inline">\(y=f(x, w)\)</span> and learns the weights <span class="math inline">\(w\)</span> by approximating the function <span class="math inline">\(f\)</span> <span class="citation">(Goodfellow, Bengio, and Courville <a href="references.html#ref-goodfellow2016deep">2016</a>)</span>.</p>
+<p>For a binary classification problem on a dataset with <span class="math inline">\(n\)</span> examples and <span class="math inline">\(p\)</span> features <span class="math inline">\(D = \{\{x_i, y_i\}\}, x_i = \{x_{i,1},x_{i,2},\ldots,x_{i,p}\}, y_i \in \{0,1\}, i = 1 \ldots n\}\)</span>, the input layer has <span class="math inline">\(p\)</span> units, the output layer has <span class="math inline">\(1\)</span> unit. The hidden layers each have an arbitrary number of <em>hidden</em> units.</p>
+<p>Each unit, except for the input layer, consists of a perceptron, which is in effect a linear model with some non-linear activation function applied:</p>
+<p><span class="math display" id="eq:perceptron">\[\begin{equation}
+y = \phi(w^Tx+b)
+\tag{2.16}
+\end{equation}\]</span></p>
+<p>where <span class="math inline">\(\phi\)</span> is a non-linear activation function, <span class="math inline">\(w\)</span> is the vector of weights, <span class="math inline">\(x\)</span> is the vector of inputs and b is the bias. For <span class="math inline">\(\phi\)</span>, typical functions are the hyperbolic tangens <span class="math inline">\(tanh(\cdot)\)</span>, the logistic sigmoid <span class="math inline">\(\sigma(x) = \frac{1}{1+e^{-x}}\)</span>, or, more recently, the rectified linear unit <span class="math inline">\(relu(x) = max(0,x)\)</span> <span class="citation">(Hahnloser et al. <a href="references.html#ref-hahnloser2000digital">2000</a>; Goodfellow, Bengio, and Courville <a href="references.html#ref-goodfellow2016deep">2016</a>)</span>.</p>
+<p>During learning, the training examples are fed to the network sequentially. For each example, the prediction error is calculated using a loss function, which is typically the negative log-likelihood.</p>
+<p>Then, the partial derivatives of the loss function with respect to the weights are computed for each unit and the parameters updated using stochastic gradient descent. This process is called back-propagation.</p>
+<p>The complete network is a chain of functions, for the network trained here, it is:
+<span class="math display">\[\begin{equation}
+\mathbf{y} = \phi^{(3)}(\mathbf{W}^{(3)T} \mathbf{\phi}^{(2)}(\mathbf{W}^{(2)T} \mathbf{\phi}^{(1)}(\mathbf{W}^{(1)T} \mathbf{x} + \mathbf{b}^{(1)}) + \mathbf{b}^{(2)}) + \mathbf{b}^{(3)})
+\end{equation}\]</span>
+where <span class="math inline">\(x\)</span> is the vector of input features, <span class="math inline">\(y\)</span> is the vector of outputs, <span class="math inline">\(\mathbf{W}^{(1)}, \mathbf{W}^{(2)}, \mathbf{W}^{(3)}\)</span> are the weight matrices for each layer and <span class="math inline">\(b^{(1)}, b^{(2)}, b^{(3)}\)</span> are the bias vectors for each layer and <span class="math inline">\(\phi^{(1)}, \phi^{(2)}, \phi^{(3)}\)</span> are the sets of perceptrons in the corresponding layer.</p>
+
+<div class="figure" style="text-align: center"><span id="fig:mlp-graph"></span>
+<img src="figures/methods/mlp-structure.png" alt="Neural network topology used. Two hidden layers \(\mathbf{h^{(1)}, h^{(2)}}\) are contained. \(\mathbf{b^{(2)}, b^{(3)}}\) and \(\mathbf{b^{(4)}}\) are the bias vectors for the respective layers." width="70%" />
+<p class="caption">
+Figure 2.16: Neural network topology used. Two hidden layers <span class="math inline">\(\mathbf{h^{(1)}, h^{(2)}}\)</span> are contained. <span class="math inline">\(\mathbf{b^{(2)}, b^{(3)}}\)</span> and <span class="math inline">\(\mathbf{b^{(4)}}\)</span> are the bias vectors for the respective layers.
+</p>
+</div>
+<p>For this thesis, the scikit-learn implementation <code>sklearn.neural_network.MLPClassifier</code> was used with default settings (rectified linear unit as activation function, <em>adam</em> (stochastic gradient descent) solver). The network topology was determined by treating it as a hyperparameter. Best results were achieved with a network featuring two hidden layers with 28 hidden units each. The network is shown symbolically in Figure <a href="eval-and-select.html#fig:mlp-graph">2.16</a>.</p>
+<p><strong>Hyperparameters</strong></p>
+<ul>
+<li><code>hidden_layer_sizes</code>: Tuples, i.e. (100,50,) for a network with 2 hidden layers of 100 and 50 units and one output unit.</li>
+<li><span class="math inline">\(\alpha\)</span>, [0,1]: <span class="math inline">\(L^2\)</span> regularization amount</li>
+<li><code>learning_rate_init</code> <span class="math inline">\(&gt;0\)</span>: Controls step size for the solver during back-propagation (regularization).</li>
+</ul>
+</div>
+<div id="support-vector-machine" class="section level4">
+<h4><span class="header-section-number">3.5.4.5</span> Support Vector Machine</h4>
+<p>In the case of binary classification, support vector classifiers (SVC) find a separating hyperplane <span class="math inline">\(\{x: f(x)=x^T\beta+\beta_0 = 0\}\)</span> with classification rule <span class="math inline">\(G(x)=sign(x^T\beta+\beta_0)\)</span>. The best hyperplane is such that a margin <span class="math inline">\(M\)</span> defined by parallel hyperplanes on either side is maximized. The larger the margin, the lower the generalization error. The margin planes contain the examples of the classes that are nearest to each other. In the case of linearly not separable classes (when the classes overlap, see Figure <a href="eval-and-select.html#fig:svm-schematic-plot">2.17</a>), a soft-margin SVC may be employed. For examples on the correct side of the hyperplane, the loss is zero. For wrongly classified examples, the loss is proportional to the distance from the hyperplane. A global budget for loss is defined as a constraint and the hyperplane found subject to the constraint <span class="citation">(Friedman, Hastie, and Tibshirani <a href="references.html#ref-friedman2001elements">2001</a>)</span>.</p>
+
+<div class="figure" style="text-align: center"><span id="fig:svm-schematic-plot"></span>
+<img src="figures/methods/svm-schematic.png" alt="Schematic display of an SVM hyperplane (in black), separating two overlapping classes. The margins are shown around the hyperplane, with support vectors falling on the margins. Misclassifications (examples on the wrong side of the hyperplane) have a total budget for distance from the separating plane. The margins are determined by respecting the budget. Adapted from Friedman, Hastie, and Tibshirani (2001)." width="70%" />
+<p class="caption">
+Figure 2.17: Schematic display of an SVM hyperplane (in black), separating two overlapping classes. The margins are shown around the hyperplane, with support vectors falling on the margins. Misclassifications (examples on the wrong side of the hyperplane) have a total budget for distance from the separating plane. The margins are determined by respecting the budget. Adapted from <span class="citation">Friedman, Hastie, and Tibshirani (<a href="references.html#ref-friedman2001elements">2001</a>)</span>.
+</p>
+</div>
+<p>Support Vector Machines (SVM), <span class="citation">(Boser, Guyon, and Vapnik <a href="references.html#ref-boser1992svc">1992</a>; Cortes and Vapnik <a href="references.html#ref-cortes1995support">1995</a>)</span> are another approach to the overlapping class case. By mapping the original input space to a high- or infinite-dimensional feature space using nonlinear transformations, a linear hyperplane separating the classes can be found. Calculation of the SVM involves a dot product between the <span class="math inline">\(x_i\)</span> <span class="citation">(Friedman, Hastie, and Tibshirani <a href="references.html#ref-friedman2001elements">2001</a>)</span>:</p>
+<p><span class="math display" id="eq:svm">\[\begin{equation}
+f(x) = \sum_{i=1}^N \alpha_i*y_i\langle h(x), h(x_i)\rangle + \beta_0
+\tag{2.17}
+\end{equation}\]</span></p>
+<p>where <span class="math inline">\(h(x)\)</span> are the transformations mapping from the input space to the high-dimensional space.</p>
+<p>Since the transformations can be prohibitively expensive, the so-called kernel trick <span class="citation">(Aizerman, Braverman, and Rozoner <a href="references.html#ref-aizerman1964theoretical">1964</a>)</span> is used <span class="citation">(Boser, Guyon, and Vapnik <a href="references.html#ref-boser1992svc">1992</a>)</span>. The trick lies in the fact that knowledge of the kernel function <span class="math inline">\(K(x,x&#39;) = \langle h(x), h(x&#39;) \rangle\)</span> suffices, without need to compute the dot products.</p>
+<p>Several kernels are possible. In <code>scikit-learn</code>, linear, polynomial, radial basis function and sigmoid are available.</p>
+<p>For regression, the Support Vector Regression Machine (SVR) was introduced by <span class="citation">Drucker et al. (<a href="references.html#ref-drucker1997support">1997</a>)</span>.</p>
+<p><code>scikit-learn</code> implementations were used for both classification and regression.</p>
+<p><strong>Hyperparameters</strong></p>
+<ul>
+<li><code>C</code>, <span class="math inline">\((0,\inf)\)</span>: Penalty on the margin size</li>
+<li><code>kernel</code>: One of linear, poly, rbf or sigmoid</li>
+<li><code>degree</code> <span class="math inline">\(\{1,2, \ldots \}\)</span>: Degree of polynomial kernel</li>
+<li><code>class_weight</code>: Automatic balancing or a dictionary with weights per class</li>
+</ul>
+</div>
+<div id="bayesian-ridge-regression" class="section level4">
+<h4><span class="header-section-number">3.5.4.6</span> Bayesian Ridge Regression</h4>
+<p>Bayesian Ridge Regression (BR) can be seen as a Bayesian approach to a linear model with <span class="math inline">\(l_2\)</span> regularization. The <code>sklearn.linear_model.BayesianRidge</code> algorithm was used, which is implemented as described in <span class="citation">Tipping (<a href="references.html#ref-tipping2001sparse">2001</a>)</span>. The linear model is:</p>
+<p><span class="math display" id="eq:bayesion-linear-model-sk">\[\begin{equation}
+y_i = f(x_n, w) + \epsilon_i
+\tag{2.18}
+\end{equation}\]</span></p>
+<p>where <span class="math inline">\(\epsilon_i\)</span> are iid error terms <span class="math inline">\(\sim \mathcal{N}(0, \sigma^2)\)</span>.</p>
+<p>The probabilistic model is then:</p>
+<p><span class="math display" id="eq:bayesian-prob-model">\[\begin{equation}
+p(y|x) =\mathcal{N}(y|f(x,w), \alpha)
+\tag{2.19}
+\end{equation}\]</span></p>
+<p>In order to regularize the model in a ridge manner, a prior probability on the weights in <span class="math inline">\(f(x,w)\)</span> is defined as:</p>
+<p><span class="math display" id="eq:prior-alpha">\[\begin{equation}
+p(w|\lambda) = \prod_{i=0}^p \mathcal{N}(w_i|0, \lambda_i^-1)
+\tag{2.20}
+\end{equation}\]</span></p>
+<p>The algorithm was trained with default settings.</p>
+
+</div>
+</div>
+</div>
+<!-- </div> -->
+<div class="footnotes">
+<hr />
+<ol start="14">
+<li id="fn14"><p><a href="https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/6_Model_Evaluation_Selection.ipynb">https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/6_Model_Evaluation_Selection.ipynb</a><a href="eval-and-select.html#fnref14" class="footnote-back">↩</a></p></li>
+<li id="fn15"><p>taken from <a href="https://en.wikipedia.org/wiki/Confusion_matrix">https://en.wikipedia.org/wiki/Confusion_matrix</a>, accessed on 28.05.2019<a href="eval-and-select.html#fnref15" class="footnote-back">↩</a></p></li>
+</ol>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="methods-prediction.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="results-and-discussion.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="assets/gitbook-2.6.7/js/app.min.js"></script>
+<script src="assets/gitbook-2.6.7/js/lunr.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="assets/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"google": false,
+"linkedin": true,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"all": ["facebook", "google", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"download": ["Master_Thesis_Florian_Hochstrasser.pdf"],
+"toc": {
+"collapse": "subsection"
+},
+"toolbar": {
+"position": "static"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:" && /^https?:/.test(src))
+      src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

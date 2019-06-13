@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>4.5 Prediction | Profit maximization for direct marketing campaigns</title>
+  <meta name="description" content="Master Thesis submitted in partial fulfillment of the requirements for the degree of Master of Science in Statistics" />
+  <meta name="generator" content="bookdown 0.11 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="4.5 Prediction | Profit maximization for direct marketing campaigns" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="Master Thesis submitted in partial fulfillment of the requirements for the degree of Master of Science in Statistics" />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="4.5 Prediction | Profit maximization for direct marketing campaigns" />
+  
+  <meta name="twitter:description" content="Master Thesis submitted in partial fulfillment of the requirements for the degree of Master of Science in Statistics" />
+  
+
+<meta name="author" content="Florian Hochstrasser" />
+
+
+<meta name="date" content="2019-06-12" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="results-models.html">
+<link rel="next" href="conclusions.html">
+<script src="assets/jquery-2.2.3/jquery.min.js"></script>
+<link href="assets/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+<script src="assets/kePrint-0.0.1/kePrint.js"></script>
+
+
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a><ul>
+<li class="chapter" data-level="1.1" data-path="task-background.html"><a href="task-background.html"><i class="fa fa-check"></i><b>1.1</b> Task Background</a></li>
+<li class="chapter" data-level="1.2" data-path="goals-and-requirements.html"><a href="goals-and-requirements.html"><i class="fa fa-check"></i><b>1.2</b> Goals and Requirements</a></li>
+<li class="chapter" data-level="1.3" data-path="conventions-and-notes.html"><a href="conventions-and-notes.html"><i class="fa fa-check"></i><b>1.3</b> Conventions and Notes</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="data.html"><a href="data.html"><i class="fa fa-check"></i><b>2</b> Data</a><ul>
+<li class="chapter" data-level="2.1" data-path="general-structure.html"><a href="general-structure.html"><i class="fa fa-check"></i><b>2.1</b> General Structure</a></li>
+<li class="chapter" data-level="2.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html"><i class="fa fa-check"></i><b>2.2</b> Exploratory Data Analysis</a><ul>
+<li class="chapter" data-level="2.2.1" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#data-types"><i class="fa fa-check"></i><b>2.2.1</b> Data Types</a></li>
+<li class="chapter" data-level="2.2.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#targets"><i class="fa fa-check"></i><b>2.2.2</b> Targets</a></li>
+<li class="chapter" data-level="2.2.3" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#skewness"><i class="fa fa-check"></i><b>2.2.3</b> Skewness</a></li>
+<li class="chapter" data-level="2.2.4" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#correlations"><i class="fa fa-check"></i><b>2.2.4</b> Correlations</a></li>
+<li class="chapter" data-level="2.2.5" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#donation-patterns"><i class="fa fa-check"></i><b>2.2.5</b> Donation Patterns</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="experimental-setup-and-methods.html"><a href="experimental-setup-and-methods.html"><i class="fa fa-check"></i><b>3</b> Experimental Setup and Methods</a><ul>
+<li class="chapter" data-level="3.1" data-path="tools-used.html"><a href="tools-used.html"><i class="fa fa-check"></i><b>3.1</b> Tools Used</a></li>
+<li class="chapter" data-level="3.2" data-path="data-handling.html"><a href="data-handling.html"><i class="fa fa-check"></i><b>3.2</b> Data Handling</a></li>
+<li class="chapter" data-level="3.3" data-path="data-preprocessing.html"><a href="data-preprocessing.html"><i class="fa fa-check"></i><b>3.3</b> Data Preprocessing</a><ul>
+<li class="chapter" data-level="3.3.1" data-path="data-preprocessing.html"><a href="data-preprocessing.html#cleaning"><i class="fa fa-check"></i><b>3.3.1</b> Cleaning</a></li>
+<li class="chapter" data-level="3.3.2" data-path="data-preprocessing.html"><a href="data-preprocessing.html#methods-feature-engineering"><i class="fa fa-check"></i><b>3.3.2</b> Feature Engineering</a></li>
+<li class="chapter" data-level="3.3.3" data-path="data-preprocessing.html"><a href="data-preprocessing.html#imputation"><i class="fa fa-check"></i><b>3.3.3</b> Imputation</a></li>
+<li class="chapter" data-level="3.3.4" data-path="data-preprocessing.html"><a href="data-preprocessing.html#methods-feature-selection"><i class="fa fa-check"></i><b>3.3.4</b> Feature Selection</a></li>
+</ul></li>
+<li class="chapter" data-level="3.4" data-path="methods-prediction.html"><a href="methods-prediction.html"><i class="fa fa-check"></i><b>3.4</b> Prediction</a><ul>
+<li class="chapter" data-level="3.4.1" data-path="methods-prediction.html"><a href="methods-prediction.html#setup-of-the-two-stage-prediction"><i class="fa fa-check"></i><b>3.4.1</b> Setup of the Two-Stage Prediction</a></li>
+<li class="chapter" data-level="3.4.2" data-path="methods-prediction.html"><a href="methods-prediction.html#optimization-of-alpha"><i class="fa fa-check"></i><b>3.4.2</b> Optimization of <span class="math inline">\(\alpha^*\)</span></a></li>
+</ul></li>
+<li class="chapter" data-level="3.5" data-path="eval-and-select.html"><a href="eval-and-select.html"><i class="fa fa-check"></i><b>3.5</b> Model Evaluation and -Selection</a><ul>
+<li class="chapter" data-level="3.5.1" data-path="eval-and-select.html"><a href="eval-and-select.html#evaluation"><i class="fa fa-check"></i><b>3.5.1</b> Evaluation</a></li>
+<li class="chapter" data-level="3.5.2" data-path="eval-and-select.html"><a href="eval-and-select.html#selection"><i class="fa fa-check"></i><b>3.5.2</b> Selection</a></li>
+<li class="chapter" data-level="3.5.3" data-path="eval-and-select.html"><a href="eval-and-select.html#imblearn"><i class="fa fa-check"></i><b>3.5.3</b> Dealing With Imbalanced Data</a></li>
+<li class="chapter" data-level="3.5.4" data-path="eval-and-select.html"><a href="eval-and-select.html#algorithms"><i class="fa fa-check"></i><b>3.5.4</b> Algorithms</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="results-and-discussion.html"><a href="results-and-discussion.html"><i class="fa fa-check"></i><b>4</b> Results and Discussion</a><ul>
+<li class="chapter" data-level="4.1" data-path="preprocessing-with-package-kdd98.html"><a href="preprocessing-with-package-kdd98.html"><i class="fa fa-check"></i><b>4.1</b> Preprocessing With Package kdd98</a></li>
+<li class="chapter" data-level="4.2" data-path="imputation-1.html"><a href="imputation-1.html"><i class="fa fa-check"></i><b>4.2</b> Imputation</a></li>
+<li class="chapter" data-level="4.3" data-path="feature-selection.html"><a href="feature-selection.html"><i class="fa fa-check"></i><b>4.3</b> Feature Selection</a></li>
+<li class="chapter" data-level="4.4" data-path="results-models.html"><a href="results-models.html"><i class="fa fa-check"></i><b>4.4</b> Model Evaluation and Selection</a><ul>
+<li class="chapter" data-level="4.4.1" data-path="results-models.html"><a href="results-models.html#classifiers-1"><i class="fa fa-check"></i><b>4.4.1</b> Classifiers</a></li>
+<li class="chapter" data-level="4.4.2" data-path="results-models.html"><a href="results-models.html#regressors-1"><i class="fa fa-check"></i><b>4.4.2</b> Regressors</a></li>
+</ul></li>
+<li class="chapter" data-level="4.5" data-path="prediction.html"><a href="prediction.html"><i class="fa fa-check"></i><b>4.5</b> Prediction</a><ul>
+<li class="chapter" data-level="4.5.1" data-path="prediction.html"><a href="prediction.html#prediction-of-donation-probability"><i class="fa fa-check"></i><b>4.5.1</b> Prediction of Donation Probability</a></li>
+<li class="chapter" data-level="4.5.2" data-path="prediction.html"><a href="prediction.html#conditional-prediction-of-the-donation-amount"><i class="fa fa-check"></i><b>4.5.2</b> Conditional Prediction of the Donation Amount</a></li>
+<li class="chapter" data-level="4.5.3" data-path="prediction.html"><a href="prediction.html#profit-optimization"><i class="fa fa-check"></i><b>4.5.3</b> Profit Optimization</a></li>
+<li class="chapter" data-level="4.5.4" data-path="prediction.html"><a href="prediction.html#final-prediction"><i class="fa fa-check"></i><b>4.5.4</b> Final Prediction</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="conclusions.html"><a href="conclusions.html"><i class="fa fa-check"></i><b>5</b> Conclusions</a></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+<li class="appendix"><span><b>Appendix</b></span></li>
+<li class="chapter" data-level="A" data-path="software.html"><a href="software.html"><i class="fa fa-check"></i><b>A</b> Software</a><ul>
+<li class="chapter" data-level="A.1" data-path="python-environment.html"><a href="python-environment.html"><i class="fa fa-check"></i><b>A.1</b> Python Environment</a></li>
+<li class="chapter" data-level="A.2" data-path="package-kdd98.html"><a href="package-kdd98.html"><i class="fa fa-check"></i><b>A.2</b> Package kdd98</a><ul>
+<li class="chapter" data-level="A.2.1" data-path="package-kdd98.html"><a href="package-kdd98.html#usage"><i class="fa fa-check"></i><b>A.2.1</b> Usage</a></li>
+<li class="chapter" data-level="A.2.2" data-path="package-kdd98.html"><a href="package-kdd98.html#installation"><i class="fa fa-check"></i><b>A.2.2</b> Installation</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="B" data-path="kdd-cup-documents.html"><a href="kdd-cup-documents.html"><i class="fa fa-check"></i><b>B</b> KDD Cup Documents</a><ul>
+<li class="chapter" data-level="B.1" data-path="data-set-documentation.html"><a href="data-set-documentation.html"><i class="fa fa-check"></i><b>B.1</b> Cup Documentation</a></li>
+<li class="chapter" data-level="B.2" data-path="data-set-dictionary.html"><a href="data-set-dictionary.html"><i class="fa fa-check"></i><b>B.2</b> Data Set Dictionary</a></li>
+</ul></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Profit maximization for direct marketing campaigns</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="prediction" class="section level2">
+<h2><span class="header-section-number">4.5</span> Prediction</h2>
+<p>The intermediate steps for arriving at the final prediction will be examined in this section. For details on the steps, see <em>7_Predictions.ipynb</em><a href="#fn20" class="footnote-ref" id="fnref20"><sup>20</sup></a>. Up until the final prediction, the results reported are on the learning data set. The test data was only used for the final prediction for comparison with the results of the participants of the cup.</p>
+<div id="prediction-of-donation-probability" class="section level3">
+<h3><span class="header-section-number">4.5.1</span> Prediction of Donation Probability</h3>
+<p>Using the GLMnet regressor on the learning data set, <span class="math inline">\(\hat{y}_b\)</span> is distributed close to normal with a slight right skew (see Figure <a href="prediction.html#fig:y-b-predict">4.11</a>). 33’559 examples are selected, which amounts to 35.2 % of the training data set.</p>
+
+<div class="figure" style="text-align: center"><span id="fig:y-b-predict"></span>
+<img src="figures/predictions/y_b_predicted.png" alt="Distribution of predicted donation probabilities \(\hat{y}_b\) on the learning data set." width="70%" />
+<p class="caption">
+Figure 4.11: Distribution of predicted donation probabilities <span class="math inline">\(\hat{y}_b\)</span> on the learning data set.
+</p>
+</div>
+</div>
+<div id="conditional-prediction-of-the-donation-amount" class="section level3">
+<h3><span class="header-section-number">4.5.2</span> Conditional Prediction of the Donation Amount</h3>
+<p>Compared to the true distribution of <span class="math inline">\(y_d\)</span> (see Figure <a href="results-models.html#fig:reg-targ-transform">4.7</a>), a similar distribution for <span class="math inline">\(\hat{y}_d\)</span> results from predictions with the RF regressor on the complete learning data, shown in Figure <a href="prediction.html#fig:y-d-predict">4.12</a>. The distribution is again multi-modal, with approximately the same median value. The predicted donation amounts are however strictly positive with a minimum of 3.2 $. The reason is that the predictions are biased due to the non-random sample of donors used to learn the regressor. Unfortunately, the high-dollar donations are missing. The highest prediction is 82.1 $, the median is 30.7 $, which is almost double the median of the complete learning data set.</p>
+
+<div class="figure" style="text-align: center"><span id="fig:y-d-predict"></span>
+<img src="figures/predictions/hat_y_d-distributions-before-after-transformation.png" alt="Conditionally predicted donation amounts, Box-Cox transformed (left) and on the original scale (right)." width="70%" />
+<p class="caption">
+Figure 4.12: Conditionally predicted donation amounts, Box-Cox transformed (left) and on the original scale (right).
+</p>
+</div>
+</div>
+<div id="profit-optimization" class="section level3">
+<h3><span class="header-section-number">4.5.3</span> Profit Optimization</h3>
+<p>The correction factor <span class="math inline">\(\alpha\)</span>, used to account for bias introduced by learning the regression models on a non-random sample, was found as described in section <a href="methods-prediction.html#methods-prediction">3.4</a>. First, estimated net profit <span class="math inline">\(\hat{\Pi}\)</span> was calculated using equation <a href="methods-prediction.html#eq:pi-alpha">(2.4)</a> for a grid of <span class="math inline">\(\alpha\)</span> values in <span class="math inline">\([0,1]\)</span>. Then, a cubic spline was fitted to the data and <span class="math inline">\(\alpha\)</span> optimized subsequently.</p>
+<p>As can be observed in Figure <a href="prediction.html#fig:alpha-grid">4.13</a>, the region of <span class="math inline">\(\alpha\)</span> for high profit is narrow. This is not surprising given the distribution of <span class="math inline">\(\hat{y}_d\)</span> (Figure <a href="prediction.html#fig:y-d-predict">4.12</a>), which is narrowly concentrated around ~15 $. Furthermore, the curve is constant over much of the domain, meaning that all examples were selected from <span class="math inline">\(\alpha \approx 0.15\)</span>. The cubic spline fits the data very well and finding the maximum at <span class="math inline">\(\alpha^*=0.02\)</span>. For reference, a polynomial of degree 12 is also shown in <a href="prediction.html#fig:alpha-grid">4.13</a>, highlighting the difference in the fit for the two approaches.</p>
+
+<div class="figure" style="text-align: center"><span id="fig:alpha-grid"></span>
+<img src="figures/predictions/comparison-alpha-profit-models.png" alt="Expected profit for a range of \(\alpha\) values in \([0,1]\) with overlayed cubic spline and polynomial function of order 12." width="70%" />
+<p class="caption">
+Figure 4.13: Expected profit for a range of <span class="math inline">\(\alpha\)</span> values in <span class="math inline">\([0,1]\)</span> with overlayed cubic spline and polynomial function of order 12.
+</p>
+</div>
+</div>
+<div id="final-prediction" class="section level3">
+<h3><span class="header-section-number">4.5.4</span> Final Prediction</h3>
+<p>For the final prediction, an estimator combining the two-step prediction process was implemented in package <code>kdd98</code>. The estimator <code>Kdd98ProfitEstimator</code> was initialized with the GLMnet classifier and RF regressor determined as the best during model evaluation and selection.</p>
+<p>Then, the estimator was fitted on the complete learning data set, thereby fitting both the classifier and regressor and optimizing <span class="math inline">\(\alpha*\)</span>, which was computed as <span class="math inline">\(\alpha^* = 0.023\)</span>.</p>
+<p>The fitted estimator could then be used for prediction on the test data set. The results are shown in Table <a href="prediction.html#tab:prediction-results">4.1</a> together with the winners of the cup. The model learned in this thesis selects less donors compared to the top-ranked participants and has a higher mean donation amount. Nevertheless, net profit is lower, resulting in the <span class="math inline">\(4^{th}\)</span> rank.</p>
+<p>The winner, Urban Science Applications with their proprietary software Gainsmarts, chose a two-step approach as well. In the first step, a logistic regression was used. The second step consisted of linear regression.
+Their software automated feature-engineering (by trying several different transformations for each feature) and feature selection through an expert system<a href="#fn21" class="footnote-ref" id="fnref21"><sup>21</sup></a>. They selected a distinct subset of features for each step.</p>
+<p>No information is available on SAS’s approach. Decisionhouse’s Quadstone on <span class="math inline">\(3^{rd}\)</span> rank also invested heavily in feature engineering. The proprietary software was specially designed for customer behavior modeling. They used decision trees for conditioned profit estimation using 6 features and an additive scorecard model for selecting examples based on 10 features in combination. For the estimation of donation amount, they also found the amount of the last donation and average donation amounts as important.</p>
+<p>Surely, if domain knowledge had influenced feature engineering and feature selection for the model developed here, performance would have been better. Given the radically data-driven approach, the result can be considered good.</p>
+
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<caption>
+<span id="tab:prediction-results">Table 4.1: </span>Prediction results for the test data set (in color) and the results of the cup-winners. <span class="math inline">\(N^*\)</span> denotes number of examples selected. The theoretical maximum was calculated with: $ (<span class="math inline">\(\sum_{i=1}^n \mathbb{1}_{\{\text{TARGET}_{D,i} &gt; 0.0\}}*(\text{TARGET}_{D,i} - u)\)</span> with <span class="math inline">\(u\)</span> the unit cost of 0.68 $ per mailing).
+</caption>
+<thead>
+<tr>
+<th style="border-bottom:hidden" colspan="1">
+</th>
+<th style="border-bottom:hidden" colspan="1">
+</th>
+<th style="border-bottom:hidden; padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="5">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Amount, $
+</div>
+</th>
+<th style="border-bottom:hidden" colspan="1">
+</th>
+</tr>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+N*
+</th>
+<th style="text-align:right;">
+Min
+</th>
+<th style="text-align:right;">
+Mean
+</th>
+<th style="text-align:right;">
+Std
+</th>
+<th style="text-align:right;">
+Max
+</th>
+<th style="text-align:right;">
+Net Profit
+</th>
+<th style="text-align:right;">
+Percent of Maximum
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+GainSmarts
+</td>
+<td style="text-align:right;">
+56330
+</td>
+<td style="text-align:right;">
+-0.68
+</td>
+<td style="text-align:right;">
+0.26
+</td>
+<td style="text-align:right;">
+5.57
+</td>
+<td style="text-align:right;">
+499.32
+</td>
+<td style="text-align:right;">
+14712
+</td>
+<td style="text-align:right;">
+20.22
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+SAS
+</td>
+<td style="text-align:right;">
+55838
+</td>
+<td style="text-align:right;">
+-0.68
+</td>
+<td style="text-align:right;">
+0.26
+</td>
+<td style="text-align:right;">
+5.64
+</td>
+<td style="text-align:right;">
+499.32
+</td>
+<td style="text-align:right;">
+14662
+</td>
+<td style="text-align:right;">
+20.15
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Quadstone
+</td>
+<td style="text-align:right;">
+57836
+</td>
+<td style="text-align:right;">
+-0.68
+</td>
+<td style="text-align:right;">
+0.24
+</td>
+<td style="text-align:right;">
+5.66
+</td>
+<td style="text-align:right;">
+499.32
+</td>
+<td style="text-align:right;">
+13954
+</td>
+<td style="text-align:right;">
+19.17
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;color: #39a8d1 !important;">
+Own
+</td>
+<td style="text-align:right;font-weight: bold;color: #39a8d1 !important;">
+40984
+</td>
+<td style="text-align:right;font-weight: bold;color: #39a8d1 !important;">
+-0.68
+</td>
+<td style="text-align:right;font-weight: bold;color: #39a8d1 !important;">
+0.34
+</td>
+<td style="text-align:right;font-weight: bold;color: #39a8d1 !important;">
+6.28
+</td>
+<td style="text-align:right;font-weight: bold;color: #39a8d1 !important;">
+499.32
+</td>
+<td style="text-align:right;font-weight: bold;color: #39a8d1 !important;">
+13877
+</td>
+<td style="text-align:right;font-weight: bold;color: #39a8d1 !important;">
+19.07
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+CARRL
+</td>
+<td style="text-align:right;">
+55650
+</td>
+<td style="text-align:right;">
+-0.68
+</td>
+<td style="text-align:right;">
+0.25
+</td>
+<td style="text-align:right;">
+5.61
+</td>
+<td style="text-align:right;">
+499.32
+</td>
+<td style="text-align:right;">
+13825
+</td>
+<td style="text-align:right;">
+19.00
+</td>
+</tr>
+</tbody>
+</table>
+<p>However, these predictions were made using the true <em>TARGET_D</em>. When treating the data as unseen, predicted net profit was unrealistically high, at 861’562 $, which translates to an error of 6’208 %. In this case, net profit was calculated by substituting <span class="math inline">\((y_d-u)\)</span> with <span class="math inline">\((\hat{y}_d-u)\)</span> in Equation <a href="methods-prediction.html#eq:pi-alpha">(2.4)</a>. However bad this result is, would the model developed be used to select examples for a promotion, it would still lead to relatively good net profit.</p>
+
+</div>
+</div>
+<!-- </div> -->
+<div class="footnotes">
+<hr />
+<ol start="20">
+<li id="fn20"><p><a href="https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/7_Predictions.ipynb">https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/7_Predictions.ipynb</a><a href="prediction.html#fnref20" class="footnote-back">↩</a></p></li>
+<li id="fn21"><p>see <a href="https://www.kdnuggets.com/meetings-past/kdd98/gain-kddcup98-release.html">https://www.kdnuggets.com/meetings-past/kdd98/gain-kddcup98-release.html</a><a href="prediction.html#fnref21" class="footnote-back">↩</a></p></li>
+</ol>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="results-models.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="conclusions.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="assets/gitbook-2.6.7/js/app.min.js"></script>
+<script src="assets/gitbook-2.6.7/js/lunr.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="assets/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"google": false,
+"linkedin": true,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"all": ["facebook", "google", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"download": ["Master_Thesis_Florian_Hochstrasser.pdf"],
+"toc": {
+"collapse": "subsection"
+},
+"toolbar": {
+"position": "static"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:" && /^https?:/.test(src))
+      src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

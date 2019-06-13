@@ -6,13 +6,15 @@ description: Master Thesis submitted in partial fulfillment of the requirements 
 site: bookdown::bookdown_site
 papersize: a4
 fontsize: 11pt
-mainfont: Times New Roman
 sansfont: Lato
+mainfont: Times New Roman
 monofont: Source Code Pro
 toc-depth: 2
 bibliography: thesis.bib
 biblio-style: "apalike"
 link-citations: true
+lot: false
+lof: true
 documentclass: scrbook
 classoption: DIV=12,captions=tableheading,oneside,titlepage
 always_allow_html: yes
@@ -38,7 +40,7 @@ options(scipen=999)
 
 ```{r global-helpers, include=FALSE,results='hide'}
 
-github_base_url = "https://github.com/datarian/master-thesis-msc-statistics/tree/master"
+github_base_url = "https://github.com/datarian/thesis-msc-statistics/tree/master/code"
 
 make_github_link <- function(..., text = ""){
   subdirs <- list(...)
@@ -51,8 +53,7 @@ make_github_link <- function(..., text = ""){
   url = paste(github_base_url, directory, sep="/")
   
   if (text == ""){
-    base = str_match(github_base_url, "(https://)([a-z/.-].*)(tree/master)")[3]
-    link_text = paste0(base, directory)
+    link_text = url
   } else {
     link_text = text
   }
@@ -76,7 +77,7 @@ knitr::opts_chunk$set(error=TRUE,
                       fig.asp=0.618,
                       fig.align="center",
                       fig.path = "./figures/",
-                      out.width = "60%",
+                      out.width = "70%",
                       crop = TRUE,
                       tidy=TRUE)
 
@@ -191,16 +192,15 @@ def save_fig(fig_id, tight_layout=True, fig_extension=["pdf", "png"], resolution
 
 ```
 
-Customer segmentation techniques are used in marketing to identify certain groups of customers in order to produce offers tailored to these groups. The ultimate goal is to maximize profit, which is achieved also through customer retention. In the case of direct marketing, especially when unit costs (the cost associated with addressing a customer) are significant, employing some customer segmentation technique is highly beneficial in terms of profit.
+Customer segmentation techniques are used in marketing to identify certain groups of customers in order to produce offers tailored to these groups. Customer segmentation needs a goal to be set. Generally, customer segmentation is performed with the overall goal of increasing the profitability of a business. Retaining profitable customers is one way to achieve that goal. In the case of direct marketing, especially when unit costs (the cost associated with addressing a customer) are significant, employing some customer segmentation technique is highly beneficial in terms of profit.
 
 Historically, the RFM (Recency, Frequency, Monetization) model has been employed with success in designing direct marketing campaigns @kohavi2004visualizing. While definitions vary, generally recency refers to when the last purchase was made. Frequency denotes number of purchases in a certain time period. Monetization can represent the amount of the last purchase, cumulative spending or the average amount spent per purchase.
 
 The RFM model proposed by @hughes-rfm-boost-response is often used: Customers are binned into 5 segments for each of the RFM features individually and labeled ordinal, resulting in 125 cells that can then be used to identify customers most likely to respond. The best customers have a high score for each of the 3 features. The drawback of this approach is that generally, marketing efforts go towards the best customer segment.
 
-Over time, different approaches, such as Na¨ıve Bayes, Random Forests (see @stubseid2018), Chi-squared automatic interaction detection and logistic regression were proposed. While in some situations, these alternatives outperformed RFA (see @MCCARTY2007656), RFA remained popular because of it's intuitive interpretation.
+Over time, different extensions of RFM [@fader2005rfmclv; @yeh2009] and, increasingly, machine learning models such as Na\"ive Bayes, Random Forests [@stubseid2018; durango2013], Chi-squared automatic interaction detection and logistic regression were proposed. While in some situations, these alternatives outperformed RFA [@MCCARTY2007656], RFA remains popular because of its intuitive interpretation.
 
-In this work, a radically data-driven approach was chosen. Several machine learning algorithms were employed and compared to predict potential donors and the net profit generated instead of building on previously developed, specialized models.
-
+In this thesis, a radically data-driven approach was chosen. Several machine learning algorithms were employed and compared to predict potential donors and the net profit generated instead of building on previously developed, specialized models.
 
 
 ## Task Background
@@ -216,19 +216,19 @@ The data at hand was distributed for the purpose of the KDD-CUP of the year 1998
 
 
 
-## Goal
+## Goals and Requirements
 
-The ultimate goal is to beat the winner of the original cup in terms of the predicted net profit for the promotion. For this, a complete data analysis including data preprocessing, model evaluation and -selection and final prediction was to be performed. A requirement set by the supervisor of this thesis was that the solution be demonstrated using Python as a programming environment.
-
-Furthermore, the thesis should support future work on the data set by providing a solid basis especially on the preprocessing of the data.
-
-
+* The ultimate goal is to beat the winner of the original cup in terms of predicted net profit for the promotion. A complete data analysis including data preprocessing, model evaluation and -selection and final prediction has to be performed.
+* Furthermore, the thesis should support future work on the data set by providing a solid basis especially on the preprocessing of the data.
+* The supervisor of this thesis requested that the solution be demonstrated using Python as programming environment.
 
 ## Conventions and Notes
 
 * A member of the organization will be referred to as an *example*. Each example is described by a set of *features* (explanatory variables) and has two *targets* (dependent variables) associated.
 
 * The *current* promotion refers to the most recent promotion made, *current* donors are those examples who donated in response to the promotion.
+
+* A *lapsed* donor is an example who made their last donation between 13 and 24 months prior to the current promotion.
 
 * Software packages are denoted as `package` with specific modules contained in packages written as `package.module.Class`. Where available, software used is cited with the article in which it was published. Less established packages are cited by giving their public source code repositories.
 

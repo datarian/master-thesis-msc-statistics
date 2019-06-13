@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>3.4 Prediction | Profit maximization for direct marketing campaigns</title>
+  <meta name="description" content="Master Thesis submitted in partial fulfillment of the requirements for the degree of Master of Science in Statistics" />
+  <meta name="generator" content="bookdown 0.11 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="3.4 Prediction | Profit maximization for direct marketing campaigns" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="Master Thesis submitted in partial fulfillment of the requirements for the degree of Master of Science in Statistics" />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="3.4 Prediction | Profit maximization for direct marketing campaigns" />
+  
+  <meta name="twitter:description" content="Master Thesis submitted in partial fulfillment of the requirements for the degree of Master of Science in Statistics" />
+  
+
+<meta name="author" content="Florian Hochstrasser" />
+
+
+<meta name="date" content="2019-06-12" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="data-preprocessing.html">
+<link rel="next" href="eval-and-select.html">
+<script src="assets/jquery-2.2.3/jquery.min.js"></script>
+<link href="assets/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+<script src="assets/kePrint-0.0.1/kePrint.js"></script>
+
+
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a><ul>
+<li class="chapter" data-level="1.1" data-path="task-background.html"><a href="task-background.html"><i class="fa fa-check"></i><b>1.1</b> Task Background</a></li>
+<li class="chapter" data-level="1.2" data-path="goals-and-requirements.html"><a href="goals-and-requirements.html"><i class="fa fa-check"></i><b>1.2</b> Goals and Requirements</a></li>
+<li class="chapter" data-level="1.3" data-path="conventions-and-notes.html"><a href="conventions-and-notes.html"><i class="fa fa-check"></i><b>1.3</b> Conventions and Notes</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="data.html"><a href="data.html"><i class="fa fa-check"></i><b>2</b> Data</a><ul>
+<li class="chapter" data-level="2.1" data-path="general-structure.html"><a href="general-structure.html"><i class="fa fa-check"></i><b>2.1</b> General Structure</a></li>
+<li class="chapter" data-level="2.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html"><i class="fa fa-check"></i><b>2.2</b> Exploratory Data Analysis</a><ul>
+<li class="chapter" data-level="2.2.1" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#data-types"><i class="fa fa-check"></i><b>2.2.1</b> Data Types</a></li>
+<li class="chapter" data-level="2.2.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#targets"><i class="fa fa-check"></i><b>2.2.2</b> Targets</a></li>
+<li class="chapter" data-level="2.2.3" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#skewness"><i class="fa fa-check"></i><b>2.2.3</b> Skewness</a></li>
+<li class="chapter" data-level="2.2.4" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#correlations"><i class="fa fa-check"></i><b>2.2.4</b> Correlations</a></li>
+<li class="chapter" data-level="2.2.5" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#donation-patterns"><i class="fa fa-check"></i><b>2.2.5</b> Donation Patterns</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="experimental-setup-and-methods.html"><a href="experimental-setup-and-methods.html"><i class="fa fa-check"></i><b>3</b> Experimental Setup and Methods</a><ul>
+<li class="chapter" data-level="3.1" data-path="tools-used.html"><a href="tools-used.html"><i class="fa fa-check"></i><b>3.1</b> Tools Used</a></li>
+<li class="chapter" data-level="3.2" data-path="data-handling.html"><a href="data-handling.html"><i class="fa fa-check"></i><b>3.2</b> Data Handling</a></li>
+<li class="chapter" data-level="3.3" data-path="data-preprocessing.html"><a href="data-preprocessing.html"><i class="fa fa-check"></i><b>3.3</b> Data Preprocessing</a><ul>
+<li class="chapter" data-level="3.3.1" data-path="data-preprocessing.html"><a href="data-preprocessing.html#cleaning"><i class="fa fa-check"></i><b>3.3.1</b> Cleaning</a></li>
+<li class="chapter" data-level="3.3.2" data-path="data-preprocessing.html"><a href="data-preprocessing.html#methods-feature-engineering"><i class="fa fa-check"></i><b>3.3.2</b> Feature Engineering</a></li>
+<li class="chapter" data-level="3.3.3" data-path="data-preprocessing.html"><a href="data-preprocessing.html#imputation"><i class="fa fa-check"></i><b>3.3.3</b> Imputation</a></li>
+<li class="chapter" data-level="3.3.4" data-path="data-preprocessing.html"><a href="data-preprocessing.html#methods-feature-selection"><i class="fa fa-check"></i><b>3.3.4</b> Feature Selection</a></li>
+</ul></li>
+<li class="chapter" data-level="3.4" data-path="methods-prediction.html"><a href="methods-prediction.html"><i class="fa fa-check"></i><b>3.4</b> Prediction</a><ul>
+<li class="chapter" data-level="3.4.1" data-path="methods-prediction.html"><a href="methods-prediction.html#setup-of-the-two-stage-prediction"><i class="fa fa-check"></i><b>3.4.1</b> Setup of the Two-Stage Prediction</a></li>
+<li class="chapter" data-level="3.4.2" data-path="methods-prediction.html"><a href="methods-prediction.html#optimization-of-alpha"><i class="fa fa-check"></i><b>3.4.2</b> Optimization of <span class="math inline">\(\alpha^*\)</span></a></li>
+</ul></li>
+<li class="chapter" data-level="3.5" data-path="eval-and-select.html"><a href="eval-and-select.html"><i class="fa fa-check"></i><b>3.5</b> Model Evaluation and -Selection</a><ul>
+<li class="chapter" data-level="3.5.1" data-path="eval-and-select.html"><a href="eval-and-select.html#evaluation"><i class="fa fa-check"></i><b>3.5.1</b> Evaluation</a></li>
+<li class="chapter" data-level="3.5.2" data-path="eval-and-select.html"><a href="eval-and-select.html#selection"><i class="fa fa-check"></i><b>3.5.2</b> Selection</a></li>
+<li class="chapter" data-level="3.5.3" data-path="eval-and-select.html"><a href="eval-and-select.html#imblearn"><i class="fa fa-check"></i><b>3.5.3</b> Dealing With Imbalanced Data</a></li>
+<li class="chapter" data-level="3.5.4" data-path="eval-and-select.html"><a href="eval-and-select.html#algorithms"><i class="fa fa-check"></i><b>3.5.4</b> Algorithms</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="results-and-discussion.html"><a href="results-and-discussion.html"><i class="fa fa-check"></i><b>4</b> Results and Discussion</a><ul>
+<li class="chapter" data-level="4.1" data-path="preprocessing-with-package-kdd98.html"><a href="preprocessing-with-package-kdd98.html"><i class="fa fa-check"></i><b>4.1</b> Preprocessing With Package kdd98</a></li>
+<li class="chapter" data-level="4.2" data-path="imputation-1.html"><a href="imputation-1.html"><i class="fa fa-check"></i><b>4.2</b> Imputation</a></li>
+<li class="chapter" data-level="4.3" data-path="feature-selection.html"><a href="feature-selection.html"><i class="fa fa-check"></i><b>4.3</b> Feature Selection</a></li>
+<li class="chapter" data-level="4.4" data-path="results-models.html"><a href="results-models.html"><i class="fa fa-check"></i><b>4.4</b> Model Evaluation and Selection</a><ul>
+<li class="chapter" data-level="4.4.1" data-path="results-models.html"><a href="results-models.html#classifiers-1"><i class="fa fa-check"></i><b>4.4.1</b> Classifiers</a></li>
+<li class="chapter" data-level="4.4.2" data-path="results-models.html"><a href="results-models.html#regressors-1"><i class="fa fa-check"></i><b>4.4.2</b> Regressors</a></li>
+</ul></li>
+<li class="chapter" data-level="4.5" data-path="prediction.html"><a href="prediction.html"><i class="fa fa-check"></i><b>4.5</b> Prediction</a><ul>
+<li class="chapter" data-level="4.5.1" data-path="prediction.html"><a href="prediction.html#prediction-of-donation-probability"><i class="fa fa-check"></i><b>4.5.1</b> Prediction of Donation Probability</a></li>
+<li class="chapter" data-level="4.5.2" data-path="prediction.html"><a href="prediction.html#conditional-prediction-of-the-donation-amount"><i class="fa fa-check"></i><b>4.5.2</b> Conditional Prediction of the Donation Amount</a></li>
+<li class="chapter" data-level="4.5.3" data-path="prediction.html"><a href="prediction.html#profit-optimization"><i class="fa fa-check"></i><b>4.5.3</b> Profit Optimization</a></li>
+<li class="chapter" data-level="4.5.4" data-path="prediction.html"><a href="prediction.html#final-prediction"><i class="fa fa-check"></i><b>4.5.4</b> Final Prediction</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="conclusions.html"><a href="conclusions.html"><i class="fa fa-check"></i><b>5</b> Conclusions</a></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+<li class="appendix"><span><b>Appendix</b></span></li>
+<li class="chapter" data-level="A" data-path="software.html"><a href="software.html"><i class="fa fa-check"></i><b>A</b> Software</a><ul>
+<li class="chapter" data-level="A.1" data-path="python-environment.html"><a href="python-environment.html"><i class="fa fa-check"></i><b>A.1</b> Python Environment</a></li>
+<li class="chapter" data-level="A.2" data-path="package-kdd98.html"><a href="package-kdd98.html"><i class="fa fa-check"></i><b>A.2</b> Package kdd98</a><ul>
+<li class="chapter" data-level="A.2.1" data-path="package-kdd98.html"><a href="package-kdd98.html#usage"><i class="fa fa-check"></i><b>A.2.1</b> Usage</a></li>
+<li class="chapter" data-level="A.2.2" data-path="package-kdd98.html"><a href="package-kdd98.html#installation"><i class="fa fa-check"></i><b>A.2.2</b> Installation</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="B" data-path="kdd-cup-documents.html"><a href="kdd-cup-documents.html"><i class="fa fa-check"></i><b>B</b> KDD Cup Documents</a><ul>
+<li class="chapter" data-level="B.1" data-path="data-set-documentation.html"><a href="data-set-documentation.html"><i class="fa fa-check"></i><b>B.1</b> Cup Documentation</a></li>
+<li class="chapter" data-level="B.2" data-path="data-set-dictionary.html"><a href="data-set-dictionary.html"><i class="fa fa-check"></i><b>B.2</b> Data Set Dictionary</a></li>
+</ul></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Profit maximization for direct marketing campaigns</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="methods-prediction" class="section level2">
+<h2><span class="header-section-number">3.4</span> Prediction</h2>
+<p>The desired quantity to estimate is net profit <span class="math inline">\(\hat{\Pi}\)</span>. In order to predict this quantity, a two-step procedure was implemented, utilizing the response indicator <span class="math inline">\(\text{TARGET}_B\)</span> and the continuous target <em><span class="math inline">\(\text{TARGET}_D\)</span></em>, respectively. For each step, a model was trained. One is a classifier, predicting <span class="math inline">\(\hat{y}_b\)</span>, the probability of donating. The other is a regressor, predicting the donation amount <span class="math inline">\(\hat{y}_d\)</span>. The classifier was trained on the complete learning data set, while the regressor was trained on <span class="math inline">\(\mathbf{X}_d = \{x_i|y_{b,i} = 1, i=1 \ldots n\}\)</span> and <span class="math inline">\(y_d = \{y_{d,i}|y_{b,i} = 1, i=1 \ldots n\}\)</span>. The non-random sample leads to a conditionally predicted donation amount, thereby introducing bias. A correction for the bias is necessary as a consequence. This approach resembles <span class="citation">Heckman (<a href="references.html#ref-heckman1976common">1976</a>)</span>’s two-stage procedure which is widely used in econometrics. Heckman’s procedure was presented for the question of wage offerings for women. Data on wages was only available for working women, thereby introducing bias if wage offerings were only predicted on this sample. The question of whether an example works or not is seen as an unobserved feature. In <span class="citation">Heckman (<a href="references.html#ref-heckman1976common">1976</a>)</span>, a probit model is used for this first <em>selection</em> stage. The inverse Mills ratio of the probit, <span class="math inline">\(\frac{-\phi(\hat{y_i}-\mathbf{X}\beta)}{\Phi(\hat{y_i}-\mathbf{X}\beta}\)</span>, is calculated and included in the data for predictions in the second <em>observation</em> stage with OLS regression.</p>
+<div id="setup-of-the-two-stage-prediction" class="section level3">
+<h3><span class="header-section-number">3.4.1</span> Setup of the Two-Stage Prediction</h3>
+<p>For the first stage some classifier is used, predicting the probability for example <span class="math inline">\(x_i\)</span> to donate. This is not a probit (<span class="math inline">\(P(Y=1|X) = \Phi(X^T\beta)\)</span>), of course. Instead, the resulting distribution depends on the classifier.</p>
+<p><span class="math display" id="eq:y-b">\[\begin{equation}
+\hat{y}_b = f(\mathbf{X})
+\tag{2.1}
+\end{equation}\]</span></p>
+<p>where <span class="math inline">\(\hat{y}_b\)</span> is the vector of predicted probabilities of donating and <span class="math inline">\(f\)</span> is the classifier.</p>
+<p>The second stage is performed on <span class="math inline">\(\mathbf{X}_d\)</span> and consists in predicting the donation amount using a regression model:</p>
+<p><span class="math display" id="eq:y-d">\[\begin{equation}
+\hat{y}_{dt} = g(\mathbf{X_d})
+\tag{2.2}
+\end{equation}\]</span></p>
+<p>where <span class="math inline">\(\mathbf{\hat{y}_{dt}}\)</span> is the vector of predicted donation amounts and <span class="math inline">\(g\)</span> is the conditionally learned regression model. <span class="math inline">\(g\)</span> is learned with Box-Cox transformed target <span class="math inline">\(\mathbf{y_d}\)</span>, so <span class="math inline">\(\hat{y}_{dt}\)</span> is also Box-Cox transformed with parameter <span class="math inline">\(\lambda\)</span>.</p>
+<p>The decision of whether to include example <span class="math inline">\(i\)</span> in the promotion is governed by the following indicator function. In it, <span class="math inline">\(\alpha^*\)</span> accounts for the introduced bias. Every example that has a predicted donation amount of more than the unit cost is included.</p>
+<p><span class="math display" id="eq:indicator">\[\begin{equation}
+ \mathbb{1}_{\hat{y}_{i,b} * \exp(\hat{y}_{i,dt}) * \alpha^* &gt; \exp(u_t)}(\hat{y}_{i,dt})
+\tag{2.3}
+\end{equation}\]</span></p>
+<p>where <span class="math inline">\(\alpha^* \in [0,1]\)</span> is a factor to correct for bias introduced due to the non-randomness of <span class="math inline">\(\mathbf{X}_d\)</span>, <span class="math inline">\(\hat{y}_{i,dt}\)</span> is the predicted donation amount, transformed so as to normalize the distribution learned beforehand and <span class="math inline">\(u_t\)</span> is the unit cost, Box-Cox transformed with parameter <span class="math inline">\(\lambda\)</span>. The exponential is used to deal with negative values resulting from the Box-Cox transformation.</p>
+<p>Finally, the quantity estimated is net profit <span class="math inline">\(\hat{\Pi}\)</span>. It is calculated by summing over the product of the indicator function <a href="methods-prediction.html#eq:indicator">(2.3)</a> and the net profit for examples <span class="math inline">\(1 \ldots n\)</span>. For unseen data, @eq:pi-alpha is altered by using the estimated net profit <span class="math inline">\(\hat{y}_{d,i}\)</span> in the product.</p>
+<p><span class="math display" id="eq:pi-alpha">\[\begin{equation}
+\hat{\Pi}_\alpha = \sum_{i=1}^n  \mathbb{1}_{\hat{y}_{i,b} * \exp(\hat{y}_{i,dt}) * \alpha^* &gt; \exp(u_t)}(\hat{y}_{i,dt})*(y_{i,d} - u)
+\tag{2.4}
+\end{equation}\]</span></p>
+</div>
+<div id="optimization-of-alpha" class="section level3">
+<h3><span class="header-section-number">3.4.2</span> Optimization of <span class="math inline">\(\alpha^*\)</span></h3>
+<p>With equation <a href="methods-prediction.html#eq:pi-alpha">(2.4)</a>, the estimated profit <span class="math inline">\(\Pi\)</span> was calculated on the learning data for a grid of <span class="math inline">\(\alpha\)</span> values, <span class="math inline">\(\alpha \in [0,1]\)</span>. The optimal value was then <span class="math inline">\(\alpha^{*} = \underset{\alpha}{\operatorname{argmax}} f(\alpha)\)</span> where <span class="math inline">\(f\)</span> is a function that was fit to <span class="math inline">\(\Pi\)</span>.</p>
+<p>For <span class="math inline">\(f\)</span>, a cubic spline <span class="math inline">\(s\)</span> was used. <span class="math inline">\(\alpha^*\)</span> was determined as follows:</p>
+<ol style="list-style-type: decimal">
+<li>Fit <span class="math inline">\(s(\Pi)\)</span>, the cubic spline on the estimated profits for the grid of <span class="math inline">\(\alpha\)</span> values</li>
+<li>Derive <span class="math inline">\(ds = \frac{\delta}{\delta \alpha} s\)</span></li>
+<li>Find the finite roots of <span class="math inline">\(ds\)</span>, <span class="math inline">\(\alpha_{\text{candidates}}\)</span>, representing candidates for <span class="math inline">\(\alpha^*\)</span></li>
+<li>Determine <span class="math inline">\(\alpha^* = \underset{\alpha}{\operatorname{argmax}} s(\alpha_{\text{candidates}})\)</span></li>
+</ol>
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="data-preprocessing.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="eval-and-select.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="assets/gitbook-2.6.7/js/app.min.js"></script>
+<script src="assets/gitbook-2.6.7/js/lunr.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="assets/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"google": false,
+"linkedin": true,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"all": ["facebook", "google", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"download": ["Master_Thesis_Florian_Hochstrasser.pdf"],
+"toc": {
+"collapse": "subsection"
+},
+"toolbar": {
+"position": "static"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:" && /^https?:/.test(src))
+      src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

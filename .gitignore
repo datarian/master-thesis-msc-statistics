@@ -5,6 +5,7 @@
 MA_Report.Rproj
 *.RData
 _bookdown_files/Master_Thesis_Florian_Hochstrasser_cache/*
+_bookdown_files/**
 data/**
 *.log
 ma-thesis.sublime-project
@@ -14,4 +15,11 @@ figures/**
 models/**
 ma-thesis-report.sublime-project
 ma-thesis-report.sublime-workspace
+Master_Thesis_Florian_Hochstrasser.lof
+Master_Thesis_Florian_Hochstrasser.lot
+Master_Thesis_Florian_Hochstrasser.tex
+Master_Thesis_Florian_Hochstrasser.toc
+Master_Thesis_Florian_Hochstrasser.utf8.md
+Master_Thesis_Florian_Hochstrasser.aux
+docs/Master_Thesis_Florian_Hochstrasser.tex
 .vscode/**

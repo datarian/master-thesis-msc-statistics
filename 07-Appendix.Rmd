@@ -1,5 +1,7 @@
 # (APPENDIX) Appendix {-} 
 
+# Software
+
 ## Python Environment
 
 Python was installed through the Anaconda distribution^[Available from [https://www.anaconda.com](https://www.anaconda.com)].
@@ -12,8 +14,75 @@ Once conda is installed the following two commands first set up the environment 
 
 ```
 > conda env create -f environment.yml
-> source activate ma-thesis-fh
+> source activate msc-thesis-fh
 ```
+
+## Package kdd98
+
+The source code is at: `r make_github_link("kdd98")`
+
+### Usage
+
+#### Data Provisioning
+
+```
+from kdd98 import data_handler as dh
+
+provider = dh.KDD98DataProvider(["cup98LRN.txt", "cup98VAL.txt"])
+
+# Get data at several intermediate steps as necessary
+provider.raw_data
+provider.preprocessed_data
+provider.numeric_data
+provider.imputed_data
+provider.all_relevant_data
+```
+
+By requesting `all_relevant_data`, all transformation steps are applied.
+Request data for cup98LRN.txt first to learn all transformers involved.
+Only then can the provider be instantiated with cup98VAL.txt and the exact same transformations applied to that data set.
+
+#### Predictions
+
+```
+from kdd98.prediction import Kdd98ProfitEstimator
+
+# These are found beforehand and expected to implement scikit-learn's API
+classifier = SomeClassifier() # predicts donation probability
+regressor = SomeRegressor() # conditionally predicts donation amount
+
+estimator = Kdd98ProfitEstimator(classifier, regressor)
+
+estimator.fit(X_learn, y_learn)
+
+# Returns a tuple (indicator, net_profit):
+estimator.predict(X_test, y_test)
+```
+
+### Installation
+
+Clone the repository, then, from the base directory:
+
+```
+cd code
+
+python setup.py install # for direct install
+
+# for a conda package to be installed manually afterards:
+python setup.py bdist_conda 
+```
+
+#### Project structure
+
+After installing the package, several folders and files are created in the working directory when using it:
+
+* ``data`` contains the data files and documentation of the original KDD Cup 1998
+* ``data/data_frames`` contains pickled pandas df's with data at the corresponding transformation step
+* ``models/internal`` contains persisted transformers for data set transformations.
+* ``out.log`` reports transformation progress / potential problems
+
+
+# KDD Cup Documents
 
 ## Cup Documentation {#data-set-documentation}
 

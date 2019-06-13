@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>3.3 Data Preprocessing | Profit maximization for direct marketing campaigns</title>
+  <meta name="description" content="Master Thesis submitted in partial fulfillment of the requirements for the degree of Master of Science in Statistics" />
+  <meta name="generator" content="bookdown 0.11 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="3.3 Data Preprocessing | Profit maximization for direct marketing campaigns" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="Master Thesis submitted in partial fulfillment of the requirements for the degree of Master of Science in Statistics" />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="3.3 Data Preprocessing | Profit maximization for direct marketing campaigns" />
+  
+  <meta name="twitter:description" content="Master Thesis submitted in partial fulfillment of the requirements for the degree of Master of Science in Statistics" />
+  
+
+<meta name="author" content="Florian Hochstrasser" />
+
+
+<meta name="date" content="2019-06-12" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="data-handling.html">
+<link rel="next" href="methods-prediction.html">
+<script src="assets/jquery-2.2.3/jquery.min.js"></script>
+<link href="assets/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+<script src="assets/kePrint-0.0.1/kePrint.js"></script>
+
+
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a><ul>
+<li class="chapter" data-level="1.1" data-path="task-background.html"><a href="task-background.html"><i class="fa fa-check"></i><b>1.1</b> Task Background</a></li>
+<li class="chapter" data-level="1.2" data-path="goals-and-requirements.html"><a href="goals-and-requirements.html"><i class="fa fa-check"></i><b>1.2</b> Goals and Requirements</a></li>
+<li class="chapter" data-level="1.3" data-path="conventions-and-notes.html"><a href="conventions-and-notes.html"><i class="fa fa-check"></i><b>1.3</b> Conventions and Notes</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="data.html"><a href="data.html"><i class="fa fa-check"></i><b>2</b> Data</a><ul>
+<li class="chapter" data-level="2.1" data-path="general-structure.html"><a href="general-structure.html"><i class="fa fa-check"></i><b>2.1</b> General Structure</a></li>
+<li class="chapter" data-level="2.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html"><i class="fa fa-check"></i><b>2.2</b> Exploratory Data Analysis</a><ul>
+<li class="chapter" data-level="2.2.1" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#data-types"><i class="fa fa-check"></i><b>2.2.1</b> Data Types</a></li>
+<li class="chapter" data-level="2.2.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#targets"><i class="fa fa-check"></i><b>2.2.2</b> Targets</a></li>
+<li class="chapter" data-level="2.2.3" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#skewness"><i class="fa fa-check"></i><b>2.2.3</b> Skewness</a></li>
+<li class="chapter" data-level="2.2.4" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#correlations"><i class="fa fa-check"></i><b>2.2.4</b> Correlations</a></li>
+<li class="chapter" data-level="2.2.5" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#donation-patterns"><i class="fa fa-check"></i><b>2.2.5</b> Donation Patterns</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="experimental-setup-and-methods.html"><a href="experimental-setup-and-methods.html"><i class="fa fa-check"></i><b>3</b> Experimental Setup and Methods</a><ul>
+<li class="chapter" data-level="3.1" data-path="tools-used.html"><a href="tools-used.html"><i class="fa fa-check"></i><b>3.1</b> Tools Used</a></li>
+<li class="chapter" data-level="3.2" data-path="data-handling.html"><a href="data-handling.html"><i class="fa fa-check"></i><b>3.2</b> Data Handling</a></li>
+<li class="chapter" data-level="3.3" data-path="data-preprocessing.html"><a href="data-preprocessing.html"><i class="fa fa-check"></i><b>3.3</b> Data Preprocessing</a><ul>
+<li class="chapter" data-level="3.3.1" data-path="data-preprocessing.html"><a href="data-preprocessing.html#cleaning"><i class="fa fa-check"></i><b>3.3.1</b> Cleaning</a></li>
+<li class="chapter" data-level="3.3.2" data-path="data-preprocessing.html"><a href="data-preprocessing.html#methods-feature-engineering"><i class="fa fa-check"></i><b>3.3.2</b> Feature Engineering</a></li>
+<li class="chapter" data-level="3.3.3" data-path="data-preprocessing.html"><a href="data-preprocessing.html#imputation"><i class="fa fa-check"></i><b>3.3.3</b> Imputation</a></li>
+<li class="chapter" data-level="3.3.4" data-path="data-preprocessing.html"><a href="data-preprocessing.html#methods-feature-selection"><i class="fa fa-check"></i><b>3.3.4</b> Feature Selection</a></li>
+</ul></li>
+<li class="chapter" data-level="3.4" data-path="methods-prediction.html"><a href="methods-prediction.html"><i class="fa fa-check"></i><b>3.4</b> Prediction</a><ul>
+<li class="chapter" data-level="3.4.1" data-path="methods-prediction.html"><a href="methods-prediction.html#setup-of-the-two-stage-prediction"><i class="fa fa-check"></i><b>3.4.1</b> Setup of the Two-Stage Prediction</a></li>
+<li class="chapter" data-level="3.4.2" data-path="methods-prediction.html"><a href="methods-prediction.html#optimization-of-alpha"><i class="fa fa-check"></i><b>3.4.2</b> Optimization of <span class="math inline">\(\alpha^*\)</span></a></li>
+</ul></li>
+<li class="chapter" data-level="3.5" data-path="eval-and-select.html"><a href="eval-and-select.html"><i class="fa fa-check"></i><b>3.5</b> Model Evaluation and -Selection</a><ul>
+<li class="chapter" data-level="3.5.1" data-path="eval-and-select.html"><a href="eval-and-select.html#evaluation"><i class="fa fa-check"></i><b>3.5.1</b> Evaluation</a></li>
+<li class="chapter" data-level="3.5.2" data-path="eval-and-select.html"><a href="eval-and-select.html#selection"><i class="fa fa-check"></i><b>3.5.2</b> Selection</a></li>
+<li class="chapter" data-level="3.5.3" data-path="eval-and-select.html"><a href="eval-and-select.html#imblearn"><i class="fa fa-check"></i><b>3.5.3</b> Dealing With Imbalanced Data</a></li>
+<li class="chapter" data-level="3.5.4" data-path="eval-and-select.html"><a href="eval-and-select.html#algorithms"><i class="fa fa-check"></i><b>3.5.4</b> Algorithms</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="results-and-discussion.html"><a href="results-and-discussion.html"><i class="fa fa-check"></i><b>4</b> Results and Discussion</a><ul>
+<li class="chapter" data-level="4.1" data-path="preprocessing-with-package-kdd98.html"><a href="preprocessing-with-package-kdd98.html"><i class="fa fa-check"></i><b>4.1</b> Preprocessing With Package kdd98</a></li>
+<li class="chapter" data-level="4.2" data-path="imputation-1.html"><a href="imputation-1.html"><i class="fa fa-check"></i><b>4.2</b> Imputation</a></li>
+<li class="chapter" data-level="4.3" data-path="feature-selection.html"><a href="feature-selection.html"><i class="fa fa-check"></i><b>4.3</b> Feature Selection</a></li>
+<li class="chapter" data-level="4.4" data-path="results-models.html"><a href="results-models.html"><i class="fa fa-check"></i><b>4.4</b> Model Evaluation and Selection</a><ul>
+<li class="chapter" data-level="4.4.1" data-path="results-models.html"><a href="results-models.html#classifiers-1"><i class="fa fa-check"></i><b>4.4.1</b> Classifiers</a></li>
+<li class="chapter" data-level="4.4.2" data-path="results-models.html"><a href="results-models.html#regressors-1"><i class="fa fa-check"></i><b>4.4.2</b> Regressors</a></li>
+</ul></li>
+<li class="chapter" data-level="4.5" data-path="prediction.html"><a href="prediction.html"><i class="fa fa-check"></i><b>4.5</b> Prediction</a><ul>
+<li class="chapter" data-level="4.5.1" data-path="prediction.html"><a href="prediction.html#prediction-of-donation-probability"><i class="fa fa-check"></i><b>4.5.1</b> Prediction of Donation Probability</a></li>
+<li class="chapter" data-level="4.5.2" data-path="prediction.html"><a href="prediction.html#conditional-prediction-of-the-donation-amount"><i class="fa fa-check"></i><b>4.5.2</b> Conditional Prediction of the Donation Amount</a></li>
+<li class="chapter" data-level="4.5.3" data-path="prediction.html"><a href="prediction.html#profit-optimization"><i class="fa fa-check"></i><b>4.5.3</b> Profit Optimization</a></li>
+<li class="chapter" data-level="4.5.4" data-path="prediction.html"><a href="prediction.html#final-prediction"><i class="fa fa-check"></i><b>4.5.4</b> Final Prediction</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="conclusions.html"><a href="conclusions.html"><i class="fa fa-check"></i><b>5</b> Conclusions</a></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+<li class="appendix"><span><b>Appendix</b></span></li>
+<li class="chapter" data-level="A" data-path="software.html"><a href="software.html"><i class="fa fa-check"></i><b>A</b> Software</a><ul>
+<li class="chapter" data-level="A.1" data-path="python-environment.html"><a href="python-environment.html"><i class="fa fa-check"></i><b>A.1</b> Python Environment</a></li>
+<li class="chapter" data-level="A.2" data-path="package-kdd98.html"><a href="package-kdd98.html"><i class="fa fa-check"></i><b>A.2</b> Package kdd98</a><ul>
+<li class="chapter" data-level="A.2.1" data-path="package-kdd98.html"><a href="package-kdd98.html#usage"><i class="fa fa-check"></i><b>A.2.1</b> Usage</a></li>
+<li class="chapter" data-level="A.2.2" data-path="package-kdd98.html"><a href="package-kdd98.html#installation"><i class="fa fa-check"></i><b>A.2.2</b> Installation</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="B" data-path="kdd-cup-documents.html"><a href="kdd-cup-documents.html"><i class="fa fa-check"></i><b>B</b> KDD Cup Documents</a><ul>
+<li class="chapter" data-level="B.1" data-path="data-set-documentation.html"><a href="data-set-documentation.html"><i class="fa fa-check"></i><b>B.1</b> Cup Documentation</a></li>
+<li class="chapter" data-level="B.2" data-path="data-set-dictionary.html"><a href="data-set-dictionary.html"><i class="fa fa-check"></i><b>B.2</b> Data Set Dictionary</a></li>
+</ul></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Profit maximization for direct marketing campaigns</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="data-preprocessing" class="section level2">
+<h2><span class="header-section-number">3.3</span> Data Preprocessing</h2>
+<p>The necessary preprocessing was guided by practical necessity (input errors, inconsistent categories), the requirements of the algorithms that were examined (Section <a href="eval-and-select.html#eval-and-select">3.5</a>) and the requirements set out in the cup documentation:</p>
+<ul>
+<li>Only numeric features (required by some algorithms)</li>
+<li>Imputation of missing values (required by cup documentation)</li>
+<li>Removal of constant and <em>sparse</em> features (required by cup documentation)</li>
+</ul>
+<p>The transformations were established interactively in Jupyter notebooks. Once finalized, transformations were implemented in the python package <code>kdd98</code><a href="#fn6" class="footnote-ref" id="fnref6"><sup>6</sup></a>.</p>
+<div id="cleaning" class="section level3">
+<h3><span class="header-section-number">3.3.1</span> Cleaning</h3>
+<p>The transformations applied can be studied in the Jupyter notebook <em>1_Preprocessing.ipynb</em><a href="#fn7" class="footnote-ref" id="fnref7"><sup>7</sup></a>.</p>
+<p>The cleaning stage of preprocessing encompassed the following transformations:</p>
+<ul>
+<li>Removing <em>noise</em>: Input errors, inconsistent encoding of binary / categorical features</li>
+<li>Dropping constant and sparse (i.e. those where only few examples have a value set) features</li>
+<li>Imputation of values missing at random (MAR)</li>
+</ul>
+<p>MAR values in the sense of <span class="citation">Rubin (<a href="references.html#ref-rubin1976inference">1976</a>)</span> are missing conditionally on other features in the data. For example, there are three related features from the promotion and giving history: <em>ADATE</em>, the date of mailing a promotion, <em>RDATE</em>, the date of receiving a donation in response to the promotion and <em>RAMOUNT</em>, the amount received. For missing <em>RAMOUNT</em> values, it can be checked if <em>RDATE</em> is non-missing. If <em>RDATE</em> is missing, then the example most likely has not donated and <em>RAMOUNT</em> can be set to zero. If, on the other hand, both date features have a value, <em>RAMOUNT</em> is truly missing.</p>
+</div>
+<div id="methods-feature-engineering" class="section level3">
+<h3><span class="header-section-number">3.3.2</span> Feature Engineering</h3>
+<p>The transformations applied during feature engineering are described in detail in the Jupyter notebook <em>2_Feature_Engineering.ipynb</em><a href="#fn8" class="footnote-ref" id="fnref8"><sup>8</sup></a>. The result of this step was an all-numeric data set usable for downstream learning.</p>
+<p>All non-numeric (i.e. categorical) features were encoded as numeric representations. For ordinal features, manual mappings from alphanumeric levels to integer numbers were specified. For nominal features, two encoding techniques provided in package <code>categorical-encoding</code><a href="#fn9" class="footnote-ref" id="fnref9"><sup>9</sup></a> were employed, depending on the number of levels:</p>
+<ul>
+<li><p>One-hot encoding for <span class="math inline">\(\leq 10\)</span> levels: For each level of a categorical feature, a new feature is created. An additional feature may be added to indicate missing values. Exactly one of these new features is set to <span class="math inline">\(1\)</span>, indicating the original level.</p></li>
+<li><p>Binary encoding, <span class="math inline">\(&gt; 10\)</span> levels: The levels of the categorical are first transformed to ordinal (i.e. to a sequence of integer numbers). Then, these numbers are taken to the base of 2. (A <span class="math inline">\(5\)</span>, for example, becomes <code>101</code>). According to the number of levels, new features for the binary digits are created. As an example: To represent 60 levels, 6 features are required (<span class="math inline">\(2^6=64\)</span>).</p></li>
+</ul>
+<p>Also, several features were transformed to better usable formats (i.e. converting dates to time deltas, converting zip codes to coordinates). Care was taken to keep the dimensionality of the data set as low as possible.</p>
+</div>
+<div id="imputation" class="section level3">
+<h3><span class="header-section-number">3.3.3</span> Imputation</h3>
+<p>Three different approaches were evaluated. The details are shown in Jupyter notebook <em>4_Imputation.ipynb</em><a href="#fn10" class="footnote-ref" id="fnref10"><sup>10</sup></a>.</p>
+<div id="k-nearest-neighbors" class="section level4">
+<h4><span class="header-section-number">3.3.3.1</span> K-Nearest Neighbors</h4>
+<p>kNN imputation uses those examples that are “near” an example with a missing value in feature <span class="math inline">\(f\)</span> to impute the value. In short, the kNN algorithm by <span class="citation">Troyanskaya et al. (<a href="references.html#ref-troyanskaya2001missing">2001</a>)</span> implemented in <code>missingpy</code><a href="#fn11" class="footnote-ref" id="fnref11"><sup>11</sup></a> works as follows:</p>
+<ol style="list-style-type: decimal">
+<li>Construct the distance matrix <span class="math inline">\(D\)</span> with distances between examples.</li>
+<li>Order all features descending by number of missing values.</li>
+<li>Starting with the feature with most missing, for each example with a missing value, use the <span class="math inline">\(k\)</span> nearest neighbors’ mean or median to impute.</li>
+</ol>
+<p>The algorithm runs until all values are imputed.</p>
+<p>While very attractive because of the intuitive approach and because it preserves data characteristics (continuous / discrete, categoricals) in the features, the distance matrix is very memory-intensive for large data sets. Also, it is required to remove features with &gt; 80 % missing values first.</p>
+</div>
+<div id="iterative-imputation" class="section level4">
+<h4><span class="header-section-number">3.3.3.2</span> Iterative imputation</h4>
+<p>Iterative imputation, implemented in package <code>fancyimpute</code><a href="#fn12" class="footnote-ref" id="fnref12"><sup>12</sup></a>, works similar to the R-package <code>mice</code> (see <span class="citation">van Buuren and Groothuis-Oudshoorn (<a href="references.html#ref-buuren2011mice">2011</a>)</span>). Before imputation, all features have to be transformed to numerical data types and normalized because the underlying model is a linear regresssion.</p>
+<p>In short, the algorithm works as follows:</p>
+<ol style="list-style-type: decimal">
+<li>Features are ordered by the fraction of missing values</li>
+<li>Starting with the feature with most missing values, use the other features to build a linear model, using the current feature as the dependent variable and predict missing values.</li>
+<li>Repeat step 2 until all features are complete</li>
+<li>Repeat steps 2 – 3 <span class="math inline">\(n\)</span> times, <span class="math inline">\(n=5\)</span> was chosen</li>
+</ol>
+</div>
+<div id="simple-imputation-and-categorical-indicator" class="section level4">
+<h4><span class="header-section-number">3.3.3.3</span> Simple Imputation and Categorical Indicator</h4>
+<p>This approach is straightforward: Numeric features are imputed by their median value to make the imputation robust to skewed distributions.</p>
+<p>As the algorithm used (<code>sklearn.impute.SimpleImputer</code>) only supports numerical data types, categorical features were treated separately during feature engineering (Section <a href="data-preprocessing.html#methods-feature-engineering">3.3.2</a>): The one-hot or binary encoded categoricals had one more feature added, indicating missing values.</p>
+</div>
+</div>
+<div id="methods-feature-selection" class="section level3">
+<h3><span class="header-section-number">3.3.4</span> Feature Selection</h3>
+<p>One of the biggest caveats in dealing with high-dimensional data is the infamous “Curse of Dimensionality” coined by <span class="citation">Bellman (<a href="references.html#ref-bellman1966dynamic">1966</a>)</span>. The curse comes from the fact that with an increasing number of dimensions of the feature space, the number of possible combinations grows exponentially. In order to cover all possible combinations with several examples, a huge amount of data would be required as a result. In the area of machine learning, high dimensionality frequently manifests in the form of overfitting, which leads to an unacceptably large generalization error <span class="citation">Goodfellow, Bengio, and Courville (<a href="references.html#ref-goodfellow2016deep">2016</a>)</span>. <span class="citation">Hughes (<a href="references.html#ref-hughes1968mean">1968</a>)</span> showed that for a fixed number of examples, model performance first increases with increasing number of dimensions but then decreases again.</p>
+<p>Boruta, introduced by <span class="citation">Kursa, Rudnicki, and others (<a href="references.html#ref-kursa2010boruta">2010</a>)</span> in the form of an R package, performs feature selection by solving the so-called all-relevant feature problem. The algorithm was found to perform very well regarding selection of relevant features in <span class="citation">Kursa and Rudnicki (<a href="references.html#ref-kursa2011boruta">2011</a>)</span>.</p>
+<p>In short, the algorithm works as follows:</p>
+<ol style="list-style-type: decimal">
+<li>The input matrix <span class="math inline">\(\mathbf{X}\)</span> of dimension <span class="math inline">\(n \times p\)</span> is extended with <span class="math inline">\(p\)</span> so-called <em>shadow features</em>. The shadow features are permuted copies of the features in <span class="math inline">\(\mathbf{X}\)</span>. They are therefore de-correlated with the target.</li>
+<li>On the resulting matrix <span class="math inline">\(\mathbf{X^*}\)</span>, a random forest classifier is trained and the Z-scores <span class="math inline">\(\frac{\bar{\text{loss}}}{sd}\)</span> for each of the <span class="math inline">\(2p\)</span> features calculated.</li>
+<li>The highest Z-score among the shadow features <span class="math inline">\(MZSA\)</span> is determined.</li>
+<li>All original features are compared against <span class="math inline">\(MZSA\)</span> and those features with a higher score selected as important.</li>
+<li>With the remaining features, a two-sided test for equality of the Z-scores with <span class="math inline">\(MZSA\)</span> is performed and all features with significantly lower score are deemed unimportant.</li>
+<li>All shadow copies are removed, go to step 1.</li>
+</ol>
+<p>The algorithm terminates when all attributes are marked as either important or not important or when the maximum number of iterations is reached.</p>
+<p>For this thesis, a python implementation<a href="#fn13" class="footnote-ref" id="fnref13"><sup>13</sup></a> was used.</p>
+<p>The models were all learned on the same data set resulting from the boruta selection.</p>
+</div>
+</div>
+<div class="footnotes">
+<hr />
+<ol start="6">
+<li id="fn6"><p>Available from <a href="https://github.com/datarian/thesis-msc-statistics/tree/master/code/kdd98">https://github.com/datarian/thesis-msc-statistics/tree/master/code/kdd98</a><a href="data-preprocessing.html#fnref6" class="footnote-back">↩</a></p></li>
+<li id="fn7"><p><a href="https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/1_Preprocessing.ipynb">https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/1_Preprocessing.ipynb</a><a href="data-preprocessing.html#fnref7" class="footnote-back">↩</a></p></li>
+<li id="fn8"><p><a href="https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/2_Feature%20Engineering.ipynb">https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/2_Feature Engineering.ipynb</a><a href="data-preprocessing.html#fnref8" class="footnote-back">↩</a></p></li>
+<li id="fn9"><p>Available at: <a href="https://github.com/scikit-learn-contrib/categorical-encoding/">https://github.com/scikit-learn-contrib/categorical-encoding/</a>, accessed on 5.6.2019<a href="data-preprocessing.html#fnref9" class="footnote-back">↩</a></p></li>
+<li id="fn10"><p><a href="https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/4_Imputation.ipynb">https://github.com/datarian/thesis-msc-statistics/tree/master/code/notebooks/4_Imputation.ipynb</a><a href="data-preprocessing.html#fnref10" class="footnote-back">↩</a></p></li>
+<li id="fn11"><p>Available at: <a href="https://github.com/epsilon-machine/missingpy">https://github.com/epsilon-machine/missingpy</a>, accessed on 11.6.2019<a href="data-preprocessing.html#fnref11" class="footnote-back">↩</a></p></li>
+<li id="fn12"><p>Available at: <a href="https://pypi.org/project/fancyimpute/">https://pypi.org/project/fancyimpute/</a>, accessed on 30.06.2019<a href="data-preprocessing.html#fnref12" class="footnote-back">↩</a></p></li>
+<li id="fn13"><p>Available from <a href="https://github.com/scikit-learn-contrib/boruta_py">https://github.com/scikit-learn-contrib/boruta_py</a>, accessed on 5.6.2019<a href="data-preprocessing.html#fnref13" class="footnote-back">↩</a></p></li>
+</ol>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="data-handling.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="methods-prediction.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="assets/gitbook-2.6.7/js/app.min.js"></script>
+<script src="assets/gitbook-2.6.7/js/lunr.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="assets/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"google": false,
+"linkedin": true,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"all": ["facebook", "google", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"download": ["Master_Thesis_Florian_Hochstrasser.pdf"],
+"toc": {
+"collapse": "subsection"
+},
+"toolbar": {
+"position": "static"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:" && /^https?:/.test(src))
+      src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

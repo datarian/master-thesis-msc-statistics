@@ -1,13 +1,12 @@
 \begin{titlepage}
 
 \titlehead{Master Thesis}
-\subject{Profit maximization for direct marketing campaigns}
-\title{An application of knowledge discovery for decision making}
+\title{Profit maximization for direct marketing campaigns}
+\subject{An application of data-driven decision making}
 \subtitle{Submitted in partial fulfillment of the requirements for the degree of Master of Science in Statistics}
 \author{Florian Hochstrasser}
 \date{14.06.2019}
 \publishers{Supervisor: Jacques Zuber}
-%\dedication{Dieses Beispiel widme ich\\allen LaTeX Usern}
 
 \end{titlepage}
 
@@ -15,12 +14,11 @@
 \maketitle
 
 \begin{abstract}
+A profit optimization problem, based on the data distributed for the KDD-Cup 1998, was solved using several different supervised learning algorithms. A complete analysis including data preprocessing, model evaluation and selection and construction of the final estimator was conducted.
 
-It is known that....
+During preprocessing, several approaches for imputation and feature selection were explored. A two-stage prediction approach was chosen, separately predicting donation probability and donation amount. Five classification- and four regression-algorithms were evaluated. The best-performing algorithms of both families were then combined for the final prediction.
 
-This work addressed the problem from the perspective of...
+A python package was developed to automate preprocessing of the data, guaranteeing consistent treatment of learning- and validation data. The package features an extensible architecture for future work on the data set.
 
-It could be shown that...
-
-Henceforth, it should be considered that...
+In comparison to the winners of the Cup, the developed model ranked $4^{th}$. Future work based on the results achieved should focus on feature engineering and alternative imputation strategies.
 \end{abstract}

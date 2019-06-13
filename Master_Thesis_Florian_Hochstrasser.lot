@@ -1,0 +1,10 @@
+\babel@toc {english}{}
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {\relax 2.1}{\ignorespaces Data types after import of raw csv data\relax }}{14}{table.caption.4}% 
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {\relax 4.1}{\ignorespaces Prediction results for the test data set (in color) and the results of the cup-winners. \(N^*\) denotes number of examples selected. The theoretical maximum was calculated with: \$ (\(\sum _{i=1}^n \symbb {1}_{\{\text {TARGET}_{D,i} > 0.0\}}*(\text {TARGET}_{D,i} - u)\) with \(u\) the unit cost of 0.68 \$ per mailing).\relax }}{52}{table.caption.35}% 
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }

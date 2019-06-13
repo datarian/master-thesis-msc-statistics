@@ -1,44 +1,12 @@
 # Conclusions
 
-## Comparison With Cup Winners
+* The effort put into preprocessing and development of the package `kdd98` laid a basis for future work on the data set. The architecture of the package makes modifications to existing transformers or implementation of additional transformations time-efficient. Care was taken to document the code so that future users can quickly add their own modifications.
 
-The KDD-CUP committee evaluated the results based on the net revenue generated on the validation sample. 
-The measure used was the sum (the actual donation amount - \$0.68) over all records for which the expected revenue (or predicted value of the donation) is over \$0.68. 
-This measure is simple, objective and a direct measure of profit. Table 2 depicts the results. The participants are listed based on the last column.
+* Regarding model learning, the current approach using a two-step prediction is promising in principle. Shortcomings in terms of classifier and regressor performance are suspected to mainly result from the remaining high dimensionality, even after reducing the number features by 90%. A logical next step would be to reiterate over feature engineering, imputation, and feature selection:
+    * In feature engineering, the promotion- and giving history features should be carefully reexamined. Given the selection of various *RFA_* features for promotions in the past through `boruta`, these could be distilled into single *R*, *F*, *A* summaries.
+    * Imputation with a CART method like in R's `caret` package is another imputation strategy to consider. The simple strategy implemented in this thesis might have led to bias during model learning.
+    * Feature selection using `boruta` could be combined with a manual step afterwards, informed by domain knowledge.
 
+* The $4^{th}$ rank achieved proves that selection of examples works in principle. The high error on predicted net profit however suggests a thorough reconsideration of the prediction method is necessary. Again, the implementation in `kdd98` can serve as a basis, providing the necessary "plumbing" for efficient examination and future work.
 
-
-## Achieved
-
-* A solid preprocessing package, albeit data set specific, extensible and easy to use
-
-## Shortcomings
-
-* Poor prediction performance: Non-gaussian distribution of $\hat{y}_b$, which violates assumptions for Heckman-correctio., bias-variance tradeoff
-
-* Problems with lax implementation of two-stage Heckman: @bushway2007magic
-
-Prediction Error $PE(z) = \sigma_{\epsilon}^2+\text{Bias}^2(\hat{f}(z))+\text{Var}(\hat{f}(z))$. When model more complex, local structure picked up, coefficient estimates suffer from high Var as more terms included in model -> more bias can lead to decrease in variance, decreasing PE.
-
-## Outlook
-
-* Next iteration:
-	* Try other imputation strategies:
-        * Median perhaps too simple, introducing bias
-        * Iterative imputer struggles with non-normal data due to linear models
-        * CART imputation could be interesting
-        * kNN problematic because of high dimensionality -> distances small, but maybe worth a try on powerful hardware
-
-    * Revise outliers:
-        * Relied on Yeo-Johnson transformation to normalize
-        * Other possibilities: 
-
-	* Feature Extraction
-		* Based on domain knowledge, create new features from promotion / giving history
-
-	* Feature Selection
-		* Tune boruta to select less features
-
-	* Choice of Models
-
-* Will be easy to work on these specific areas given the infrastructure created in this thesis
+* The result in comparison with the performance of specialized software coupled with expertise in the field employed by the cup winners emphasizes the power of domain knowledge. The progress made in machine learning over the past 20 years since the cup does not automatically lead to superior results when strictly taking only the information contained in the data itself.
