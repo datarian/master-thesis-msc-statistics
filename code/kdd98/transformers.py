@@ -578,8 +578,6 @@ class CategoricalImputer(NamedFeatureTransformer):
 class ZipToCoords(NamedFeatureTransformer):
     def __init__(self):
         super().__init__()
-        self.app_id = "ZJBxigwxa1QPHlWrtWH6"
-        self.app_code = "OJBun02aepkFbuHmYn1bOg"
         try:
             with open(pathlib.Path(Config.get("data_dir"), "zip_db.pkl"),
                       "rb") as zdb:
@@ -591,8 +589,8 @@ class ZipToCoords(NamedFeatureTransformer):
             self.locations = zip_db.set_index("zip").to_dict('index')
 
     def _do_geo_query(self, q):
-        geolocator = Here(app_id="ZJBxigwxa1QPHlWrtWH6",
-                          app_code="OJBun02aepkFbuHmYn1bOg")
+        geolocator = Here(app_id=Config.get("here_geolocator_app_id"),
+                          app_code=Config.get("here_geolocator_app_code"))
         geocode = RateLimiter(geolocator.geocode,
                               min_delay_seconds=0.01,
                               max_retries=4)

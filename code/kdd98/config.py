@@ -90,10 +90,12 @@ class Config:
         "seq_color_map":
         sns.light_palette(sns.husl_palette(8)[4], n_colors=256, as_cmap=True),
         "diverging_color_map":
-        sns.diverging_palette(359, 204, s=83, l=57, sep=10, n=12, as_cmap=True)
+        sns.diverging_palette(359, 204, s=83, l=57, sep=10, n=12, as_cmap=True),
+        "here_geolocator_app_id": "",
+        "here_geolocator_app_code": "",
     }
 
-    __setters = ["data_dir", "model_store"]
+    __setters = ["data_dir", "model_store", "here_geolocator_app_id", "here_geolocator_app_code"]
 
     @staticmethod
     def get(*keys):
